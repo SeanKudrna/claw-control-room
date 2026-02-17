@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-02-17T20:00:52.939073+00:00",
-  "generatedAtLocal": "2026-02-17 14:00 ",
+  "generatedAt": "2026-02-17T20:23:33.865425+00:00",
+  "generatedAtLocal": "2026-02-17 14:23 ",
   "currentFocus": "",
-  "activeWork": "13:20-13:45 \u2014 Midday reliability + queue reconciliation (confirm noon usage reliability state and de-duplicate remaining queue items)",
+  "activeWork": "14:15-14:30 \u2014 PM block setup + dashboard/queue reconciliation before execution window",
   "reliability": {
     "status": "green"
   },
@@ -39,17 +39,7 @@
   "nextJobs": [
     {
       "name": "Critical update failover guard",
-      "nextRun": "14:07",
-      "lastStatus": "ok"
-    },
-    {
-      "name": "Today dashboard refresh (every 3h)",
-      "nextRun": "14:15",
-      "lastStatus": null
-    },
-    {
-      "name": "Reliability watchdog hourly (self-heal + conditional alert)",
-      "nextRun": "14:20",
+      "nextRun": "14:37",
       "lastStatus": "ok"
     },
     {
@@ -61,6 +51,11 @@
       "name": "Reliability deep-work block B (DAILY_PLAN-driven)",
       "nextRun": "15:10",
       "lastStatus": null
+    },
+    {
+      "name": "Reliability watchdog hourly (self-heal + conditional alert)",
+      "nextRun": "15:20",
+      "lastStatus": "ok"
     },
     {
       "name": "Surprise value lane (daily)",
@@ -75,6 +70,11 @@
     {
       "name": "Usage report - 5pm",
       "nextRun": "17:00",
+      "lastStatus": null
+    },
+    {
+      "name": "Day1 reliability MVP 5pm update",
+      "nextRun": "17:02",
       "lastStatus": null
     }
   ],
