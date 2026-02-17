@@ -1,5 +1,17 @@
 # Changelog
 
+## v1.3.3 - 2026-02-17
+
+### Fixed
+- Removed duplicate heading stacks inside collapsible panel bodies by adding compact heading mode to panel content components.
+- Preserved accessibility labels for compacted panel-body sections while keeping section titles in the collapsible summary row.
+
+### Added
+- Added UI contract test `scripts/tests/test_collapsible_heading_compact.py` to ensure collapsible panel bodies keep heading compaction wired in `App.tsx`.
+
+### Changed
+- Updated docs to document collapsible compact-heading behavior and quality gate coverage.
+
 ## v1.3.2 - 2026-02-17
 
 ### Fixed

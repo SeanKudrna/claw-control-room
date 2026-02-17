@@ -1,9 +1,14 @@
 import type { TimelineItem } from '../types/status';
 
-export function Timeline({ items }: { items: TimelineItem[] }) {
+interface TimelineProps {
+  items: TimelineItem[];
+  hideHeading?: boolean;
+}
+
+export function Timeline({ items, hideHeading = false }: TimelineProps) {
   return (
-    <section className="card">
-      <h2>Today Timeline</h2>
+    <section className="card" aria-label={hideHeading ? 'Today Timeline' : undefined}>
+      {!hideHeading && <h2>Today Timeline</h2>}
       <ul className="timeline">
         {items.length === 0 && <li className="timeline-item muted">No timeline blocks found.</li>}
         {items.map((item, index) => (

@@ -57,7 +57,7 @@ export default function App() {
             subtitle="Current day plan blocks"
             defaultOpen={true}
           >
-            <Timeline items={data.timeline} />
+            <Timeline items={data.timeline} hideHeading={true} />
           </CollapsibleSection>
 
           <CollapsibleSection
@@ -65,7 +65,7 @@ export default function App() {
             subtitle="Next cron actions and status"
             defaultOpen={true}
           >
-            <JobsTable jobs={data.nextJobs} />
+            <JobsTable jobs={data.nextJobs} hideHeading={true} />
           </CollapsibleSection>
         </>
       );
@@ -79,7 +79,7 @@ export default function App() {
             subtitle="Filterable operational stream"
             defaultOpen={true}
           >
-            <ActivityFeed activity={data.activity ?? []} />
+            <ActivityFeed activity={data.activity ?? []} hideHeading={true} />
           </CollapsibleSection>
 
           <CollapsibleSection
@@ -87,7 +87,7 @@ export default function App() {
             subtitle="Recent completed value"
             defaultOpen={false}
           >
-            <Findings findings={data.findings} />
+            <Findings findings={data.findings} hideHeading={true} />
           </CollapsibleSection>
         </>
       );
@@ -118,6 +118,7 @@ export default function App() {
             now={data.workstream?.now ?? []}
             next={data.workstream?.next ?? []}
             done={data.workstream?.done ?? []}
+            hideHeading={true}
           />
         </CollapsibleSection>
 

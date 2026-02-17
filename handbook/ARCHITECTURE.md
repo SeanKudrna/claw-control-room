@@ -27,6 +27,7 @@ Claw Control Room provides a readable, near-real-time view of Claw's operations:
   - `src/lib/statusApi.ts` source resolution/fetch logic
   - `src/types/status.ts` shared payload contracts
 - Information architecture uses tabbed views (`Overview`, `Operations`, `Insights`) plus collapsible sections to reduce visual overload.
+- Components rendered inside collapsible bodies support compact heading mode, so section titles stay in the summary row while inner content keeps accessibility labels without duplicate heading stacks.
 - Active tab is URL-hash persisted (`#tab-*`) for direct navigation/state restore.
 - Build output: `docs/` (served by GitHub Pages).
 

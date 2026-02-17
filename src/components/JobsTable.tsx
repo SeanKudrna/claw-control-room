@@ -7,10 +7,15 @@ function statusClass(lastStatus?: string): string {
   return 'neutral';
 }
 
-export function JobsTable({ jobs }: { jobs: JobItem[] }) {
+interface JobsTableProps {
+  jobs: JobItem[];
+  hideHeading?: boolean;
+}
+
+export function JobsTable({ jobs, hideHeading = false }: JobsTableProps) {
   return (
-    <section className="card">
-      <h2>Next Scheduled Jobs</h2>
+    <section className="card" aria-label={hideHeading ? 'Next Scheduled Jobs' : undefined}>
+      {!hideHeading && <h2>Next Scheduled Jobs</h2>}
       <div className="table-wrap">
         <table>
           <thead>

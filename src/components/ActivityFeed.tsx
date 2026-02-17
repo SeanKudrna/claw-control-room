@@ -5,7 +5,12 @@ const ORDER = ['all', 'ui', 'reliability', 'release', 'docs', 'ops'] as const;
 
 type FilterValue = (typeof ORDER)[number];
 
-export function ActivityFeed({ activity }: { activity: ActivityItem[] }) {
+interface ActivityFeedProps {
+  activity: ActivityItem[];
+  hideHeading?: boolean;
+}
+
+export function ActivityFeed({ activity, hideHeading = false }: ActivityFeedProps) {
   const [filter, setFilter] = useState<FilterValue>('all');
 
   const filtered = useMemo(() => {
@@ -19,11 +24,13 @@ export function ActivityFeed({ activity }: { activity: ActivityItem[] }) {
   }, [activity]);
 
   return (
-    <section className="card">
-      <div className="section-header">
-        <h2>Activity Feed</h2>
-        <span className="muted">Filterable ops stream from daily memory</span>
-      </div>
+    <section className="card" aria-label={hideHeading ? 'Activity Feed' : undefined}>
+      {!hideHeading && (
+        <div className="section-header">
+          <h2>Activity Feed</h2>
+          <span className="muted">Filterable ops stream from daily memory</span>
+        </div>
+      )}
 
       <div className="chip-row">
         {availableFilters.map((value) => (
