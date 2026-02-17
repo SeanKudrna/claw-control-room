@@ -14,6 +14,10 @@ npm install
 npm run dev
 ```
 
+UI nav notes:
+- Tabs are hash-driven (`#tab-overview`, `#tab-operations`, `#tab-insights`).
+- Major sections are collapsible via native `<details>` wrappers.
+
 ## Build output for GitHub Pages
 
 ```bash

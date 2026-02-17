@@ -144,6 +144,84 @@ p {
   margin-bottom: 14px;
 }
 
+.tab-shell {
+  margin-bottom: 14px;
+}
+
+.tab-row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.tab-btn {
+  border: 1px solid var(--border);
+  background: #10173a;
+  color: var(--muted);
+  border-radius: 10px;
+  font-size: 0.84rem;
+  font-weight: 700;
+  padding: 8px 11px;
+  cursor: pointer;
+}
+
+.tab-btn.active {
+  border-color: rgba(122, 141, 245, 0.65);
+  background: rgba(122, 141, 245, 0.18);
+  color: #d5dcff;
+}
+
+.tab-description {
+  margin-top: 9px;
+  font-size: 0.85rem;
+}
+
+.collapse-panel {
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0));
+}
+
+.collapse-panel > summary {
+  list-style: none;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  padding: 12px 14px;
+}
+
+.collapse-panel > summary::-webkit-details-marker {
+  display: none;
+}
+
+.collapse-heading {
+  display: grid;
+  gap: 3px;
+}
+
+.collapse-chevron {
+  color: var(--muted);
+  transition: transform 0.16s ease;
+}
+
+.collapse-panel[open] .collapse-chevron {
+  transform: rotate(180deg);
+}
+
+.collapse-content {
+  padding: 0 12px 12px;
+  display: grid;
+  gap: 12px;
+}
+
+.collapse-content > .card {
+  border: none;
+  background: transparent;
+  padding: 0;
+}
+
 .dashboard-grid {
   display: grid;
   gap: 14px;

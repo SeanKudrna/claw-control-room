@@ -1,16 +1,126 @@
 import { AlertTriangle } from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react';
 import { ActivityFeed } from './components/ActivityFeed';
+import { CollapsibleSection } from './components/CollapsibleSection';
 import { Findings } from './components/Findings';
 import { Header } from './components/Header';
 import { JobsTable } from './components/JobsTable';
 import { SummaryCards } from './components/SummaryCards';
+import { TabBar, type DashboardTab } from './components/TabBar';
 import { Timeline } from './components/Timeline';
 import { TrendCharts } from './components/TrendCharts';
 import { WorkstreamBoard } from './components/WorkstreamBoard';
 import { useStatus } from './hooks/useStatus';
 
+const TABS: DashboardTab[] = [
+  {
+    id: 'overview',
+    label: 'Overview',
+    description: 'High-signal snapshot: current state, workstream lanes, and trend charts.',
+  },
+  {
+    id: 'operations',
+    label: 'Operations',
+    description: 'Execution plan + scheduler view: timeline blocks and upcoming jobs.',
+  },
+  {
+    id: 'insights',
+    label: 'Insights',
+    description: 'Activity stream and findings/wins for context and review.',
+  },
+];
+
+function resolveInitialTab(): string {
+  if (typeof window === 'undefined') return TABS[0].id;
+  const hash = window.location.hash.replace('#tab-', '').trim();
+  return TABS.some((tab) => tab.id === hash) ? hash : TABS[0].id;
+}
+
 export default function App() {
   const { data, loading, error, refresh, lastUpdatedLabel } = useStatus();
+  const [activeTab, setActiveTab] = useState<string>(resolveInitialTab());
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    window.location.hash = `tab-${activeTab}`;
+  }, [activeTab]);
+
+  const content = useMemo(() => {
+    if (!data) return null;
+
+    if (activeTab === 'operations') {
+      return (
+        <>
+          <CollapsibleSection
+            title="Execution Timeline"
+            subtitle="Current day plan blocks"
+            defaultOpen={true}
+          >
+            <Timeline items={data.timeline} />
+          </CollapsibleSection>
+
+          <CollapsibleSection
+            title="Scheduled Jobs"
+            subtitle="Next cron actions and status"
+            defaultOpen={true}
+          >
+            <JobsTable jobs={data.nextJobs} />
+          </CollapsibleSection>
+        </>
+      );
+    }
+
+    if (activeTab === 'insights') {
+      return (
+        <>
+          <CollapsibleSection
+            title="Activity Feed"
+            subtitle="Filterable operational stream"
+            defaultOpen={true}
+          >
+            <ActivityFeed activity={data.activity ?? []} />
+          </CollapsibleSection>
+
+          <CollapsibleSection
+            title="Findings / Wins"
+            subtitle="Recent completed value"
+            defaultOpen={false}
+          >
+            <Findings findings={data.findings} />
+          </CollapsibleSection>
+        </>
+      );
+    }
+
+    return (
+      <>
+        <SummaryCards data={data} />
+
+        <CollapsibleSection
+          title="Now / Next / Done"
+          subtitle="Live workstream board"
+          defaultOpen={true}
+        >
+          <WorkstreamBoard
+            now={data.workstream?.now ?? []}
+            next={data.workstream?.next ?? []}
+            done={data.workstream?.done ?? []}
+          />
+        </CollapsibleSection>
+
+        <CollapsibleSection
+          title="Trend Charts"
+          subtitle="Recent run quality + reliability"
+          defaultOpen={true}
+        >
+          <TrendCharts
+            jobPoints={data.charts?.jobSuccessTrend ?? []}
+            reliabilityPoints={data.charts?.reliabilityTrend ?? []}
+          />
+        </CollapsibleSection>
+      </>
+    );
+  }, [activeTab, data]);
 
   return (
     <div className="app-shell">
@@ -21,6 +131,8 @@ export default function App() {
         onRefresh={() => void refresh()}
       />
 
+      <TabBar tabs={TABS} activeTab={activeTab} onChange={setActiveTab} />
+
       {error && (
         <div className="error-banner">
           <AlertTriangle size={16} />
@@ -30,24 +142,7 @@ export default function App() {
 
       {!data && loading && <div className="card">Loading status…</div>}
 
-      {data && (
-        <main className="dashboard-grid">
-          <SummaryCards data={data} />
-          <WorkstreamBoard
-            now={data.workstream?.now ?? []}
-            next={data.workstream?.next ?? []}
-            done={data.workstream?.done ?? []}
-          />
-          <TrendCharts
-            jobPoints={data.charts?.jobSuccessTrend ?? []}
-            reliabilityPoints={data.charts?.reliabilityTrend ?? []}
-          />
-          <Timeline items={data.timeline} />
-          <JobsTable jobs={data.nextJobs} />
-          <ActivityFeed activity={data.activity ?? []} />
-          <Findings findings={data.findings} />
-        </main>
-      )}
+      {data && <main className="dashboard-grid">{content}</main>}
     </div>
   );
 }

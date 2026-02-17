@@ -1,5 +1,19 @@
 # Changelog
 
+## v1.1.0 - 2026-02-17
+
+### Added
+- Tabbed information architecture with dedicated dashboard views:
+  - Overview
+  - Operations
+  - Insights
+- Collapsible section containers for major content groups to reduce on-screen overload.
+- URL hash tab persistence (`#tab-overview`, `#tab-operations`, `#tab-insights`) for direct navigation.
+
+### Changed
+- Reorganized app layout to avoid single-page info-dump and improve scanability.
+- Styled UI controls for tabs/collapsible behavior with responsive mobile behavior.
+
 ## v1.0.2 - 2026-02-17
 
 ### Fixed

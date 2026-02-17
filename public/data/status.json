@@ -1,7 +1,7 @@
 {
-  "generatedAt": "2026-02-17T21:26:15.550967+00:00",
-  "generatedAtLocal": "2026-02-17 15:26 ",
-  "controlRoomVersion": "1.0.2",
+  "generatedAt": "2026-02-17T21:29:23.571533+00:00",
+  "generatedAtLocal": "2026-02-17 15:29 ",
+  "controlRoomVersion": "1.1.0",
   "currentFocus": "Reliability deep-work block B (scheduled cron)",
   "activeWork": "15:10-16:05 \u2014 Reliability deep-work block B (scheduled cron)",
   "reliability": {
@@ -80,12 +80,12 @@
     }
   ],
   "findings": [
-    "Release: https://github.com/SeanKudrna/claw-control-room/releases/tag/v1.0.0",
     "Updated gist status payload after release so runtime dashboard data includes `controlRoomVersion: 1.0.0`.",
     "Fixed stale dashboard state where `Current Focus` could show `n/a` and `Now` could remain on old time windows.",
     "Implemented timeline-aware stale fallback in `scripts/lib/status_builder.py` so active/focus/now lanes follow current `DAILY_PLAN.md` window when `TODAY_STATUS.md` lags.",
     "Added tests for stale active-work fallback and timeline-aware now-lane rendering.",
-    "Released as patch version `v1.0.1` with tag + GitHub release: https://github.com/SeanKudrna/claw-control-room/releases/tag/v1.0.1"
+    "Released as patch version `v1.0.1` with tag + GitHub release: https://github.com/SeanKudrna/claw-control-room/releases/tag/v1.0.1",
+    "Follow-up patch v1.0.2 shipped to filter stale time-passed items out of `Next` swimlane; tag/release created and gist payload refreshed."
   ],
   "workstream": {
     "now": [
@@ -241,11 +241,6 @@
   },
   "activity": [
     {
-      "time": "15:05",
-      "category": "ops",
-      "text": "Increased `Control room status publish (gist backend)` cadence from every 20 minutes to every 5 minutes (07:00-22:00 America/Chicago)."
-    },
-    {
       "time": "15:10",
       "category": "ui",
       "text": "Refactored `claw-control-room` from vanilla static JS/CSS into modular React + TypeScript (Vite)."
@@ -359,6 +354,11 @@
       "time": "15:25",
       "category": "release",
       "text": "Released as patch version `v1.0.1` with tag + GitHub release: https://github.com/SeanKudrna/claw-control-room/releases/tag/v1.0.1"
+    },
+    {
+      "time": "15:25",
+      "category": "release",
+      "text": "Follow-up patch v1.0.2 shipped to filter stale time-passed items out of `Next` swimlane; tag/release created and gist payload refreshed."
     }
   ]
 }
