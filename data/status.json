@@ -1,6 +1,6 @@
 {
-  "generatedAt": "2026-02-17T20:31:52.646195+00:00",
-  "generatedAtLocal": "2026-02-17 14:31 ",
+  "generatedAt": "2026-02-17T20:56:07.889846+00:00",
+  "generatedAtLocal": "2026-02-17 14:56 ",
   "currentFocus": "",
   "activeWork": "14:15-14:30 \u2014 PM block setup + dashboard/queue reconciliation before execution window",
   "reliability": {
@@ -38,18 +38,18 @@
   ],
   "nextJobs": [
     {
-      "name": "Critical update failover guard",
-      "nextRun": "14:37",
+      "name": "Downtime gap auto-fill guard (quiet unless triggered)",
+      "nextRun": "15:00",
       "lastStatus": "ok"
     },
     {
-      "name": "Control room publish refresh",
-      "nextRun": "14:40",
-      "lastStatus": null
+      "name": "Control room status publish (gist backend)",
+      "nextRun": "15:00",
+      "lastStatus": "error"
     },
     {
-      "name": "Downtime gap auto-fill guard (quiet unless triggered)",
-      "nextRun": "15:00",
+      "name": "Critical update failover guard",
+      "nextRun": "15:07",
       "lastStatus": "ok"
     },
     {
@@ -79,11 +79,11 @@
     }
   ],
   "findings": [
-    "Disabled redundant Schedule gap guard to reduce overlap/noise.",
-    "Added reliability SLO scorecard doc + daily SLO snapshot cron (5:05 PM CST).",
-    "Added capability pipeline doc to standardize build->test->proof->document->operationalize flow.",
     "Added/activated immediate workflow hardening layer: `TODAY_STATUS.md` refresh cadence + `Critical update failover guard` checks + dedupe ledger `status/failover-sent.json`.",
     "Dashboard contract now standardized to: running now, next 3 meaningful blocks, last proof, blockers, next action.",
-    "Immediate failover audit caught historical 7:00 usage-report failure root cause (disallowed model on that run); retry path is now stabilized on `gpt-5.3-codex` with noon success and next critical retry at 17:00."
+    "Immediate failover audit caught historical 7:00 usage-report failure root cause (disallowed model on that run); retry path is now stabilized on `gpt-5.3-codex` with noon success and next critical retry at 17:00.",
+    "Sean explicitly wants high-quality, modular, well-commented, well-documented dashboard code using industry best practices.",
+    "Documentation must be updated whenever code changes.",
+    "Prioritize strong AGENTS.md engineering contract and maintainable repo structure as the dashboard grows."
   ]
 }

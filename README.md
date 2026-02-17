@@ -26,11 +26,23 @@ python3 scripts/build_status_json.py
 open index.html
 ```
 
-## Update + publish
+## Publish modes
+
+### A) Status-only publish (recommended, no repo commit)
+
+```bash
+./scripts/publish_status.sh
+```
+
+This updates a GitHub Gist payload consumed by the dashboard, so status refreshes do **not** create repo commits.
+
+### B) Code/content publish (repo commit + push)
 
 ```bash
 ./scripts/update_and_push.sh
 ```
+
+Use this when dashboard code/docs actually change.
 
 ## Data sources
 

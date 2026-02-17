@@ -15,7 +15,13 @@ python3 -m py_compile scripts/build_status_json.py scripts/lib/status_builder.py
 python3 scripts/tests/test_status_builder.py
 ```
 
-## Publish manually
+## Publish status only (no repo commit)
+
+```bash
+./scripts/publish_status.sh
+```
+
+## Publish code/docs
 
 ```bash
 ./scripts/update_and_push.sh

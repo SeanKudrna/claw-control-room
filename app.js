@@ -1,5 +1,22 @@
+const DEFAULT_STATUS_URL = 'data/status.json';
+
+async function resolveStatusUrl() {
+  try {
+    const cfgRes = await fetch('data/source.json?ts=' + Date.now());
+    if (!cfgRes.ok) return DEFAULT_STATUS_URL;
+    const cfg = await cfgRes.json();
+    if (cfg && typeof cfg.url === 'string' && cfg.url.trim()) {
+      return cfg.url.trim() + (cfg.url.includes('?') ? '&' : '?') + 'ts=' + Date.now();
+    }
+  } catch (_) {
+    // fall through to local default
+  }
+  return DEFAULT_STATUS_URL + '?ts=' + Date.now();
+}
+
 async function load() {
-  const res = await fetch('data/status.json?ts=' + Date.now());
+  const statusUrl = await resolveStatusUrl();
+  const res = await fetch(statusUrl);
   const data = await res.json();
 
   document.getElementById('generatedAt').textContent = `Updated ${data.generatedAtLocal}`;
@@ -36,6 +53,6 @@ async function load() {
 }
 
 load().catch(err => {
-  document.getElementById('generatedAt').textContent = 'Failed to load status.json';
+  document.getElementById('generatedAt').textContent = 'Failed to load status source';
   console.error(err);
 });

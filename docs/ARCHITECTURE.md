@@ -16,12 +16,13 @@ Claw Control Room is a static dashboard that exposes a readable, near-real-time 
 - Output is written to `data/status.json`.
 
 2) Static rendering (browser)
-- `app.js` fetches `data/status.json`.
+- `app.js` resolves a status source from `data/source.json` (gist URL) and falls back to local `data/status.json`.
 - `index.html` and `styles.css` render cards/tables/timeline.
 
 3) Publish flow (GitHub Pages)
-- `scripts/update_and_push.sh` runs quality gates + build + push.
-- OpenClaw cron calls this script on interval.
+- **Status channel (default):** `scripts/publish_status.sh` -> `scripts/publish_status_gist.py` publishes fresh status JSON to a GitHub Gist (no repo commit needed).
+- **Code channel (as needed):** `scripts/update_and_push.sh` runs quality gates + build + commit/push for actual code/doc changes.
+- OpenClaw cron calls the status channel on interval.
 
 ## Data sources
 
