@@ -1,9 +1,9 @@
 {
-  "generatedAt": "2026-02-17T21:57:24.769407+00:00",
-  "generatedAtLocal": "2026-02-17 15:57 ",
-  "controlRoomVersion": "1.3.0",
-  "currentFocus": "Control-room product governance and issue-driven QA automation",
-  "activeWork": "15:35-16:15 \u2014 Control-room ownership hardening (issue workflow, planning integration, QA intake automation)",
+  "generatedAt": "2026-02-17T22:11:45.650909+00:00",
+  "generatedAtLocal": "2026-02-17 16:11 ",
+  "controlRoomVersion": "1.3.1",
+  "currentFocus": "Control-room runtime observability and issue-driven UX quality",
+  "activeWork": "15:45-16:10 \u2014 Runtime monitor shipped (idle/running + timers) and release verification",
   "reliability": {
     "status": "green"
   },
@@ -39,28 +39,18 @@
   ],
   "nextJobs": [
     {
-      "name": "Downtime gap auto-fill guard (quiet unless triggered)",
-      "nextRun": "16:00",
-      "lastStatus": "ok"
-    },
-    {
       "name": "Control room status publish (gist backend)",
-      "nextRun": "16:00",
+      "nextRun": "16:12",
       "lastStatus": "ok"
-    },
-    {
-      "name": "Critical update failover guard",
-      "nextRun": "16:07",
-      "lastStatus": "ok"
-    },
-    {
-      "name": "Surprise value lane (daily)",
-      "nextRun": "16:10",
-      "lastStatus": null
     },
     {
       "name": "Reliability watchdog hourly (self-heal + conditional alert)",
       "nextRun": "16:20",
+      "lastStatus": "ok"
+    },
+    {
+      "name": "Critical update failover guard",
+      "nextRun": "16:22",
       "lastStatus": "ok"
     },
     {
@@ -74,33 +64,43 @@
       "lastStatus": null
     },
     {
+      "name": "Downtime gap auto-fill guard (quiet unless triggered)",
+      "nextRun": "17:00",
+      "lastStatus": "ok"
+    },
+    {
       "name": "Day1 reliability MVP 5pm update",
       "nextRun": "17:02",
+      "lastStatus": null
+    },
+    {
+      "name": "Daily reliability SLO snapshot",
+      "nextRun": "17:05",
       "lastStatus": null
     }
   ],
   "findings": [
-    "Added recurring cron governance job: `Control room issue triage + QA intake` (09:35/13:35/17:35/21:35 CT) for issue monitoring + QA ticket intake.",
-    "Added GitHub issue templates for QA bugs and product improvements.",
-    "Opened initial QA backlog tickets from live review:",
-    "#1 [QA] Deduplicate overlapping entries in Overview Next lane",
-    "#2 [UX] Remove duplicate heading stacks inside collapsible panels",
-    "Added issue snapshot tooling (`scripts/issue_snapshot.py`) + tests and documented ticket-linked commit rule (`refs #<issue>`)."
+    "Runtime detection source: session-store run keys reconciled against cron finished-run logs for definitive active-run detection.",
+    "Shipped as ticket-linked release `v1.3.0` with commit message including `refs #3` and GitHub release tag.",
+    "Added control-room data freshness indicator in header (`Fresh`, `Aging`, `Stale`) computed from payload `generatedAt`.",
+    "Why: prevents accidental trust in stale dashboard snapshots when gist refresh lags.",
+    "Updated React hook + header UI + styles + README docs.",
+    "Proof: `./scripts/quality_gate.sh` passed (Python tests + TS typecheck + Vite build)."
   ],
   "workstream": {
     "now": [
-      "15:10-16:05 \u2014 Reliability deep-work block B (scheduled cron)"
+      "15:45-16:10 \u2014 Runtime monitor shipped (idle/running + timers) and release verification"
     ],
     "next": [
       "16:50-16:58 \u2014 Pre-5pm reliability checkpoint (scheduled cron)",
       "17:00-17:12 \u2014 Usage report + MVP user update window",
       "17:12-18:30 \u2014 Post-run stabilization + next-action prep",
-      "16:10-16:30 \u2014 Work issue #1 (dedupe overlapping Next-lane entries) and prep ticket-linked release",
+      "16:10-16:30 \u2014 Work issue #1 (dedupe overlapping Next-lane entries) and prep ticket-linked patch release",
       "17:00-17:12 \u2014 Usage report + MVP update verification window"
     ],
     "done": [
-      "Control-room governance tooling shipped: issue templates + issue snapshot script + ticket-linked release workflow (`--issue`) and new triage cron.",
-      "Proof: released `v1.2.0` with tag + GitHub release; issues opened: #1 and #2 in `SeanKudrna/claw-control-room`."
+      "Real-time runtime status feature shipped: Overview panel now shows `IDLE`/`RUNNING`, active job runs, and live elapsed timers.",
+      "Proof: released `v1.3.0` (refs #3) with tag/release and live page verification at cache-busted URL."
     ]
   },
   "charts": {
@@ -136,12 +136,6 @@
         "job": "Today dashboard refresh (every 3h)"
       },
       {
-        "label": "15:00",
-        "status": "ok",
-        "score": 1.0,
-        "job": "Downtime gap auto-fill guard (quiet unless triggered)"
-      },
-      {
         "label": "15:10",
         "status": "ok",
         "score": 1.0,
@@ -154,13 +148,25 @@
         "job": "Reliability watchdog hourly (self-heal + conditional alert)"
       },
       {
-        "label": "15:37",
+        "label": "16:00",
+        "status": "ok",
+        "score": 1.0,
+        "job": "Downtime gap auto-fill guard (quiet unless triggered)"
+      },
+      {
+        "label": "16:07",
         "status": "ok",
         "score": 1.0,
         "job": "Critical update failover guard"
       },
       {
-        "label": "15:55",
+        "label": "16:10",
+        "status": "ok",
+        "score": 1.0,
+        "job": "Surprise value lane (daily)"
+      },
+      {
+        "label": "16:11",
         "status": "ok",
         "score": 1.0,
         "job": "Control room status publish (gist backend)"
@@ -240,41 +246,6 @@
     ]
   },
   "activity": [
-    {
-      "time": "15:22",
-      "category": "ui",
-      "text": "Added release-notes extraction utility + tests (`scripts/extract_release_notes.py`, `scripts/tests/test_extract_release_notes.py`)."
-    },
-    {
-      "time": "15:22",
-      "category": "ui",
-      "text": "Released and published `v1.0.0`:"
-    },
-    {
-      "time": "15:22",
-      "category": "ui",
-      "text": "Tag: `v1.0.0`"
-    },
-    {
-      "time": "15:22",
-      "category": "ui",
-      "text": "Release: https://github.com/SeanKudrna/claw-control-room/releases/tag/v1.0.0"
-    },
-    {
-      "time": "15:22",
-      "category": "ui",
-      "text": "Updated gist status payload after release so runtime dashboard data includes `controlRoomVersion: 1.0.0`."
-    },
-    {
-      "time": "15:25",
-      "category": "ui",
-      "text": "Fixed stale dashboard state where `Current Focus` could show `n/a` and `Now` could remain on old time windows."
-    },
-    {
-      "time": "15:25",
-      "category": "ui",
-      "text": "Implemented timeline-aware stale fallback in `scripts/lib/status_builder.py` so active/focus/now lanes follow current `DAILY_PLAN.md` window when `TODAY_STATUS.md` lags."
-    },
     {
       "time": "15:25",
       "category": "release",
@@ -359,6 +330,41 @@
       "time": "15:35",
       "category": "docs",
       "text": "Added issue snapshot tooling (`scripts/issue_snapshot.py`) + tests and documented ticket-linked commit rule (`refs #<issue>`)."
+    },
+    {
+      "time": "15:58",
+      "category": "ui",
+      "text": "Added deterministic runtime monitor to control-room UI showing `IDLE` vs `RUNNING`, active job list, and live elapsed timers."
+    },
+    {
+      "time": "15:58",
+      "category": "reliability",
+      "text": "Runtime detection source: session-store run keys reconciled against cron finished-run logs for definitive active-run detection."
+    },
+    {
+      "time": "15:58",
+      "category": "release",
+      "text": "Shipped as ticket-linked release `v1.3.0` with commit message including `refs #3` and GitHub release tag."
+    },
+    {
+      "time": "16:10",
+      "category": "ops",
+      "text": "Added control-room data freshness indicator in header (`Fresh`, `Aging`, `Stale`) computed from payload `generatedAt`."
+    },
+    {
+      "time": "16:10",
+      "category": "ui",
+      "text": "Why: prevents accidental trust in stale dashboard snapshots when gist refresh lags."
+    },
+    {
+      "time": "16:10",
+      "category": "ui",
+      "text": "Updated React hook + header UI + styles + README docs."
+    },
+    {
+      "time": "16:10",
+      "category": "ui",
+      "text": "Proof: `./scripts/quality_gate.sh` passed (Python tests + TS typecheck + Vite build)."
     }
   ],
   "runtime": {
@@ -366,7 +372,7 @@
     "isIdle": true,
     "activeCount": 0,
     "activeRuns": [],
-    "checkedAtMs": 1771365444799,
+    "checkedAtMs": 1771366305680,
     "source": "session-store + cron-run-log reconciliation"
   }
 }

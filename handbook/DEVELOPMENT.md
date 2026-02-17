@@ -46,6 +46,7 @@ This runs:
 ```
 
 Use this for routine runtime status refreshes.
+In production cron, this runs on a 1-minute cadence for tighter runtime monitor freshness.
 
 ## Issue snapshot / backlog check
 

@@ -3,11 +3,20 @@ import { RefreshCw } from 'lucide-react';
 interface HeaderProps {
   version: string;
   lastUpdatedLabel: string;
+  freshnessLevel: 'fresh' | 'aging' | 'stale';
+  freshnessLabel: string;
   refreshing: boolean;
   onRefresh: () => void;
 }
 
-export function Header({ version, lastUpdatedLabel, refreshing, onRefresh }: HeaderProps) {
+export function Header({
+  version,
+  lastUpdatedLabel,
+  freshnessLevel,
+  freshnessLabel,
+  refreshing,
+  onRefresh,
+}: HeaderProps) {
   return (
     <header className="hero card">
       <div>
@@ -20,6 +29,7 @@ export function Header({ version, lastUpdatedLabel, refreshing, onRefresh }: Hea
 
       <div className="hero-meta">
         <div className="updated-pill">Updated: {lastUpdatedLabel}</div>
+        <div className={`freshness-pill ${freshnessLevel}`}>{freshnessLabel}</div>
         <button className="ghost-btn" onClick={onRefresh} disabled={refreshing}>
           <RefreshCw size={16} className={refreshing ? 'spin' : ''} />
           Refresh

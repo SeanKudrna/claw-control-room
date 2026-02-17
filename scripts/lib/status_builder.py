@@ -25,6 +25,9 @@ CONTROL_ROOM_ROOT = Path(__file__).resolve().parents[2]
 SESSIONS_STORE_PATH = Path("/Users/seankudrna/.openclaw/agents/main/sessions/sessions.json")
 CRON_RUNS_DIR = Path("/Users/seankudrna/.openclaw/cron/runs")
 CRON_RUN_SESSION_KEY_RE = re.compile(r"^agent:main:cron:([^:]+):run:([^:]+)$")
+EXCLUDED_RUNTIME_JOB_NAME_SUBSTRINGS = (
+    "control room status publish",
+)
 
 
 def read_text(path: Path) -> str:
@@ -611,6 +614,12 @@ def runtime_activity(
             # Ignore orphaned stale sessions to avoid false "running" flags.
             continue
 
+        job_name = jobs_by_id.get(job_id, f"Unknown job ({job_id[:8]})")
+        normalized_job_name = job_name.lower()
+        if any(token in normalized_job_name for token in EXCLUDED_RUNTIME_JOB_NAME_SUBSTRINGS):
+            # Prevent self-referential/sticky runtime false positives from fast publisher runs.
+            continue
+
         started_local = (
             dt.datetime.fromtimestamp(started_at_ms / 1000, dt.timezone.utc)
             .astimezone()
@@ -620,7 +629,7 @@ def runtime_activity(
         active_runs.append(
             {
                 "jobId": job_id,
-                "jobName": jobs_by_id.get(job_id, f"Unknown job ({job_id[:8]})"),
+                "jobName": job_name,
                 "sessionId": session_id,
                 "startedAtMs": started_at_ms,
                 "startedAtLocal": started_local,

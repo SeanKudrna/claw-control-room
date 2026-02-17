@@ -155,6 +155,46 @@ class StatusBuilderTests(unittest.TestCase):
             self.assertEqual(runtime["activeRuns"][0]["sessionId"], "session-active")
             self.assertEqual(runtime["activeRuns"][0]["jobName"], "Job One")
 
+    def test_runtime_activity_excludes_status_publish_job(self) -> None:
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            jobs_file = root / "jobs.json"
+            sessions_file = root / "sessions.json"
+            runs_dir = root / "runs"
+            runs_dir.mkdir(parents=True, exist_ok=True)
+
+            jobs_file.write_text(
+                json.dumps(
+                    {
+                        "jobs": [
+                            {
+                                "id": "job-publish",
+                                "name": "Control room status publish (gist backend)",
+                                "enabled": True,
+                            },
+                        ]
+                    }
+                ),
+                encoding="utf-8",
+            )
+
+            now_ms = int(dt.datetime.now(dt.timezone.utc).timestamp() * 1000)
+            sessions_file.write_text(
+                json.dumps(
+                    {
+                        "agent:main:cron:job-publish:run:session-active": {
+                            "sessionId": "session-active",
+                            "updatedAt": now_ms - 10_000,
+                        },
+                    }
+                ),
+                encoding="utf-8",
+            )
+
+            runtime = runtime_activity(jobs_file, sessions_file, runs_dir)
+            self.assertEqual(runtime["status"], "idle")
+            self.assertEqual(runtime["activeCount"], 0)
+
     def test_build_payload_shape(self) -> None:
         with tempfile.TemporaryDirectory() as td:
             workspace = Path(td)

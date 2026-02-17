@@ -1,5 +1,15 @@
 # Changelog
 
+## v1.3.1 - 2026-02-17
+
+### Fixed
+- Resolved runtime panel false-running state caused by self-referential status publisher detection.
+- Excluded control-room status publish job from runtime active-run calculation to prevent sticky `RUNNING` status.
+
+### Changed
+- Increased status publish cadence from every 5 minutes to every 1 minute for tighter runtime freshness.
+- Added test coverage for runtime exclusion logic.
+
 ## v1.3.0 - 2026-02-17
 
 ### Added

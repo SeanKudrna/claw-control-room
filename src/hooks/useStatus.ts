@@ -2,12 +2,16 @@ import { useEffect, useMemo, useState } from 'react';
 import { fetchStatus } from '../lib/statusApi';
 import type { StatusPayload } from '../types/status';
 
+type FreshnessLevel = 'fresh' | 'aging' | 'stale';
+
 interface UseStatusResult {
   data: StatusPayload | null;
   loading: boolean;
   error: string | null;
   refresh: () => Promise<void>;
   lastUpdatedLabel: string;
+  freshnessLevel: FreshnessLevel;
+  freshnessLabel: string;
 }
 
 export function useStatus(refreshMs = 60_000): UseStatusResult {
@@ -41,5 +45,33 @@ export function useStatus(refreshMs = 60_000): UseStatusResult {
     return data.generatedAtLocal;
   }, [data?.generatedAtLocal]);
 
-  return { data, loading, error, refresh, lastUpdatedLabel };
+  const freshness = useMemo(() => {
+    if (!data?.generatedAt) {
+      return { level: 'stale' as FreshnessLevel, label: 'Freshness unknown' };
+    }
+
+    const generatedAtMs = Date.parse(data.generatedAt);
+    if (!Number.isFinite(generatedAtMs)) {
+      return { level: 'stale' as FreshnessLevel, label: 'Freshness unknown' };
+    }
+
+    const ageMinutes = Math.max(0, Math.floor((Date.now() - generatedAtMs) / 60_000));
+    if (ageMinutes <= 5) {
+      return { level: 'fresh' as FreshnessLevel, label: `Fresh (${ageMinutes}m old)` };
+    }
+    if (ageMinutes <= 15) {
+      return { level: 'aging' as FreshnessLevel, label: `Aging (${ageMinutes}m old)` };
+    }
+    return { level: 'stale' as FreshnessLevel, label: `Stale (${ageMinutes}m old)` };
+  }, [data?.generatedAt]);
+
+  return {
+    data,
+    loading,
+    error,
+    refresh,
+    lastUpdatedLabel,
+    freshnessLevel: freshness.level,
+    freshnessLabel: freshness.label,
+  };
 }

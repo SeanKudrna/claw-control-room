@@ -4,6 +4,7 @@ A React + TypeScript dashboard (GitHub Pages) that gives a clear window into Cla
 - tabbed views (Overview / Operations / Insights) to prevent a single-page infodump
 - collapsible content sections for cleaner UX and faster scanning
 - real-time runtime panel (idle vs running, active job list, live elapsed timers)
+- data freshness pill (fresh / aging / stale) based on payload generation time
 - current focus and active work (with timeline-aware stale fallback)
 - now/next/done swimlanes
 - timeline of planned tasks
@@ -64,6 +65,7 @@ Issue discipline:
 ```
 
 This updates a GitHub Gist payload consumed by the dashboard, so routine status refreshes do **not** create repo commits.
+(Automation currently runs every 1 minute during daytime window for tighter runtime freshness.)
 
 ### B) Code/docs release publish (commit + tag + GitHub release)
 

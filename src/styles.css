@@ -105,6 +105,31 @@ p {
   color: var(--muted);
 }
 
+.freshness-pill {
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  padding: 6px 10px;
+}
+
+.freshness-pill.fresh {
+  color: #c8ffd6;
+  background: rgba(47, 199, 131, 0.2);
+  border: 1px solid rgba(47, 199, 131, 0.55);
+}
+
+.freshness-pill.aging {
+  color: #ffe7b2;
+  background: rgba(214, 167, 50, 0.18);
+  border: 1px solid rgba(214, 167, 50, 0.5);
+}
+
+.freshness-pill.stale {
+  color: #ffd2d2;
+  background: rgba(218, 91, 91, 0.18);
+  border: 1px solid rgba(218, 91, 91, 0.5);
+}
+
 .ghost-btn {
   display: inline-flex;
   align-items: center;
