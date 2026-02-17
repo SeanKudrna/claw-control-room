@@ -22,6 +22,9 @@ HEADING_TIME_RE = re.compile(r"^(\d{1,2}:\d{2})")
 TIME_RANGE_RE = re.compile(r"(\d{1,2}:\d{2})-(\d{1,2}:\d{2})")
 
 CONTROL_ROOM_ROOT = Path(__file__).resolve().parents[2]
+SESSIONS_STORE_PATH = Path("/Users/seankudrna/.openclaw/agents/main/sessions/sessions.json")
+CRON_RUNS_DIR = Path("/Users/seankudrna/.openclaw/cron/runs")
+CRON_RUN_SESSION_KEY_RE = re.compile(r"^agent:main:cron:([^:]+):run:([^:]+)$")
 
 
 def read_text(path: Path) -> str:
@@ -490,6 +493,153 @@ def reliability_trend(log_file: Path, limit: int = 14) -> List[Dict[str, Any]]:
     return trimmed
 
 
+def finished_run_session_ids(job_id: str, runs_dir: Path, cache: Dict[str, set[str]]) -> set[str]:
+    """Return finished run session ids for a job from cron JSONL run history."""
+    if job_id in cache:
+        return cache[job_id]
+
+    run_file = runs_dir / f"{job_id}.jsonl"
+    if not run_file.exists():
+        cache[job_id] = set()
+        return cache[job_id]
+
+    finished: set[str] = set()
+    for raw in run_file.read_text(encoding="utf-8").splitlines():
+        line = raw.strip()
+        if not line:
+            continue
+        try:
+            row = json.loads(line)
+        except json.JSONDecodeError:
+            continue
+
+        if row.get("action") != "finished":
+            continue
+
+        session_id = row.get("sessionId")
+        if isinstance(session_id, str) and session_id:
+            finished.add(session_id)
+
+    cache[job_id] = finished
+    return finished
+
+
+def runtime_activity(
+    jobs_file: Path,
+    sessions_store_path: Path = SESSIONS_STORE_PATH,
+    runs_dir: Path = CRON_RUNS_DIR,
+    max_age_ms: int = 6 * 60 * 60 * 1000,
+) -> Dict[str, Any]:
+    """Return real-time runtime/idle state from cron run sessions.
+
+    Detection model:
+    - read run-session records from sessions store (`agent:main:cron:<jobId>:run:<sessionId>`)
+    - reconcile against cron run logs (`runs/<jobId>.jsonl`) finished entries
+    - sessions present but not finished are considered actively running
+
+    This gives deterministic active-run visibility and timer start timestamps.
+    """
+    now_ms = int(dt.datetime.now(dt.timezone.utc).timestamp() * 1000)
+
+    jobs_doc_text = read_text(jobs_file)
+    jobs_by_id: Dict[str, str] = {}
+    if jobs_doc_text:
+        try:
+            jobs_doc = json.loads(jobs_doc_text)
+            jobs_by_id = {
+                str(job.get("id")): str(job.get("name", ""))
+                for job in jobs_doc.get("jobs", [])
+                if job.get("id")
+            }
+        except json.JSONDecodeError:
+            jobs_by_id = {}
+
+    if not sessions_store_path.exists():
+        return {
+            "status": "idle",
+            "isIdle": True,
+            "activeCount": 0,
+            "activeRuns": [],
+            "checkedAtMs": now_ms,
+            "source": "sessions-store-missing",
+        }
+
+    try:
+        sessions_doc = json.loads(sessions_store_path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError:
+        return {
+            "status": "idle",
+            "isIdle": True,
+            "activeCount": 0,
+            "activeRuns": [],
+            "checkedAtMs": now_ms,
+            "source": "sessions-store-invalid",
+        }
+
+    if not isinstance(sessions_doc, dict):
+        return {
+            "status": "idle",
+            "isIdle": True,
+            "activeCount": 0,
+            "activeRuns": [],
+            "checkedAtMs": now_ms,
+            "source": "sessions-store-unexpected-shape",
+        }
+
+    finished_cache: Dict[str, set[str]] = {}
+    active_runs: List[Dict[str, Any]] = []
+
+    for key, meta in sessions_doc.items():
+        if not isinstance(key, str) or not isinstance(meta, dict):
+            continue
+
+        match = CRON_RUN_SESSION_KEY_RE.match(key)
+        if not match:
+            continue
+
+        job_id, session_id = match.groups()
+        finished_ids = finished_run_session_ids(job_id, runs_dir, finished_cache)
+        if session_id in finished_ids:
+            continue
+
+        started_at_ms = meta.get("updatedAt")
+        if not isinstance(started_at_ms, int):
+            continue
+
+        running_for_ms = max(0, now_ms - started_at_ms)
+        if running_for_ms > max_age_ms:
+            # Ignore orphaned stale sessions to avoid false "running" flags.
+            continue
+
+        started_local = (
+            dt.datetime.fromtimestamp(started_at_ms / 1000, dt.timezone.utc)
+            .astimezone()
+            .strftime("%Y-%m-%d %H:%M:%S")
+        )
+
+        active_runs.append(
+            {
+                "jobId": job_id,
+                "jobName": jobs_by_id.get(job_id, f"Unknown job ({job_id[:8]})"),
+                "sessionId": session_id,
+                "startedAtMs": started_at_ms,
+                "startedAtLocal": started_local,
+                "runningForMs": running_for_ms,
+            }
+        )
+
+    active_runs.sort(key=lambda item: item.get("startedAtMs", 0))
+
+    return {
+        "status": "running" if active_runs else "idle",
+        "isIdle": len(active_runs) == 0,
+        "activeCount": len(active_runs),
+        "activeRuns": active_runs,
+        "checkedAtMs": now_ms,
+        "source": "session-store + cron-run-log reconciliation",
+    }
+
+
 def control_room_version() -> str:
     """Read dashboard app version from package.json."""
     package_json = CONTROL_ROOM_ROOT / "package.json"
@@ -534,4 +684,5 @@ def build_payload(workspace_root: Path, jobs_file: Path) -> Dict[str, Any]:
             "reliabilityTrend": reliability_trend(Path("/Users/seankudrna/.openclaw/logs/reliability-watchdog.jsonl")),
         },
         "activity": recent_activity(memory_text),
+        "runtime": runtime_activity(jobs_file),
     }

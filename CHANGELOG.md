@@ -1,5 +1,19 @@
 # Changelog
 
+## v1.3.0 - 2026-02-17
+
+### Added
+- Real-time runtime monitor panel in Overview:
+  - `IDLE` vs `RUNNING` state
+  - active background job list
+  - live elapsed timers per run (`HH:MM:SS`)
+- Runtime payload contract (`runtime`) with source metadata and active run details.
+- Runtime detection test coverage in `test_status_builder.py`.
+
+### Changed
+- Status builder now derives active runs by reconciling session-store run keys against cron finished-run logs.
+- Type contracts updated for runtime observability fields.
+
 ## v1.2.0 - 2026-02-17
 
 ### Added

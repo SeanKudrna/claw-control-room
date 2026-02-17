@@ -23,6 +23,7 @@ from scripts.lib.status_builder import (
     parse_workstream,
     recent_activity,
     resolve_active_work,
+    runtime_activity,
 )
 
 
@@ -101,6 +102,59 @@ class StatusBuilderTests(unittest.TestCase):
         self.assertEqual(activity[-1]["time"], "15:10")
         self.assertIn(activity[-1]["category"], {"ui", "docs", "ops"})
 
+    def test_runtime_activity_detects_active_runs(self) -> None:
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            jobs_file = root / "jobs.json"
+            sessions_file = root / "sessions.json"
+            runs_dir = root / "runs"
+            runs_dir.mkdir(parents=True, exist_ok=True)
+
+            jobs_file.write_text(
+                json.dumps(
+                    {
+                        "jobs": [
+                            {"id": "job-1", "name": "Job One", "enabled": True},
+                        ]
+                    }
+                ),
+                encoding="utf-8",
+            )
+
+            now_ms = int(dt.datetime.now(dt.timezone.utc).timestamp() * 1000)
+            sessions_file.write_text(
+                json.dumps(
+                    {
+                        "agent:main:cron:job-1:run:session-finished": {
+                            "sessionId": "session-finished",
+                            "updatedAt": now_ms - 30_000,
+                        },
+                        "agent:main:cron:job-1:run:session-active": {
+                            "sessionId": "session-active",
+                            "updatedAt": now_ms - 12_000,
+                        },
+                    }
+                ),
+                encoding="utf-8",
+            )
+
+            (runs_dir / "job-1.jsonl").write_text(
+                json.dumps(
+                    {
+                        "action": "finished",
+                        "sessionId": "session-finished",
+                    }
+                )
+                + "\n",
+                encoding="utf-8",
+            )
+
+            runtime = runtime_activity(jobs_file, sessions_file, runs_dir)
+            self.assertEqual(runtime["status"], "running")
+            self.assertEqual(runtime["activeCount"], 1)
+            self.assertEqual(runtime["activeRuns"][0]["sessionId"], "session-active")
+            self.assertEqual(runtime["activeRuns"][0]["jobName"], "Job One")
+
     def test_build_payload_shape(self) -> None:
         with tempfile.TemporaryDirectory() as td:
             workspace = Path(td)
@@ -160,6 +214,7 @@ class StatusBuilderTests(unittest.TestCase):
             self.assertIn("workstream", payload)
             self.assertIn("charts", payload)
             self.assertIn("activity", payload)
+            self.assertIn("runtime", payload)
             self.assertIn("Live sample block", payload["currentFocus"])
             self.assertIn("Live sample block", payload["workstream"]["now"][0])
 

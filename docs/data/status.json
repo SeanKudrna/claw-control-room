@@ -1,9 +1,9 @@
 {
-  "generatedAt": "2026-02-17T21:38:31.625391+00:00",
-  "generatedAtLocal": "2026-02-17 15:38 ",
-  "controlRoomVersion": "1.2.0",
-  "currentFocus": "Reliability deep-work block B (scheduled cron)",
-  "activeWork": "15:10-16:05 \u2014 Reliability deep-work block B (scheduled cron)",
+  "generatedAt": "2026-02-17T21:57:24.769407+00:00",
+  "generatedAtLocal": "2026-02-17 15:57 ",
+  "controlRoomVersion": "1.3.0",
+  "currentFocus": "Control-room product governance and issue-driven QA automation",
+  "activeWork": "15:35-16:15 \u2014 Control-room ownership hardening (issue workflow, planning integration, QA intake automation)",
   "reliability": {
     "status": "green"
   },
@@ -39,18 +39,18 @@
   ],
   "nextJobs": [
     {
+      "name": "Downtime gap auto-fill guard (quiet unless triggered)",
+      "nextRun": "16:00",
+      "lastStatus": "ok"
+    },
+    {
       "name": "Control room status publish (gist backend)",
-      "nextRun": "15:40",
+      "nextRun": "16:00",
       "lastStatus": "ok"
     },
     {
       "name": "Critical update failover guard",
-      "nextRun": "15:52",
-      "lastStatus": "ok"
-    },
-    {
-      "name": "Downtime gap auto-fill guard (quiet unless triggered)",
-      "nextRun": "16:00",
+      "nextRun": "16:07",
       "lastStatus": "ok"
     },
     {
@@ -95,12 +95,12 @@
       "16:50-16:58 \u2014 Pre-5pm reliability checkpoint (scheduled cron)",
       "17:00-17:12 \u2014 Usage report + MVP user update window",
       "17:12-18:30 \u2014 Post-run stabilization + next-action prep",
-      "17:00-17:10 \u2014 Usage report cron run + delivery confirmation",
-      "17:10-17:25 \u2014 Post-run verification/self-heal if needed; update evidence for end-of-day status"
+      "16:10-16:30 \u2014 Work issue #1 (dedupe overlapping Next-lane entries) and prep ticket-linked release",
+      "17:00-17:12 \u2014 Usage report + MVP update verification window"
     ],
     "done": [
-      "13:10 capability build completed: `scripts/build_daily_priority_checklist.py` + `scripts/test_daily_priority_checklist.py`",
-      "Proof: `python3 -m unittest scripts/test_daily_priority_checklist.py` passed (OK); refreshed `status/daily_priority_checklist.md`"
+      "Control-room governance tooling shipped: issue templates + issue snapshot script + ticket-linked release workflow (`--issue`) and new triage cron.",
+      "Proof: released `v1.2.0` with tag + GitHub release; issues opened: #1 and #2 in `SeanKudrna/claw-control-room`."
     ]
   },
   "charts": {
@@ -154,24 +154,19 @@
         "job": "Reliability watchdog hourly (self-heal + conditional alert)"
       },
       {
-        "label": "15:35",
-        "status": "ok",
-        "score": 1.0,
-        "job": "Control room status publish (gist backend)"
-      },
-      {
         "label": "15:37",
         "status": "ok",
         "score": 1.0,
         "job": "Critical update failover guard"
+      },
+      {
+        "label": "15:55",
+        "status": "ok",
+        "score": 1.0,
+        "job": "Control room status publish (gist backend)"
       }
     ],
     "reliabilityTrend": [
-      {
-        "label": "09:52",
-        "status": "green",
-        "score": 1.0
-      },
       {
         "label": "10:20",
         "status": "green",
@@ -234,6 +229,11 @@
       },
       {
         "label": "15:20",
+        "status": "green",
+        "score": 1.0
+      },
+      {
+        "label": "15:51",
         "status": "green",
         "score": 1.0
       }
@@ -360,5 +360,13 @@
       "category": "docs",
       "text": "Added issue snapshot tooling (`scripts/issue_snapshot.py`) + tests and documented ticket-linked commit rule (`refs #<issue>`)."
     }
-  ]
+  ],
+  "runtime": {
+    "status": "idle",
+    "isIdle": true,
+    "activeCount": 0,
+    "activeRuns": [],
+    "checkedAtMs": 1771365444799,
+    "source": "session-store + cron-run-log reconciliation"
+  }
 }

@@ -5,6 +5,7 @@ import { CollapsibleSection } from './components/CollapsibleSection';
 import { Findings } from './components/Findings';
 import { Header } from './components/Header';
 import { JobsTable } from './components/JobsTable';
+import { RuntimeStatus } from './components/RuntimeStatus';
 import { SummaryCards } from './components/SummaryCards';
 import { TabBar, type DashboardTab } from './components/TabBar';
 import { Timeline } from './components/Timeline';
@@ -94,6 +95,18 @@ export default function App() {
 
     return (
       <>
+        <RuntimeStatus
+          runtime={
+            data.runtime ?? {
+              status: 'idle',
+              isIdle: true,
+              activeCount: 0,
+              activeRuns: [],
+              checkedAtMs: Date.now(),
+              source: 'payload-missing-runtime',
+            }
+          }
+        />
         <SummaryCards data={data} />
 
         <CollapsibleSection

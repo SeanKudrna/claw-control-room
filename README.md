@@ -3,6 +3,7 @@
 A React + TypeScript dashboard (GitHub Pages) that gives a clear window into Claw's day:
 - tabbed views (Overview / Operations / Insights) to prevent a single-page infodump
 - collapsible content sections for cleaner UX and faster scanning
+- real-time runtime panel (idle vs running, active job list, live elapsed timers)
 - current focus and active work (with timeline-aware stale fallback)
 - now/next/done swimlanes
 - timeline of planned tasks

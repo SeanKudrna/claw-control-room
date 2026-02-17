@@ -24,6 +24,15 @@ export interface ActivityItem {
   text: string;
 }
 
+export interface RuntimeRun {
+  jobId: string;
+  jobName: string;
+  sessionId: string;
+  startedAtMs: number;
+  startedAtLocal: string;
+  runningForMs: number;
+}
+
 export interface StatusPayload {
   generatedAt: string;
   generatedAtLocal: string;
@@ -46,4 +55,12 @@ export interface StatusPayload {
     reliabilityTrend: TrendPoint[];
   };
   activity: ActivityItem[];
+  runtime: {
+    status: 'idle' | 'running';
+    isIdle: boolean;
+    activeCount: number;
+    activeRuns: RuntimeRun[];
+    checkedAtMs: number;
+    source: string;
+  };
 }
