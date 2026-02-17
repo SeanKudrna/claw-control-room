@@ -29,7 +29,17 @@ Run:
 (Checks Python compile/tests + React typecheck/build.)
 
 5) No silent contract changes
-If dashboard payload shape, timeline parsing, data-source behavior, or publish flow changes, document it in architecture/changelog.
+If dashboard payload shape, timeline parsing, data-source behavior, publish flow, or release process changes, document it in architecture/changelog.
+
+6) Versioning + release discipline (required)
+- Use semantic versioning (`major.minor.patch`) in `package.json`.
+- Every code/docs push to `main` must include an appropriate version bump.
+- Every version bump must produce:
+  - git tag `vX.Y.Z`
+  - GitHub release for that tag
+  - release notes sourced from the matching `CHANGELOG.md` section.
+- Canonical release path:
+  - `./scripts/update_and_push.sh --version X.Y.Z --message "release: vX.Y.Z"`
 
 ## Repository layout
 

@@ -11,9 +11,23 @@ export interface JobItem {
   lastStatus?: string;
 }
 
+export interface TrendPoint {
+  label: string;
+  status: string;
+  score: number;
+  job?: string;
+}
+
+export interface ActivityItem {
+  time: string;
+  category: string;
+  text: string;
+}
+
 export interface StatusPayload {
   generatedAt: string;
   generatedAtLocal: string;
+  controlRoomVersion: string;
   currentFocus: string;
   activeWork: string;
   reliability: {
@@ -22,4 +36,14 @@ export interface StatusPayload {
   timeline: TimelineItem[];
   nextJobs: JobItem[];
   findings: string[];
+  workstream: {
+    now: string[];
+    next: string[];
+    done: string[];
+  };
+  charts: {
+    jobSuccessTrend: TrendPoint[];
+    reliabilityTrend: TrendPoint[];
+  };
+  activity: ActivityItem[];
 }

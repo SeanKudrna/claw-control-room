@@ -1,10 +1,12 @@
 # Claw Control Room
 
 A React + TypeScript dashboard (GitHub Pages) that gives a clear window into Claw's day:
-- current focus
-- active work block
+- current focus and active work
+- now/next/done swimlanes
 - timeline of planned tasks
-- next scheduled jobs
+- upcoming scheduled jobs
+- job + reliability trend mini charts
+- filterable activity feed
 - recent findings/wins
 
 ## Standards
@@ -13,6 +15,7 @@ This repo follows a strict engineering contract in `AGENTS.md`:
 - modular code first
 - docs updated with every meaningful behavior change
 - quality gates before push
+- semantic versioning + release tags
 
 Read next:
 - `handbook/ARCHITECTURE.md`
@@ -26,7 +29,7 @@ npm install
 npm run dev
 ```
 
-## Build + typecheck
+## Full quality gate
 
 ```bash
 ./scripts/quality_gate.sh
@@ -42,13 +45,18 @@ npm run dev
 
 This updates a GitHub Gist payload consumed by the dashboard, so routine status refreshes do **not** create repo commits.
 
-### B) Code/docs publish (commit + push)
+### B) Code/docs release publish (commit + tag + GitHub release)
 
 ```bash
-./scripts/update_and_push.sh "optional commit message"
+./scripts/update_and_push.sh --version 1.0.0 --message "release: v1.0.0"
 ```
 
-Use this when code, docs, or architecture changes.
+This workflow:
+1. bumps internal app version
+2. runs quality gate
+3. commits + pushes
+4. creates/pushes tag (`vX.Y.Z`)
+5. creates GitHub release from matching changelog section
 
 ## Data sources
 
@@ -58,8 +66,10 @@ Runtime status builder reads from:
 - `~/.openclaw/workspace/memory/YYYY-MM-DD.md`
 - `~/.openclaw/cron/jobs.json`
 - `~/.openclaw/workspace/scripts/reliability_watchdog_report.py`
+- `~/.openclaw/logs/reliability-watchdog.jsonl`
 
 ## Hosting
 
-- GitHub Pages serves from `main` branch `/docs` folder (built output from Vite).
+- GitHub Pages serves from `main` branch `/docs` folder (Vite build output).
 - App reads status source config from `public/data/source.json`.
+- App fallback snapshot is `public/data/status.json`.

@@ -4,7 +4,7 @@
 - Node.js 20+
 - npm
 - Python 3.11+
-- GitHub CLI (`gh`) authenticated for publish scripts
+- GitHub CLI (`gh`) authenticated for publish/release scripts
 
 ## Local frontend dev
 
@@ -30,8 +30,8 @@ Vite outputs static artifacts to `docs/`.
 
 This runs:
 - Python compile checks
-- Python unit tests (`scripts/tests/test_status_builder.py`)
-- Status payload build sanity check
+- Python tests (`scripts/tests/test_status_builder.py`, `scripts/tests/test_extract_release_notes.py`)
+- status payload build sanity check
 - TypeScript typecheck
 - Vite production build
 
@@ -43,13 +43,29 @@ This runs:
 
 Use this for routine runtime status refreshes.
 
-## Code/docs publish (commit + push)
+## Code/docs release publish (with semver tag + GitHub release)
 
 ```bash
-./scripts/update_and_push.sh "optional commit message"
+./scripts/update_and_push.sh --version 1.0.0 --message "release: v1.0.0"
 ```
 
-Use this for code, architecture, or UI changes.
+Script behavior:
+1. validates semver
+2. bumps `package.json`/`package-lock.json` version
+3. runs full quality gate
+4. commits + pushes
+5. tags release (`vX.Y.Z`) and pushes tag
+6. creates GitHub release with notes extracted from matching changelog section
+
+## Changelog format expectation
+
+`CHANGELOG.md` should include version headings like:
+
+```md
+## v1.0.0 - 2026-02-17
+```
+
+Release notes extraction script reads this section and stops at the next `## v...` heading.
 
 ## Operational notes
 - Dashboard data source config: `public/data/source.json`

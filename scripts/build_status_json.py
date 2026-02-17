@@ -22,7 +22,7 @@ def main() -> int:
     parser.add_argument("--jobs-file", default="/Users/seankudrna/.openclaw/cron/jobs.json")
     parser.add_argument(
         "--out",
-        default="/Users/seankudrna/.openclaw/workspace/claw-control-room/data/status.json",
+        default="/Users/seankudrna/.openclaw/workspace/claw-control-room/public/data/status.json",
     )
     args = parser.parse_args()
 

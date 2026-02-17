@@ -1,6 +1,7 @@
 {
-  "generatedAt": "2026-02-17T20:56:07.889846+00:00",
-  "generatedAtLocal": "2026-02-17 14:56 ",
+  "generatedAt": "2026-02-17T21:20:13.081451+00:00",
+  "generatedAtLocal": "2026-02-17 15:20 ",
+  "controlRoomVersion": "1.0.0",
   "currentFocus": "",
   "activeWork": "14:15-14:30 \u2014 PM block setup + dashboard/queue reconciliation before execution window",
   "reliability": {
@@ -38,28 +39,23 @@
   ],
   "nextJobs": [
     {
-      "name": "Downtime gap auto-fill guard (quiet unless triggered)",
-      "nextRun": "15:00",
+      "name": "Reliability watchdog hourly (self-heal + conditional alert)",
+      "nextRun": "15:20",
       "lastStatus": "ok"
     },
     {
       "name": "Control room status publish (gist backend)",
-      "nextRun": "15:00",
-      "lastStatus": "error"
-    },
-    {
-      "name": "Critical update failover guard",
-      "nextRun": "15:07",
+      "nextRun": "15:20",
       "lastStatus": "ok"
     },
     {
-      "name": "Reliability deep-work block B (DAILY_PLAN-driven)",
-      "nextRun": "15:10",
-      "lastStatus": null
+      "name": "Critical update failover guard",
+      "nextRun": "15:22",
+      "lastStatus": "ok"
     },
     {
-      "name": "Reliability watchdog hourly (self-heal + conditional alert)",
-      "nextRun": "15:20",
+      "name": "Downtime gap auto-fill guard (quiet unless triggered)",
+      "nextRun": "16:00",
       "lastStatus": "ok"
     },
     {
@@ -76,14 +72,291 @@
       "name": "Usage report - 5pm",
       "nextRun": "17:00",
       "lastStatus": null
+    },
+    {
+      "name": "Day1 reliability MVP 5pm update",
+      "nextRun": "17:02",
+      "lastStatus": null
     }
   ],
   "findings": [
-    "Added/activated immediate workflow hardening layer: `TODAY_STATUS.md` refresh cadence + `Critical update failover guard` checks + dedupe ledger `status/failover-sent.json`.",
-    "Dashboard contract now standardized to: running now, next 3 meaningful blocks, last proof, blockers, next action.",
-    "Immediate failover audit caught historical 7:00 usage-report failure root cause (disallowed model on that run); retry path is now stabilized on `gpt-5.3-codex` with noon success and next critical retry at 17:00.",
-    "Sean explicitly wants high-quality, modular, well-commented, well-documented dashboard code using industry best practices.",
-    "Documentation must be updated whenever code changes.",
-    "Prioritize strong AGENTS.md engineering contract and maintainable repo structure as the dashboard grows."
+    "typed status fetch layer + polling hook",
+    "upgraded UI cards/timeline/jobs/findings layout",
+    "Added npm toolchain and dependencies for maintainable UI expansion and easier future agent collaboration.",
+    "Updated quality gates to include Python checks + TypeScript typecheck + Vite production build.",
+    "Updated docs/contracts/changelog to reflect new architecture and workflow (`handbook/*`, `AGENTS.md`, `README.md`, `CHANGELOG.md`).",
+    "GitHub Pages updated to serve built app from `main:/docs`; deployment verified built successfully."
+  ],
+  "workstream": {
+    "now": [
+      "14:15-14:30 \u2014 PM block setup + dashboard/queue reconciliation before execution window"
+    ],
+    "next": [
+      "14:30-15:15 \u2014 Autonomy execution block (PM): ship one concrete reliability/capability improvement from queue",
+      "17:00-17:10 \u2014 Usage report cron run + delivery confirmation",
+      "17:10-17:25 \u2014 Post-run verification/self-heal if needed; update evidence for end-of-day status"
+    ],
+    "done": [
+      "13:10 capability build completed: `scripts/build_daily_priority_checklist.py` + `scripts/test_daily_priority_checklist.py`",
+      "Proof: `python3 -m unittest scripts/test_daily_priority_checklist.py` passed (OK); refreshed `status/daily_priority_checklist.md`"
+    ]
+  },
+  "charts": {
+    "jobSuccessTrend": [
+      {
+        "label": "07:00",
+        "status": "error",
+        "score": 0.0,
+        "job": "Usage report - 7am"
+      },
+      {
+        "label": "09:09",
+        "status": "ok",
+        "score": 1.0,
+        "job": "Autonomy daily planner (DAILY_PLAN source of truth)"
+      },
+      {
+        "label": "12:00",
+        "status": "ok",
+        "score": 1.0,
+        "job": "Usage report - noon"
+      },
+      {
+        "label": "13:10",
+        "status": "ok",
+        "score": 1.0,
+        "job": "Capability build block (plan+result pings)"
+      },
+      {
+        "label": "14:15",
+        "status": "ok",
+        "score": 1.0,
+        "job": "Today dashboard refresh (every 3h)"
+      },
+      {
+        "label": "14:20",
+        "status": "ok",
+        "score": 1.0,
+        "job": "Reliability watchdog hourly (self-heal + conditional alert)"
+      },
+      {
+        "label": "15:00",
+        "status": "ok",
+        "score": 1.0,
+        "job": "Downtime gap auto-fill guard (quiet unless triggered)"
+      },
+      {
+        "label": "15:07",
+        "status": "ok",
+        "score": 1.0,
+        "job": "Critical update failover guard"
+      },
+      {
+        "label": "15:10",
+        "status": "ok",
+        "score": 1.0,
+        "job": "Reliability deep-work block B (DAILY_PLAN-driven)"
+      },
+      {
+        "label": "15:15",
+        "status": "ok",
+        "score": 1.0,
+        "job": "Control room status publish (gist backend)"
+      }
+    ],
+    "reliabilityTrend": [
+      {
+        "label": "09:52",
+        "status": "green",
+        "score": 1.0
+      },
+      {
+        "label": "10:20",
+        "status": "green",
+        "score": 1.0
+      },
+      {
+        "label": "10:51",
+        "status": "green",
+        "score": 1.0
+      },
+      {
+        "label": "11:20",
+        "status": "green",
+        "score": 1.0
+      },
+      {
+        "label": "11:30",
+        "status": "green",
+        "score": 1.0
+      },
+      {
+        "label": "11:51",
+        "status": "green",
+        "score": 1.0
+      },
+      {
+        "label": "12:20",
+        "status": "green",
+        "score": 1.0
+      },
+      {
+        "label": "12:51",
+        "status": "green",
+        "score": 1.0
+      },
+      {
+        "label": "13:20",
+        "status": "green",
+        "score": 1.0
+      },
+      {
+        "label": "13:51",
+        "status": "green",
+        "score": 1.0
+      },
+      {
+        "label": "13:51",
+        "status": "green",
+        "score": 1.0
+      },
+      {
+        "label": "14:20",
+        "status": "green",
+        "score": 1.0
+      },
+      {
+        "label": "14:51",
+        "status": "green",
+        "score": 1.0
+      },
+      {
+        "label": "15:20",
+        "status": "green",
+        "score": 1.0
+      }
+    ]
+  },
+  "activity": [
+    {
+      "time": "n/a",
+      "category": "ui",
+      "text": "Added capability pipeline doc to standardize build->test->proof->document->operationalize flow."
+    },
+    {
+      "time": "13:42",
+      "category": "reliability",
+      "text": "Added/activated immediate workflow hardening layer: `TODAY_STATUS.md` refresh cadence + `Critical update failover guard` checks + dedupe ledger `status/failover-sent.json`."
+    },
+    {
+      "time": "13:42",
+      "category": "ui",
+      "text": "Dashboard contract now standardized to: running now, next 3 meaningful blocks, last proof, blockers, next action."
+    },
+    {
+      "time": "13:42",
+      "category": "reliability",
+      "text": "Immediate failover audit caught historical 7:00 usage-report failure root cause (disallowed model on that run); retry path is now stabilized on `gpt-5.3-codex` with noon success and next critical retry at 17:00."
+    },
+    {
+      "time": "n/a",
+      "category": "ui",
+      "text": "Sean explicitly wants high-quality, modular, well-commented, well-documented dashboard code using industry best practices."
+    },
+    {
+      "time": "n/a",
+      "category": "ui",
+      "text": "Documentation must be updated whenever code changes."
+    },
+    {
+      "time": "n/a",
+      "category": "ui",
+      "text": "Prioritize strong AGENTS.md engineering contract and maintainable repo structure as the dashboard grows."
+    },
+    {
+      "time": "14:55",
+      "category": "ui",
+      "text": "Implemented gist-backed status publishing so routine dashboard refreshes do not require repo commits."
+    },
+    {
+      "time": "14:55",
+      "category": "ops",
+      "text": "Added `scripts/publish_status_gist.py` and `scripts/publish_status.sh`."
+    },
+    {
+      "time": "14:55",
+      "category": "ui",
+      "text": "Dashboard now resolves runtime source from `data/source.json` (gist URL) with fallback to local status JSON."
+    },
+    {
+      "time": "14:55",
+      "category": "ops",
+      "text": "Operational split is now explicit:"
+    },
+    {
+      "time": "14:55",
+      "category": "ops",
+      "text": "status refreshes -> gist publish (no commit spam)"
+    },
+    {
+      "time": "14:55",
+      "category": "docs",
+      "text": "code/docs changes -> commit + push path"
+    },
+    {
+      "time": "15:05",
+      "category": "ui",
+      "text": "Sean asked for dashboard freshness during active work; expectation set to keep it continuously current."
+    },
+    {
+      "time": "15:05",
+      "category": "ops",
+      "text": "Increased `Control room status publish (gist backend)` cadence from every 20 minutes to every 5 minutes (07:00-22:00 America/Chicago)."
+    },
+    {
+      "time": "15:10",
+      "category": "ui",
+      "text": "Refactored `claw-control-room` from vanilla static JS/CSS into modular React + TypeScript (Vite)."
+    },
+    {
+      "time": "15:10",
+      "category": "ui",
+      "text": "New architecture includes:"
+    },
+    {
+      "time": "15:10",
+      "category": "ui",
+      "text": "`src/components`, `src/hooks`, `src/lib`, `src/types`"
+    },
+    {
+      "time": "15:10",
+      "category": "ui",
+      "text": "typed status fetch layer + polling hook"
+    },
+    {
+      "time": "15:10",
+      "category": "ui",
+      "text": "upgraded UI cards/timeline/jobs/findings layout"
+    },
+    {
+      "time": "15:10",
+      "category": "ui",
+      "text": "Added npm toolchain and dependencies for maintainable UI expansion and easier future agent collaboration."
+    },
+    {
+      "time": "15:10",
+      "category": "ui",
+      "text": "Updated quality gates to include Python checks + TypeScript typecheck + Vite production build."
+    },
+    {
+      "time": "15:10",
+      "category": "ui",
+      "text": "Updated docs/contracts/changelog to reflect new architecture and workflow (`handbook/*`, `AGENTS.md`, `README.md`, `CHANGELOG.md`)."
+    },
+    {
+      "time": "15:10",
+      "category": "ui",
+      "text": "GitHub Pages updated to serve built app from `main:/docs`; deployment verified built successfully."
+    }
   ]
 }

@@ -1,16 +1,20 @@
 import { RefreshCw } from 'lucide-react';
 
 interface HeaderProps {
+  version: string;
   lastUpdatedLabel: string;
   refreshing: boolean;
   onRefresh: () => void;
 }
 
-export function Header({ lastUpdatedLabel, refreshing, onRefresh }: HeaderProps) {
+export function Header({ version, lastUpdatedLabel, refreshing, onRefresh }: HeaderProps) {
   return (
     <header className="hero card">
       <div>
-        <h1>Claw Control Room</h1>
+        <div className="title-row">
+          <h1>Claw Control Room</h1>
+          <span className="version-pill">v{version}</span>
+        </div>
         <p className="muted">Live window into Claw's day: tasks, progress, findings, and system health.</p>
       </div>
 

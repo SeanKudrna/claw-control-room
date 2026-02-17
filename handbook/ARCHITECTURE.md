@@ -2,32 +2,42 @@
 
 ## Purpose
 Claw Control Room provides a readable, near-real-time view of Claw's operations:
-- current focus
-- active work block
-- planned timeline
-- upcoming scheduled jobs
-- recent findings/wins
+- current focus / active work
+- now/next/done swimlanes
+- planned timeline + upcoming jobs
+- reliability posture and trend
+- activity feed and findings
 
 ## High-level design
 
 ### 1) Data generation + publish (Python)
-- `scripts/build_status_json.py` is the CLI entrypoint.
-- Core logic lives in `scripts/lib/status_builder.py`.
-- `scripts/publish_status_gist.py` pushes fresh status payloads to a GitHub Gist.
+- `scripts/build_status_json.py` is the CLI entrypoint for local snapshot generation.
+- Core payload assembly lives in `scripts/lib/status_builder.py`.
+- `scripts/publish_status_gist.py` pushes fresh payloads to a GitHub Gist.
 - `scripts/publish_status.sh` is the operational wrapper used by cron.
 
 ### 2) Dashboard UI (React + TypeScript + Vite)
 - App source: `src/`
-  - `src/components/` presentation components
-  - `src/hooks/useStatus.ts` polling + state
+  - `src/components/` presentation modules
+  - `src/hooks/useStatus.ts` polling + load state
   - `src/lib/statusApi.ts` source resolution/fetch logic
-  - `src/types/status.ts` shared status payload contracts
+  - `src/types/status.ts` shared payload contracts
 - Build output: `docs/` (served by GitHub Pages).
 
 ### 3) Status source strategy
 - Primary runtime source: Gist URL from `public/data/source.json`.
-- Fallback source: `public/data/status.json` (last-known sample snapshot).
-- This avoids repo commit spam for routine status refreshes.
+- Fallback source: `public/data/status.json`.
+- This preserves commitless status refreshes while keeping a safe local fallback snapshot.
+
+### 4) Versioning + release architecture
+- Dashboard version lives in `package.json` and is surfaced in UI via payload (`controlRoomVersion`).
+- Releases are semver-based (`major.minor.patch`) and tied to git tags + GitHub releases.
+- `scripts/update_and_push.sh` is the canonical release path:
+  1. bump version
+  2. run quality gate
+  3. commit + push
+  4. create/push `vX.Y.Z` tag
+  5. create GitHub release using notes extracted from `CHANGELOG.md`
 
 ## Build and delivery flow
 
@@ -37,20 +47,19 @@ Claw Control Room provides a readable, near-real-time view of Claw's operations:
 3. Script updates gist JSON.
 4. Dashboard fetches fresh gist data on load/refresh.
 
-### Code/docs changes
-1. Update source in `src/`, `scripts/`, or `handbook/`.
-2. Run `./scripts/quality_gate.sh`.
-3. Run `./scripts/update_and_push.sh`.
-4. GitHub Pages serves updated build from `docs/`.
+### Code/docs release publish
+1. Implement changes in `src/`, `scripts/`, `public/`, or `handbook/`.
+2. Update changelog section for target version.
+3. Run `./scripts/update_and_push.sh --version X.Y.Z --message "release: vX.Y.Z"`.
 
 ## Reliability and safety notes
 - Builder is resilient to missing/invalid local source files (safe defaults).
 - Quality gate enforces Python checks + TS typecheck + production build.
-- Docs/changelog updates are required whenever behavior/contracts change.
+- Docs/changelog updates are mandatory whenever behavior/contracts change.
 
 ## Extension points
 - Add cards/panels by extending:
   - payload schema in `scripts/lib/status_builder.py`
   - typed contracts in `src/types/status.ts`
   - UI rendering in `src/components/`
-- Add tests under `scripts/tests/` and (if needed) frontend tests in a future `src/tests/` layer.
+- Add deeper tests under `scripts/tests/` and future frontend tests under `src/tests/`.
