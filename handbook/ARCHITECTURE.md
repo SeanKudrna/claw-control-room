@@ -41,6 +41,12 @@ Claw Control Room provides a readable, near-real-time view of Claw's operations:
   3. commit + push
   4. create/push `vX.Y.Z` tag
   5. create GitHub release using notes extracted from `CHANGELOG.md`
+- For ticket-targeted work, pass `--issue <id>` so release commit messages include `refs #<id>`.
+
+### 5) Continuous QA + issue loop
+- QA findings are tracked as first-class GitHub issues (bug + UX/improvement templates).
+- `scripts/issue_snapshot.py` writes a markdown backlog snapshot for planning/review.
+- This keeps dashboard evolution visible, triaged, and linked to implementation commits.
 
 ## Build and delivery flow
 

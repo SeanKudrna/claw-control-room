@@ -47,19 +47,35 @@ This runs:
 
 Use this for routine runtime status refreshes.
 
+## Issue snapshot / backlog check
+
+```bash
+python3 scripts/issue_snapshot.py
+```
+
+Writes a planning-friendly markdown snapshot to:
+- `~/.openclaw/workspace/status/control-room-issues.md`
+
 ## Code/docs release publish (with semver tag + GitHub release)
 
 ```bash
 ./scripts/update_and_push.sh --version 1.0.0 --message "release: v1.0.0"
 ```
 
+Ticket-linked release example:
+
+```bash
+./scripts/update_and_push.sh --version 1.0.1 --issue 34 --message "fix: resolve stale next-lane duplication"
+```
+
 Script behavior:
 1. validates semver
-2. bumps `package.json`/`package-lock.json` version
-3. runs full quality gate
-4. commits + pushes
-5. tags release (`vX.Y.Z`) and pushes tag
-6. creates GitHub release with notes extracted from matching changelog section
+2. optional `--issue` validates numeric issue id and appends `(refs #<id>)` to commit message
+3. bumps `package.json`/`package-lock.json` version
+4. runs full quality gate
+5. commits + pushes
+6. tags release (`vX.Y.Z`) and pushes tag
+7. creates GitHub release with notes extracted from matching changelog section
 
 ## Changelog format expectation
 

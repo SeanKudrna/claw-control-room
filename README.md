@@ -37,6 +37,23 @@ npm run dev
 ./scripts/quality_gate.sh
 ```
 
+## Issue monitoring / QA workflow
+
+Open-issue snapshot (markdown output):
+
+```bash
+python3 scripts/issue_snapshot.py
+```
+
+Issue discipline:
+- Log defects/improvements as GitHub issues (use issue templates).
+- Link ticket-directed commits with `refs #<issue>`.
+- Ticket-linked release example:
+
+```bash
+./scripts/update_and_push.sh --version 1.2.0 --issue 12 --message "fix: resolve duplicate next-lane items"
+```
+
 ## Publish modes
 
 ### A) Status-only publish (recommended, no repo commit)

@@ -7,7 +7,7 @@ cd "$REPO_DIR"
 usage() {
   cat <<EOF
 Usage:
-  ./scripts/update_and_push.sh --version <x.y.z> [--message "commit message"]
+  ./scripts/update_and_push.sh --version <x.y.z> [--message "commit message"] [--issue <number>]
 
 Behavior:
   1) bump package version (package.json + package-lock.json)
@@ -15,11 +15,16 @@ Behavior:
   3) commit + push changes
   4) create git tag v<version> and push tag
   5) create GitHub release with notes pulled from CHANGELOG.md section for that version
+
+Notes:
+  - If --issue is passed, commit message is automatically suffixed with: (refs #<issue>)
+  - Use this for ticket-directed changes to keep commits linked to issues.
 EOF
 }
 
 VERSION=""
 MSG=""
+ISSUE=""
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -29,6 +34,10 @@ while [[ $# -gt 0 ]]; do
       ;;
     --message)
       MSG="${2:-}"
+      shift 2
+      ;;
+    --issue)
+      ISSUE="${2:-}"
       shift 2
       ;;
     -h|--help)
@@ -54,8 +63,17 @@ if [[ ! "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
   exit 1
 fi
 
+if [[ -n "$ISSUE" ]] && [[ ! "$ISSUE" =~ ^[0-9]+$ ]]; then
+  echo "Error: --issue must be a numeric issue id" >&2
+  exit 1
+fi
+
 TAG="v$VERSION"
 MSG="${MSG:-release: $TAG}"
+
+if [[ -n "$ISSUE" ]]; then
+  MSG="$MSG (refs #$ISSUE)"
+fi
 
 if git rev-parse "$TAG" >/dev/null 2>&1; then
   echo "Error: local tag $TAG already exists" >&2

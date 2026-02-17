@@ -1,7 +1,7 @@
 {
-  "generatedAt": "2026-02-17T21:29:23.571533+00:00",
-  "generatedAtLocal": "2026-02-17 15:29 ",
-  "controlRoomVersion": "1.1.0",
+  "generatedAt": "2026-02-17T21:38:31.625391+00:00",
+  "generatedAtLocal": "2026-02-17 15:38 ",
+  "controlRoomVersion": "1.2.0",
   "currentFocus": "Reliability deep-work block B (scheduled cron)",
   "activeWork": "15:10-16:05 \u2014 Reliability deep-work block B (scheduled cron)",
   "reliability": {
@@ -40,12 +40,12 @@
   "nextJobs": [
     {
       "name": "Control room status publish (gist backend)",
-      "nextRun": "15:30",
+      "nextRun": "15:40",
       "lastStatus": "ok"
     },
     {
       "name": "Critical update failover guard",
-      "nextRun": "15:37",
+      "nextRun": "15:52",
       "lastStatus": "ok"
     },
     {
@@ -80,12 +80,12 @@
     }
   ],
   "findings": [
-    "Updated gist status payload after release so runtime dashboard data includes `controlRoomVersion: 1.0.0`.",
-    "Fixed stale dashboard state where `Current Focus` could show `n/a` and `Now` could remain on old time windows.",
-    "Implemented timeline-aware stale fallback in `scripts/lib/status_builder.py` so active/focus/now lanes follow current `DAILY_PLAN.md` window when `TODAY_STATUS.md` lags.",
-    "Added tests for stale active-work fallback and timeline-aware now-lane rendering.",
-    "Released as patch version `v1.0.1` with tag + GitHub release: https://github.com/SeanKudrna/claw-control-room/releases/tag/v1.0.1",
-    "Follow-up patch v1.0.2 shipped to filter stale time-passed items out of `Next` swimlane; tag/release created and gist payload refreshed."
+    "Added recurring cron governance job: `Control room issue triage + QA intake` (09:35/13:35/17:35/21:35 CT) for issue monitoring + QA ticket intake.",
+    "Added GitHub issue templates for QA bugs and product improvements.",
+    "Opened initial QA backlog tickets from live review:",
+    "#1 [QA] Deduplicate overlapping entries in Overview Next lane",
+    "#2 [UX] Remove duplicate heading stacks inside collapsible panels",
+    "Added issue snapshot tooling (`scripts/issue_snapshot.py`) + tests and documented ticket-linked commit rule (`refs #<issue>`)."
   ],
   "workstream": {
     "now": [
@@ -154,16 +154,16 @@
         "job": "Reliability watchdog hourly (self-heal + conditional alert)"
       },
       {
-        "label": "15:22",
-        "status": "ok",
-        "score": 1.0,
-        "job": "Critical update failover guard"
-      },
-      {
-        "label": "15:25",
+        "label": "15:35",
         "status": "ok",
         "score": 1.0,
         "job": "Control room status publish (gist backend)"
+      },
+      {
+        "label": "15:37",
+        "status": "ok",
+        "score": 1.0,
+        "job": "Critical update failover guard"
       }
     ],
     "reliabilityTrend": [
@@ -241,76 +241,6 @@
   },
   "activity": [
     {
-      "time": "15:10",
-      "category": "ui",
-      "text": "Refactored `claw-control-room` from vanilla static JS/CSS into modular React + TypeScript (Vite)."
-    },
-    {
-      "time": "15:10",
-      "category": "ui",
-      "text": "New architecture includes:"
-    },
-    {
-      "time": "15:10",
-      "category": "ui",
-      "text": "`src/components`, `src/hooks`, `src/lib`, `src/types`"
-    },
-    {
-      "time": "15:10",
-      "category": "ui",
-      "text": "typed status fetch layer + polling hook"
-    },
-    {
-      "time": "15:10",
-      "category": "ui",
-      "text": "upgraded UI cards/timeline/jobs/findings layout"
-    },
-    {
-      "time": "15:10",
-      "category": "ui",
-      "text": "Added npm toolchain and dependencies for maintainable UI expansion and easier future agent collaboration."
-    },
-    {
-      "time": "15:10",
-      "category": "ui",
-      "text": "Updated quality gates to include Python checks + TypeScript typecheck + Vite production build."
-    },
-    {
-      "time": "15:10",
-      "category": "ui",
-      "text": "Updated docs/contracts/changelog to reflect new architecture and workflow (`handbook/*`, `AGENTS.md`, `README.md`, `CHANGELOG.md`)."
-    },
-    {
-      "time": "15:10",
-      "category": "ui",
-      "text": "GitHub Pages updated to serve built app from `main:/docs`; deployment verified built successfully."
-    },
-    {
-      "time": "15:22",
-      "category": "ui",
-      "text": "Added requested UI enhancements: now/next/done swimlanes, trend mini charts, and filterable activity feed."
-    },
-    {
-      "time": "15:22",
-      "category": "ui",
-      "text": "Added visible in-app version badge (header now shows current semver, currently v1.0.0)."
-    },
-    {
-      "time": "15:22",
-      "category": "ui",
-      "text": "Implemented semver release workflow as required:"
-    },
-    {
-      "time": "15:22",
-      "category": "ui",
-      "text": "`scripts/update_and_push.sh --version X.Y.Z --message ...`"
-    },
-    {
-      "time": "15:22",
-      "category": "ui",
-      "text": "bumps version, runs quality gate, commits/pushes, creates `vX.Y.Z` tag, and creates GitHub release from changelog notes."
-    },
-    {
       "time": "15:22",
       "category": "ui",
       "text": "Added release-notes extraction utility + tests (`scripts/extract_release_notes.py`, `scripts/tests/test_extract_release_notes.py`)."
@@ -359,6 +289,76 @@
       "time": "15:25",
       "category": "release",
       "text": "Follow-up patch v1.0.2 shipped to filter stale time-passed items out of `Next` swimlane; tag/release created and gist payload refreshed."
+    },
+    {
+      "time": "15:30",
+      "category": "ui",
+      "text": "Implemented tabbed dashboard IA to avoid single-page infodump:"
+    },
+    {
+      "time": "15:30",
+      "category": "release",
+      "text": "Overview"
+    },
+    {
+      "time": "15:30",
+      "category": "release",
+      "text": "Operations"
+    },
+    {
+      "time": "15:30",
+      "category": "release",
+      "text": "Insights"
+    },
+    {
+      "time": "15:30",
+      "category": "release",
+      "text": "Added collapsible containers for major sections using native details/summary UX."
+    },
+    {
+      "time": "15:30",
+      "category": "release",
+      "text": "Added hash-persisted tab state (`#tab-overview`, `#tab-operations`, `#tab-insights`) for direct linking and state restore."
+    },
+    {
+      "time": "15:30",
+      "category": "release",
+      "text": "Released `v1.1.0` with tag + GitHub release: https://github.com/SeanKudrna/claw-control-room/releases/tag/v1.1.0"
+    },
+    {
+      "time": "15:35",
+      "category": "ui",
+      "text": "Sean set explicit directive: control-room is a continuously improving product lane owned by Claw (UI/UX/usability/functionality/transparency), with autonomous roadmap management."
+    },
+    {
+      "time": "15:35",
+      "category": "reliability",
+      "text": "Added recurring cron governance job: `Control room issue triage + QA intake` (09:35/13:35/17:35/21:35 CT) for issue monitoring + QA ticket intake."
+    },
+    {
+      "time": "15:35",
+      "category": "ops",
+      "text": "Added GitHub issue templates for QA bugs and product improvements."
+    },
+    {
+      "time": "15:35",
+      "category": "ops",
+      "text": "Opened initial QA backlog tickets from live review:"
+    },
+    {
+      "time": "15:35",
+      "category": "ops",
+      "text": "#1 [QA] Deduplicate overlapping entries in Overview Next lane"
+    },
+    {
+      "time": "15:35",
+      "category": "ops",
+      "text": "#2 [UX] Remove duplicate heading stacks inside collapsible panels"
+    },
+    {
+      "time": "15:35",
+      "category": "docs",
+      "text": "Added issue snapshot tooling (`scripts/issue_snapshot.py`) + tests and documented ticket-linked commit rule (`refs #<issue>`)."
     }
   ]
 }

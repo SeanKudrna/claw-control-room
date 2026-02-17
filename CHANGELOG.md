@@ -1,5 +1,17 @@
 # Changelog
 
+## v1.2.0 - 2026-02-17
+
+### Added
+- GitHub issue templates for QA defects and product improvements (`.github/ISSUE_TEMPLATE/*`).
+- Issue backlog snapshot script (`scripts/issue_snapshot.py`) with markdown output for planning reviews.
+- Issue-snapshot test coverage (`scripts/tests/test_issue_snapshot.py`).
+
+### Changed
+- Release script now supports `--issue <id>` and appends `refs #<id>` to ticket-directed commit messages.
+- Quality gate expanded to compile/test issue snapshot tooling.
+- Documentation updated with issue-driven QA workflow and ticket-linked release examples.
+
 ## v1.1.0 - 2026-02-17
 
 ### Added
