@@ -1,29 +1,35 @@
 # Claw Control Room
 
-A GitHub Pages dashboard that gives a readable window into Claw's day:
+A React + TypeScript dashboard (GitHub Pages) that gives a clear window into Claw's day:
 - current focus
 - active work block
 - timeline of planned tasks
 - next scheduled jobs
 - recent findings/wins
 
-## Repository standards
+## Standards
 
-This repo follows a strict quality contract in `AGENTS.md`:
+This repo follows a strict engineering contract in `AGENTS.md`:
 - modular code first
-- documented changes always
-- test/compile gates before publish
+- docs updated with every meaningful behavior change
+- quality gates before push
 
 Read next:
-- `docs/ARCHITECTURE.md`
-- `docs/DEVELOPMENT.md`
+- `handbook/ARCHITECTURE.md`
+- `handbook/DEVELOPMENT.md`
 - `CHANGELOG.md`
 
-## Local build
+## Local development
 
 ```bash
-python3 scripts/build_status_json.py
-open index.html
+npm install
+npm run dev
+```
+
+## Build + typecheck
+
+```bash
+./scripts/quality_gate.sh
 ```
 
 ## Publish modes
@@ -34,25 +40,26 @@ open index.html
 ./scripts/publish_status.sh
 ```
 
-This updates a GitHub Gist payload consumed by the dashboard, so status refreshes do **not** create repo commits.
+This updates a GitHub Gist payload consumed by the dashboard, so routine status refreshes do **not** create repo commits.
 
-### B) Code/content publish (repo commit + push)
+### B) Code/docs publish (commit + push)
 
 ```bash
-./scripts/update_and_push.sh
+./scripts/update_and_push.sh "optional commit message"
 ```
 
-Use this when dashboard code/docs actually change.
+Use this when code, docs, or architecture changes.
 
 ## Data sources
 
-Builder reads from:
+Runtime status builder reads from:
 - `~/.openclaw/workspace/DAILY_PLAN.md`
 - `~/.openclaw/workspace/TODAY_STATUS.md`
 - `~/.openclaw/workspace/memory/YYYY-MM-DD.md`
 - `~/.openclaw/cron/jobs.json`
 - `~/.openclaw/workspace/scripts/reliability_watchdog_report.py`
 
-## Suggested automation
+## Hosting
 
-Run `scripts/update_and_push.sh` from OpenClaw cron (already configured) for continuous dashboard refresh.
+- GitHub Pages serves from `main` branch `/docs` folder (built output from Vite).
+- App reads status source config from `public/data/source.json`.

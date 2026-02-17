@@ -1,46 +1,48 @@
 # AGENTS.md — Claw Control Room Engineering Contract
 
-This repository is production-facing (GitHub Pages). Prioritize clarity, safety, and maintainability over speed hacks.
+This repository is production-facing (GitHub Pages). Prioritize maintainability, testability, and documentation discipline.
 
-## Non-negotiables
+## Core standards
 
-1) **Code quality first**
-- Keep functions small and single-purpose.
-- Prefer explicit naming and typed/structured data over clever shortcuts.
-- Include comments/docstrings for non-obvious logic.
+1) Code quality first
+- Keep components/functions small and single-purpose.
+- Prefer explicit typing and clear naming over clever shortcuts.
+- Document non-obvious logic with comments/docstrings.
 
-2) **Modular architecture**
-- Reusable logic belongs in `scripts/lib/`.
-- CLI wrappers stay thin in `scripts/`.
-- UI stays static/minimal (`index.html`, `app.js`, `styles.css`) and data-driven via `data/status.json`.
+2) Modular architecture
+- Frontend app lives in `src/` (React + TypeScript).
+- Reusable browser logic belongs in `src/lib/` and hooks in `src/hooks/`.
+- Reusable Python data/publish logic belongs in `scripts/lib/`.
+- Keep script entrypoints thin.
 
-3) **Documentation must be updated with code changes**
-When behavior/structure changes, update all relevant docs in the same change:
+3) Documentation is mandatory with behavior changes
+Update these in the same change:
 - `README.md`
-- `docs/ARCHITECTURE.md`
-- `docs/DEVELOPMENT.md`
+- `handbook/ARCHITECTURE.md`
+- `handbook/DEVELOPMENT.md`
 - `CHANGELOG.md`
 
-4) **Quality gates before publish**
-Before pushing dashboard updates:
-- `python3 -m py_compile ...`
-- `python3 scripts/tests/test_status_builder.py`
-- `python3 scripts/build_status_json.py`
+4) Quality gate before push
+Run:
+- `./scripts/quality_gate.sh`
 
-5) **No silent breaking changes**
-If an output contract changes (`data/status.json` shape, timeline parsing, job mapping), document it and call it out in changelog.
+(Checks Python compile/tests + React typecheck/build.)
+
+5) No silent contract changes
+If dashboard payload shape, timeline parsing, data-source behavior, or publish flow changes, document it in architecture/changelog.
 
 ## Repository layout
 
-- `index.html`, `app.js`, `styles.css` — static UI
-- `data/status.json` — generated dashboard snapshot
-- `scripts/build_status_json.py` — build entrypoint
-- `scripts/lib/status_builder.py` — reusable data assembly logic
-- `scripts/tests/` — lightweight tests
-- `docs/` — architecture/dev/runbook docs
+- `src/` — React + TypeScript UI
+- `public/data/` — source/status config consumed by built app
+- `docs/` — built static site artifact served by GitHub Pages
+- `scripts/` — Python + shell automation tooling
+- `scripts/lib/` — reusable Python modules
+- `scripts/tests/` — Python tests
+- `handbook/` — architecture/dev docs (source)
 
 ## Change style
 
-- Prefer incremental refactors with clear intent.
-- Keep commits scoped and readable.
-- Maintain backward compatibility unless there is a clear reason not to.
+- Prefer incremental, well-scoped commits.
+- Keep backward compatibility unless there's a clear migration note.
+- Keep status publishing commitless by default (gist backend) unless code/docs changed.

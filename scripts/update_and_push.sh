@@ -4,20 +4,18 @@ set -euo pipefail
 REPO_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$REPO_DIR"
 
-# Quick quality gate before publishing.
-python3 -m py_compile scripts/build_status_json.py scripts/lib/status_builder.py scripts/tests/test_status_builder.py
-python3 scripts/tests/test_status_builder.py
+MSG="${1:-dashboard: code/docs update $(date '+%Y-%m-%d %H:%M')}"
 
-# Build fresh dashboard data.
-python3 scripts/build_status_json.py
+# Run full quality gate (includes React typecheck/build + Python checks)
+./scripts/quality_gate.sh
 
-git add data/status.json
+git add .
 if git diff --cached --quiet; then
-  echo "No dashboard data changes"
+  echo "No code/doc changes to push"
   exit 0
 fi
 
-git commit -m "dashboard: update status $(date '+%Y-%m-%d %H:%M')"
+git commit -m "$MSG"
 git push
 
-echo "Dashboard pushed"
+echo "Code/docs pushed"
