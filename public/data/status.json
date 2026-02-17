@@ -1,7 +1,7 @@
 {
-  "generatedAt": "2026-02-17T21:24:34.916633+00:00",
-  "generatedAtLocal": "2026-02-17 15:24 ",
-  "controlRoomVersion": "1.0.1",
+  "generatedAt": "2026-02-17T21:26:15.550967+00:00",
+  "generatedAtLocal": "2026-02-17 15:26 ",
+  "controlRoomVersion": "1.0.2",
   "currentFocus": "Reliability deep-work block B (scheduled cron)",
   "activeWork": "15:10-16:05 \u2014 Reliability deep-work block B (scheduled cron)",
   "reliability": {
@@ -40,7 +40,7 @@
   "nextJobs": [
     {
       "name": "Control room status publish (gist backend)",
-      "nextRun": "15:25",
+      "nextRun": "15:30",
       "lastStatus": "ok"
     },
     {
@@ -80,12 +80,12 @@
     }
   ],
   "findings": [
-    "bumps version, runs quality gate, commits/pushes, creates `vX.Y.Z` tag, and creates GitHub release from changelog notes.",
-    "Added release-notes extraction utility + tests (`scripts/extract_release_notes.py`, `scripts/tests/test_extract_release_notes.py`).",
-    "Released and published `v1.0.0`:",
-    "Tag: `v1.0.0`",
     "Release: https://github.com/SeanKudrna/claw-control-room/releases/tag/v1.0.0",
-    "Updated gist status payload after release so runtime dashboard data includes `controlRoomVersion: 1.0.0`."
+    "Updated gist status payload after release so runtime dashboard data includes `controlRoomVersion: 1.0.0`.",
+    "Fixed stale dashboard state where `Current Focus` could show `n/a` and `Now` could remain on old time windows.",
+    "Implemented timeline-aware stale fallback in `scripts/lib/status_builder.py` so active/focus/now lanes follow current `DAILY_PLAN.md` window when `TODAY_STATUS.md` lags.",
+    "Added tests for stale active-work fallback and timeline-aware now-lane rendering.",
+    "Released as patch version `v1.0.1` with tag + GitHub release: https://github.com/SeanKudrna/claw-control-room/releases/tag/v1.0.1"
   ],
   "workstream": {
     "now": [
@@ -95,8 +95,8 @@
       "16:50-16:58 \u2014 Pre-5pm reliability checkpoint (scheduled cron)",
       "17:00-17:12 \u2014 Usage report + MVP user update window",
       "17:12-18:30 \u2014 Post-run stabilization + next-action prep",
-      "14:30-15:15 \u2014 Autonomy execution block (PM): ship one concrete reliability/capability improvement from queue",
-      "17:00-17:10 \u2014 Usage report cron run + delivery confirmation"
+      "17:00-17:10 \u2014 Usage report cron run + delivery confirmation",
+      "17:10-17:25 \u2014 Post-run verification/self-heal if needed; update evidence for end-of-day status"
     ],
     "done": [
       "13:10 capability build completed: `scripts/build_daily_priority_checklist.py` + `scripts/test_daily_priority_checklist.py`",
@@ -154,16 +154,16 @@
         "job": "Reliability watchdog hourly (self-heal + conditional alert)"
       },
       {
-        "label": "15:20",
-        "status": "ok",
-        "score": 1.0,
-        "job": "Control room status publish (gist backend)"
-      },
-      {
         "label": "15:22",
         "status": "ok",
         "score": 1.0,
         "job": "Critical update failover guard"
+      },
+      {
+        "label": "15:25",
+        "status": "ok",
+        "score": 1.0,
+        "job": "Control room status publish (gist backend)"
       }
     ],
     "reliabilityTrend": [
@@ -240,26 +240,6 @@
     ]
   },
   "activity": [
-    {
-      "time": "14:55",
-      "category": "ops",
-      "text": "Operational split is now explicit:"
-    },
-    {
-      "time": "14:55",
-      "category": "ops",
-      "text": "status refreshes -> gist publish (no commit spam)"
-    },
-    {
-      "time": "14:55",
-      "category": "docs",
-      "text": "code/docs changes -> commit + push path"
-    },
-    {
-      "time": "15:05",
-      "category": "ui",
-      "text": "Sean asked for dashboard freshness during active work; expectation set to keep it continuously current."
-    },
     {
       "time": "15:05",
       "category": "ops",
@@ -359,6 +339,26 @@
       "time": "15:22",
       "category": "ui",
       "text": "Updated gist status payload after release so runtime dashboard data includes `controlRoomVersion: 1.0.0`."
+    },
+    {
+      "time": "15:25",
+      "category": "ui",
+      "text": "Fixed stale dashboard state where `Current Focus` could show `n/a` and `Now` could remain on old time windows."
+    },
+    {
+      "time": "15:25",
+      "category": "ui",
+      "text": "Implemented timeline-aware stale fallback in `scripts/lib/status_builder.py` so active/focus/now lanes follow current `DAILY_PLAN.md` window when `TODAY_STATUS.md` lags."
+    },
+    {
+      "time": "15:25",
+      "category": "release",
+      "text": "Added tests for stale active-work fallback and timeline-aware now-lane rendering."
+    },
+    {
+      "time": "15:25",
+      "category": "release",
+      "text": "Released as patch version `v1.0.1` with tag + GitHub release: https://github.com/SeanKudrna/claw-control-room/releases/tag/v1.0.1"
     }
   ]
 }

@@ -225,6 +225,17 @@ def resolve_current_focus(raw_focus: str, active_work: str, timeline: List[Dict[
     return "Reliability monitoring + scheduled execution"
 
 
+def is_future_or_untimed(item: str, now_local: dt.datetime) -> bool:
+    """Return True for future/no-time items, False for already-ended timed blocks."""
+    parsed = parse_time_range(item)
+    if parsed is None:
+        return True
+
+    _, end = parsed
+    now_minutes = now_local.hour * 60 + now_local.minute
+    return end > now_minutes
+
+
 def parse_workstream(
     today_status_markdown: str,
     timeline: List[Dict[str, str]],
@@ -246,7 +257,13 @@ def parse_workstream(
         now_lane.extend(parse_section_bullets(today_status_markdown, "Now"))
 
     next_lane = [format_block(block) for block in next_blocks[:3]]
-    next_lane.extend(parse_section_bullets(today_status_markdown, "Next 3 meaningful blocks"))
+    next_lane.extend(
+        [
+            item
+            for item in parse_section_bullets(today_status_markdown, "Next 3 meaningful blocks")
+            if is_future_or_untimed(item, now_local)
+        ]
+    )
 
     done_lane = parse_section_bullets(today_status_markdown, "Last completed with proof")
     if not done_lane:

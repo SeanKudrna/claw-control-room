@@ -1,5 +1,14 @@
 # Changelog
 
+## v1.0.2 - 2026-02-17
+
+### Fixed
+- Filtered stale time-ranged items out of the `Next` swimlane when those blocks have already ended.
+- Prevented old `Next 3 meaningful blocks` entries from `TODAY_STATUS.md` from reappearing after their time window passes.
+
+### Added
+- Test coverage for stale-next-item filtering in `parse_workstream`.
+
 ## v1.0.1 - 2026-02-17
 
 ### Fixed

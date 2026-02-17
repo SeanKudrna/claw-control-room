@@ -65,6 +65,20 @@ class StatusBuilderTests(unittest.TestCase):
         self.assertIn("Block A", stream["next"][0])
         self.assertIn("Completed one", stream["done"][0])
 
+    def test_parse_workstream_filters_past_next_items(self) -> None:
+        md = """
+## Next 3 meaningful blocks
+- 14:30-15:15 — stale next block
+- 17:00-17:10 — valid future block
+"""
+        now_local = dt.datetime.now().replace(hour=15, minute=30)
+        timeline = [{"time": "15:10-16:05", "task": "Reliability deep-work block B"}]
+
+        stream = parse_workstream(md, timeline=timeline, active_work="", now_local=now_local)
+        joined = "\n".join(stream["next"])
+        self.assertNotIn("14:30-15:15", joined)
+        self.assertIn("17:00-17:10", joined)
+
     def test_resolve_active_work_stale_fallback(self) -> None:
         now_local = dt.datetime.now().replace(hour=15, minute=30)
         timeline = [{"time": "15:10-16:05", "task": "Reliability deep-work block B"}]
