@@ -1,0 +1,89 @@
+{
+  "generatedAt": "2026-02-17T20:00:52.939073+00:00",
+  "generatedAtLocal": "2026-02-17 14:00 ",
+  "currentFocus": "",
+  "activeWork": "13:20-13:45 \u2014 Midday reliability + queue reconciliation (confirm noon usage reliability state and de-duplicate remaining queue items)",
+  "reliability": {
+    "status": "green"
+  },
+  "timeline": [
+    {
+      "time": "13:20-13:45",
+      "task": "Midday reliability + queue reconciliation"
+    },
+    {
+      "time": "13:45-14:25",
+      "task": "Prepare 5pm update evidence pack"
+    },
+    {
+      "time": "15:10-16:05",
+      "task": "Reliability deep-work block B (scheduled cron)"
+    },
+    {
+      "time": "16:50-16:58",
+      "task": "Pre-5pm reliability checkpoint (scheduled cron)"
+    },
+    {
+      "time": "17:00-17:12",
+      "task": "Usage report + MVP user update window"
+    },
+    {
+      "time": "17:12-18:30",
+      "task": "Post-run stabilization + next-action prep"
+    },
+    {
+      "time": "19:00-19:20",
+      "task": "Evening wrap + tomorrow pre-plan (scheduled cron)"
+    }
+  ],
+  "nextJobs": [
+    {
+      "name": "Critical update failover guard",
+      "nextRun": "14:07",
+      "lastStatus": "ok"
+    },
+    {
+      "name": "Today dashboard refresh (every 3h)",
+      "nextRun": "14:15",
+      "lastStatus": null
+    },
+    {
+      "name": "Reliability watchdog hourly (self-heal + conditional alert)",
+      "nextRun": "14:20",
+      "lastStatus": "ok"
+    },
+    {
+      "name": "Downtime gap auto-fill guard (quiet unless triggered)",
+      "nextRun": "15:00",
+      "lastStatus": "ok"
+    },
+    {
+      "name": "Reliability deep-work block B (DAILY_PLAN-driven)",
+      "nextRun": "15:10",
+      "lastStatus": null
+    },
+    {
+      "name": "Surprise value lane (daily)",
+      "nextRun": "16:10",
+      "lastStatus": null
+    },
+    {
+      "name": "Pre-5pm reliability checkpoint (DAILY_PLAN-driven)",
+      "nextRun": "16:50",
+      "lastStatus": null
+    },
+    {
+      "name": "Usage report - 5pm",
+      "nextRun": "17:00",
+      "lastStatus": null
+    }
+  ],
+  "findings": [
+    "Disabled redundant Schedule gap guard to reduce overlap/noise.",
+    "Added reliability SLO scorecard doc + daily SLO snapshot cron (5:05 PM CST).",
+    "Added capability pipeline doc to standardize build->test->proof->document->operationalize flow.",
+    "Added/activated immediate workflow hardening layer: `TODAY_STATUS.md` refresh cadence + `Critical update failover guard` checks + dedupe ledger `status/failover-sent.json`.",
+    "Dashboard contract now standardized to: running now, next 3 meaningful blocks, last proof, blockers, next action.",
+    "Immediate failover audit caught historical 7:00 usage-report failure root cause (disallowed model on that run); retry path is now stabilized on `gpt-5.3-codex` with noon success and next critical retry at 17:00."
+  ]
+}

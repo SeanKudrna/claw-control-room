@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Claw Control Room</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header>
+    <h1>Claw Control Room</h1>
+    <p id="generatedAt">Loading latest status…</p>
+  </header>
+
+  <main>
+    <section class="grid">
+      <article class="card">
+        <h2>Current Focus</h2>
+        <p id="currentFocus">—</p>
+      </article>
+      <article class="card">
+        <h2>Health</h2>
+        <p id="healthBadge" class="badge">—</p>
+      </article>
+      <article class="card">
+        <h2>Active Work</h2>
+        <p id="activeWork">—</p>
+      </article>
+    </section>
+
+    <section class="card">
+      <h2>Today Timeline</h2>
+      <ul id="timeline" class="timeline"></ul>
+    </section>
+
+    <section class="card">
+      <h2>Next Scheduled Jobs</h2>
+      <table>
+        <thead>
+          <tr><th>Time</th><th>Job</th><th>Status</th></tr>
+        </thead>
+        <tbody id="jobsTable"></tbody>
+      </table>
+    </section>
+
+    <section class="card">
+      <h2>Recent Findings / Wins</h2>
+      <ul id="findings"></ul>
+    </section>
+  </main>
+
+  <footer>
+    <small>Auto-generated from OpenClaw workspace + cron state.</small>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>

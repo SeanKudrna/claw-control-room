@@ -1,0 +1,12 @@
+body{font-family:Inter,system-ui,-apple-system,sans-serif;background:#0b1020;color:#e9edff;margin:0;padding:0 16px 40px}
+header{max-width:1100px;margin:24px auto 16px}
+h1{margin:0 0 6px;font-size:28px}
+main{max-width:1100px;margin:0 auto;display:grid;gap:16px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px}
+.card{background:#131a31;border:1px solid #25315a;border-radius:12px;padding:14px}
+.badge{display:inline-block;padding:4px 10px;border-radius:999px;background:#28345f}
+.badge.green{background:#1e6a43}.badge.yellow{background:#8f6a20}.badge.red{background:#8b2d2d}
+.timeline{list-style:none;padding-left:0;margin:0;display:grid;gap:8px}
+.timeline li{padding:8px 10px;border-left:3px solid #5d73c2;background:#0e1430;border-radius:6px}
+table{width:100%;border-collapse:collapse}th,td{text-align:left;padding:8px;border-bottom:1px solid #2a3560}
+footer{max-width:1100px;margin:8px auto;color:#99a6d8}
