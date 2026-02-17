@@ -1,6 +1,6 @@
 {
-  "generatedAt": "2026-02-17T20:23:33.865425+00:00",
-  "generatedAtLocal": "2026-02-17 14:23 ",
+  "generatedAt": "2026-02-17T20:31:52.646195+00:00",
+  "generatedAtLocal": "2026-02-17 14:31 ",
   "currentFocus": "",
   "activeWork": "14:15-14:30 \u2014 PM block setup + dashboard/queue reconciliation before execution window",
   "reliability": {
@@ -43,6 +43,11 @@
       "lastStatus": "ok"
     },
     {
+      "name": "Control room publish refresh",
+      "nextRun": "14:40",
+      "lastStatus": null
+    },
+    {
       "name": "Downtime gap auto-fill guard (quiet unless triggered)",
       "nextRun": "15:00",
       "lastStatus": "ok"
@@ -70,11 +75,6 @@
     {
       "name": "Usage report - 5pm",
       "nextRun": "17:00",
-      "lastStatus": null
-    },
-    {
-      "name": "Day1 reliability MVP 5pm update",
-      "nextRun": "17:02",
       "lastStatus": null
     }
   ],
