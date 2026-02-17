@@ -80,6 +80,52 @@ class StatusBuilderTests(unittest.TestCase):
         self.assertNotIn("14:30-15:15", joined)
         self.assertIn("17:00-17:10", joined)
 
+    def test_parse_workstream_dedupes_overlapping_next_items(self) -> None:
+        md = """
+## Next 3 meaningful blocks
+- 10:05-10:35 — Reliability deep-work block
+"""
+        now_local = dt.datetime.now().replace(hour=9, minute=0)
+        timeline = [{"time": "10:00-10:30", "task": "Reliability deep work block"}]
+
+        stream = parse_workstream(md, timeline=timeline, active_work="", now_local=now_local)
+        joined = "\n".join(stream["next"])
+        self.assertIn("10:00-10:30", joined)
+        self.assertNotIn("10:05-10:35", joined)
+        self.assertEqual(len(stream["next"]), 1)
+
+    def test_parse_workstream_dedupes_issue_one_example(self) -> None:
+        md = """
+## Next 3 meaningful blocks
+- 17:00-17:10 — Usage report cron run + delivery confirmation
+"""
+        now_local = dt.datetime.now().replace(hour=16, minute=0)
+        timeline = [
+            {
+                "time": "17:00-17:12",
+                "task": "Usage report + MVP user update window",
+            }
+        ]
+
+        stream = parse_workstream(md, timeline=timeline, active_work="", now_local=now_local)
+        joined = "\n".join(stream["next"])
+        self.assertIn("17:00-17:12", joined)
+        self.assertNotIn("17:00-17:10", joined)
+        self.assertEqual(len(stream["next"]), 1)
+
+    def test_parse_workstream_preserves_non_overlapping_next_items(self) -> None:
+        md = """
+## Next 3 meaningful blocks
+- 11:00-11:30 — Deploy patch set
+"""
+        now_local = dt.datetime.now().replace(hour=9, minute=0)
+        timeline = [{"time": "10:00-10:30", "task": "Reliability deep work block"}]
+
+        stream = parse_workstream(md, timeline=timeline, active_work="", now_local=now_local)
+        joined = "\n".join(stream["next"])
+        self.assertIn("10:00-10:30", joined)
+        self.assertIn("11:00-11:30", joined)
+
     def test_resolve_active_work_stale_fallback(self) -> None:
         now_local = dt.datetime.now().replace(hour=15, minute=30)
         timeline = [{"time": "15:10-16:05", "task": "Reliability deep-work block B"}]

@@ -1,9 +1,9 @@
 {
-  "generatedAt": "2026-02-17T22:11:45.650909+00:00",
-  "generatedAtLocal": "2026-02-17 16:11 ",
-  "controlRoomVersion": "1.3.1",
-  "currentFocus": "Control-room runtime observability and issue-driven UX quality",
-  "activeWork": "15:45-16:10 \u2014 Runtime monitor shipped (idle/running + timers) and release verification",
+  "generatedAt": "2026-02-17T22:34:03.008170+00:00",
+  "generatedAtLocal": "2026-02-17 16:34 ",
+  "controlRoomVersion": "1.3.2",
+  "currentFocus": "Control-room runtime accuracy hardening and issue-driven UX quality",
+  "activeWork": "16:10-16:30 \u2014 Issue #1 prep block (Next-lane dedupe), after runtime false-running fix verification",
   "reliability": {
     "status": "green"
   },
@@ -40,17 +40,12 @@
   "nextJobs": [
     {
       "name": "Control room status publish (gist backend)",
-      "nextRun": "16:12",
-      "lastStatus": "ok"
-    },
-    {
-      "name": "Reliability watchdog hourly (self-heal + conditional alert)",
-      "nextRun": "16:20",
+      "nextRun": "16:34",
       "lastStatus": "ok"
     },
     {
       "name": "Critical update failover guard",
-      "nextRun": "16:22",
+      "nextRun": "16:37",
       "lastStatus": "ok"
     },
     {
@@ -77,30 +72,34 @@
       "name": "Daily reliability SLO snapshot",
       "nextRun": "17:05",
       "lastStatus": null
+    },
+    {
+      "name": "Today dashboard refresh (every 3h)",
+      "nextRun": "17:15",
+      "lastStatus": "ok"
     }
   ],
   "findings": [
-    "Runtime detection source: session-store run keys reconciled against cron finished-run logs for definitive active-run detection.",
-    "Shipped as ticket-linked release `v1.3.0` with commit message including `refs #3` and GitHub release tag.",
-    "Added control-room data freshness indicator in header (`Fresh`, `Aging`, `Stale`) computed from payload `generatedAt`.",
-    "Why: prevents accidental trust in stale dashboard snapshots when gist refresh lags.",
     "Updated React hook + header UI + styles + README docs.",
-    "Proof: `./scripts/quality_gate.sh` passed (Python tests + TS typecheck + Vite build)."
+    "Proof: `./scripts/quality_gate.sh` passed (Python tests + TS typecheck + Vite build).",
+    "Runtime misalignment fix shipped as `v1.3.1` (`refs #4`): excluded control-room status publisher self-run from runtime detection and increased status publish cadence to 1-minute for fresher idle/running state.",
+    "Sean reported the dashboard still looked wrong for idle/running state; live verification after `v1.3.1` showed Runtime Status correctly at `IDLE` with no active background runs.",
+    "New UX clarity gap identified: `Now` lane can still show a scheduled time block (from planning docs) while runtime is `IDLE`, which can feel contradictory to users.",
+    "Durable improvement direction: keep runtime truth (`IDLE`/`RUNNING`) distinct from schedule truth (planned current block), and consider explicit labeling in UI to avoid confusion."
   ],
   "workstream": {
     "now": [
-      "15:45-16:10 \u2014 Runtime monitor shipped (idle/running + timers) and release verification"
+      "16:10-16:30 \u2014 Issue #1 prep block (Next-lane dedupe), after runtime false-running fix verification"
     ],
     "next": [
       "16:50-16:58 \u2014 Pre-5pm reliability checkpoint (scheduled cron)",
       "17:00-17:12 \u2014 Usage report + MVP user update window",
       "17:12-18:30 \u2014 Post-run stabilization + next-action prep",
-      "16:10-16:30 \u2014 Work issue #1 (dedupe overlapping Next-lane entries) and prep ticket-linked patch release",
-      "17:00-17:12 \u2014 Usage report + MVP update verification window"
+      "16:30-16:45 \u2014 Implement issue #1 overlap-aware dedupe and ship ticket-linked patch release"
     ],
     "done": [
-      "Real-time runtime status feature shipped: Overview panel now shows `IDLE`/`RUNNING`, active job runs, and live elapsed timers.",
-      "Proof: released `v1.3.0` (refs #3) with tag/release and live page verification at cache-busted URL."
+      "Runtime panel false-running bug fixed: status publisher self-run is now excluded from runtime detection.",
+      "Proof: released `v1.3.1` (`refs #4`) and verified live dashboard now shows IDLE correctly when no active runs."
     ]
   },
   "charts": {
@@ -142,22 +141,10 @@
         "job": "Reliability deep-work block B (DAILY_PLAN-driven)"
       },
       {
-        "label": "15:20",
-        "status": "ok",
-        "score": 1.0,
-        "job": "Reliability watchdog hourly (self-heal + conditional alert)"
-      },
-      {
         "label": "16:00",
         "status": "ok",
         "score": 1.0,
         "job": "Downtime gap auto-fill guard (quiet unless triggered)"
-      },
-      {
-        "label": "16:07",
-        "status": "ok",
-        "score": 1.0,
-        "job": "Critical update failover guard"
       },
       {
         "label": "16:10",
@@ -166,18 +153,25 @@
         "job": "Surprise value lane (daily)"
       },
       {
-        "label": "16:11",
+        "label": "16:20",
+        "status": "ok",
+        "score": 1.0,
+        "job": "Reliability watchdog hourly (self-heal + conditional alert)"
+      },
+      {
+        "label": "16:22",
+        "status": "ok",
+        "score": 1.0,
+        "job": "Critical update failover guard"
+      },
+      {
+        "label": "16:33",
         "status": "ok",
         "score": 1.0,
         "job": "Control room status publish (gist backend)"
       }
     ],
     "reliabilityTrend": [
-      {
-        "label": "10:20",
-        "status": "green",
-        "score": 1.0
-      },
       {
         "label": "10:51",
         "status": "green",
@@ -242,30 +236,15 @@
         "label": "15:51",
         "status": "green",
         "score": 1.0
+      },
+      {
+        "label": "16:20",
+        "status": "green",
+        "score": 1.0
       }
     ]
   },
   "activity": [
-    {
-      "time": "15:25",
-      "category": "release",
-      "text": "Added tests for stale active-work fallback and timeline-aware now-lane rendering."
-    },
-    {
-      "time": "15:25",
-      "category": "release",
-      "text": "Released as patch version `v1.0.1` with tag + GitHub release: https://github.com/SeanKudrna/claw-control-room/releases/tag/v1.0.1"
-    },
-    {
-      "time": "15:25",
-      "category": "release",
-      "text": "Follow-up patch v1.0.2 shipped to filter stale time-passed items out of `Next` swimlane; tag/release created and gist payload refreshed."
-    },
-    {
-      "time": "15:30",
-      "category": "ui",
-      "text": "Implemented tabbed dashboard IA to avoid single-page infodump:"
-    },
     {
       "time": "15:30",
       "category": "release",
@@ -365,6 +344,26 @@
       "time": "16:10",
       "category": "ui",
       "text": "Proof: `./scripts/quality_gate.sh` passed (Python tests + TS typecheck + Vite build)."
+    },
+    {
+      "time": "16:10",
+      "category": "ops",
+      "text": "Runtime misalignment fix shipped as `v1.3.1` (`refs #4`): excluded control-room status publisher self-run from runtime detection and increased status publish cadence to 1-minute for fresher idle/running state."
+    },
+    {
+      "time": "16:14",
+      "category": "ui",
+      "text": "Sean reported the dashboard still looked wrong for idle/running state; live verification after `v1.3.1` showed Runtime Status correctly at `IDLE` with no active background runs."
+    },
+    {
+      "time": "16:14",
+      "category": "docs",
+      "text": "New UX clarity gap identified: `Now` lane can still show a scheduled time block (from planning docs) while runtime is `IDLE`, which can feel contradictory to users."
+    },
+    {
+      "time": "16:14",
+      "category": "ui",
+      "text": "Durable improvement direction: keep runtime truth (`IDLE`/`RUNNING`) distinct from schedule truth (planned current block), and consider explicit labeling in UI to avoid confusion."
     }
   ],
   "runtime": {
@@ -372,7 +371,7 @@
     "isIdle": true,
     "activeCount": 0,
     "activeRuns": [],
-    "checkedAtMs": 1771366305680,
+    "checkedAtMs": 1771367643038,
     "source": "session-store + cron-run-log reconciliation"
   }
 }

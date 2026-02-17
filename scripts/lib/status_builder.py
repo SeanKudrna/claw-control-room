@@ -20,6 +20,33 @@ BLOCK_RE = re.compile(r"^###\s+(\d{1,2}:\d{2})-(\d{1,2}:\d{2})\s+—\s+(.+)$")
 HEADING_RE = re.compile(r"^##\s+(.+)$")
 HEADING_TIME_RE = re.compile(r"^(\d{1,2}:\d{2})")
 TIME_RANGE_RE = re.compile(r"(\d{1,2}:\d{2})-(\d{1,2}:\d{2})")
+WORD_RE = re.compile(r"[a-z0-9]+")
+
+SEMANTIC_STOPWORDS = {
+    "a",
+    "an",
+    "and",
+    "at",
+    "by",
+    "for",
+    "from",
+    "in",
+    "into",
+    "of",
+    "on",
+    "over",
+    "the",
+    "to",
+    "under",
+    "via",
+    "with",
+}
+
+NEXT_LANE_DEDUPE_TIME_GRACE_MINUTES = 5
+NEXT_LANE_DEDUPE_SIMILARITY_THRESHOLD = 0.6
+NEXT_LANE_DEDUPE_STRONG_THRESHOLD = 0.85
+NEXT_LANE_DEDUPE_MIN_TOKEN_OVERLAP = 2
+NEXT_LANE_DEDUPE_OVERLAP_RATIO_THRESHOLD = 0.3
 
 CONTROL_ROOM_ROOT = Path(__file__).resolve().parents[2]
 SESSIONS_STORE_PATH = Path("/Users/seankudrna/.openclaw/agents/main/sessions/sessions.json")
@@ -112,6 +139,122 @@ def parse_time_range(value: str) -> Optional[Tuple[int, int]]:
     if start is None or end is None:
         return None
     return start, end
+
+
+def normalize_semantic_text(value: str) -> str:
+    """Normalize text for semantic comparison by stripping time ranges and punctuation."""
+    cleaned = TIME_RANGE_RE.sub(" ", value)
+    tokens = WORD_RE.findall(cleaned.lower())
+    return " ".join(tokens)
+
+
+def semantic_tokens(value: str) -> set[str]:
+    """Return normalized semantic tokens, excluding stopwords."""
+    cleaned = TIME_RANGE_RE.sub(" ", value)
+    tokens = WORD_RE.findall(cleaned.lower())
+    return {token for token in tokens if token not in SEMANTIC_STOPWORDS}
+
+
+def semantic_similarity(tokens_a: set[str], tokens_b: set[str]) -> float:
+    if not tokens_a or not tokens_b:
+        return 0.0
+    intersection = len(tokens_a & tokens_b)
+    union = len(tokens_a | tokens_b)
+    return intersection / union if union else 0.0
+
+
+def token_overlap_ratio(tokens_a: set[str], tokens_b: set[str]) -> float:
+    if not tokens_a or not tokens_b:
+        return 0.0
+    overlap = len(tokens_a & tokens_b)
+    return overlap / min(len(tokens_a), len(tokens_b))
+
+
+def has_meaningful_token_overlap(tokens_a: set[str], tokens_b: set[str]) -> bool:
+    overlap = len(tokens_a & tokens_b)
+    if overlap < NEXT_LANE_DEDUPE_MIN_TOKEN_OVERLAP:
+        return False
+    return token_overlap_ratio(tokens_a, tokens_b) >= NEXT_LANE_DEDUPE_OVERLAP_RATIO_THRESHOLD
+
+
+def time_ranges_overlap_or_close(
+    range_a: Tuple[int, int],
+    range_b: Tuple[int, int],
+    grace_minutes: int = NEXT_LANE_DEDUPE_TIME_GRACE_MINUTES,
+) -> bool:
+    """Return True when ranges overlap or sit within grace minutes."""
+    return range_a[0] <= range_b[1] + grace_minutes and range_b[0] <= range_a[1] + grace_minutes
+
+
+def build_next_lane_meta(item: str) -> Dict[str, Any]:
+    return {
+        "text": item,
+        "range": parse_time_range(item),
+        "normalized": normalize_semantic_text(item),
+        "tokens": semantic_tokens(item),
+    }
+
+
+def is_semantic_match(
+    candidate: Dict[str, Any],
+    existing: Dict[str, Any],
+    threshold: float,
+) -> bool:
+    if candidate["normalized"] and candidate["normalized"] == existing["normalized"]:
+        return True
+
+    tokens_a = candidate["tokens"]
+    tokens_b = existing["tokens"]
+    if len(tokens_a) < 2 or len(tokens_b) < 2:
+        return False
+
+    similarity = semantic_similarity(tokens_a, tokens_b)
+    if similarity >= threshold:
+        return True
+
+    overlap = tokens_a & tokens_b
+    if len(overlap) >= NEXT_LANE_DEDUPE_MIN_TOKEN_OVERLAP:
+        return tokens_a.issubset(tokens_b) or tokens_b.issubset(tokens_a)
+    return False
+
+
+def is_duplicate_next_item(candidate: Dict[str, Any], existing_items: List[Dict[str, Any]]) -> bool:
+    """Return True when candidate duplicates any canonical next item."""
+    for existing in existing_items:
+        if candidate["normalized"] and candidate["normalized"] == existing["normalized"]:
+            return True
+
+        range_a = candidate.get("range")
+        range_b = existing.get("range")
+        if range_a and range_b:
+            if not time_ranges_overlap_or_close(range_a, range_b):
+                continue
+            if is_semantic_match(candidate, existing, NEXT_LANE_DEDUPE_SIMILARITY_THRESHOLD):
+                return True
+            if has_meaningful_token_overlap(candidate["tokens"], existing["tokens"]):
+                return True
+            continue
+
+        if is_semantic_match(candidate, existing, NEXT_LANE_DEDUPE_STRONG_THRESHOLD):
+            return True
+
+    return False
+
+
+def dedupe_next_lane(timeline_items: List[str], status_items: List[str]) -> List[str]:
+    """Return next-lane items with timeline entries canonicalized."""
+    canonical_meta = [build_next_lane_meta(item) for item in timeline_items]
+    deduped = list(timeline_items)
+    seen_meta = list(canonical_meta)
+
+    for item in status_items:
+        meta = build_next_lane_meta(item)
+        if is_duplicate_next_item(meta, seen_meta):
+            continue
+        deduped.append(item)
+        seen_meta.append(meta)
+
+    return deduped
 
 
 def normalize_items(items: List[str], limit: int) -> List[str]:
@@ -262,14 +405,13 @@ def parse_workstream(
     else:
         now_lane.extend(parse_section_bullets(today_status_markdown, "Now"))
 
-    next_lane = [format_block(block) for block in next_blocks[:3]]
-    next_lane.extend(
-        [
-            item
-            for item in parse_section_bullets(today_status_markdown, "Next 3 meaningful blocks")
-            if is_future_or_untimed(item, now_local)
-        ]
-    )
+    timeline_next = [format_block(block) for block in next_blocks[:3]]
+    status_next = [
+        item
+        for item in parse_section_bullets(today_status_markdown, "Next 3 meaningful blocks")
+        if is_future_or_untimed(item, now_local)
+    ]
+    next_lane = dedupe_next_lane(timeline_next, status_next)
 
     done_lane = parse_section_bullets(today_status_markdown, "Last completed with proof")
     if not done_lane:

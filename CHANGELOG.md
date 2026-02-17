@@ -1,5 +1,11 @@
 # Changelog
 
+## v1.3.2 - 2026-02-17
+
+### Fixed
+- Deduplicated overlapping timeline/status entries in the Overview next lane using time-range overlap plus semantic matching.
+- Refined next-lane dedupe to treat overlapping time ranges with meaningful token overlap as duplicates.
+
 ## v1.3.1 - 2026-02-17
 
 ### Fixed
