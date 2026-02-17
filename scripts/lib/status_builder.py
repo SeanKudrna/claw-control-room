@@ -14,11 +14,12 @@ import json
 import re
 import subprocess
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional, Tuple
 
 BLOCK_RE = re.compile(r"^###\s+(\d{1,2}:\d{2})-(\d{1,2}:\d{2})\s+—\s+(.+)$")
 HEADING_RE = re.compile(r"^##\s+(.+)$")
 HEADING_TIME_RE = re.compile(r"^(\d{1,2}:\d{2})")
+TIME_RANGE_RE = re.compile(r"(\d{1,2}:\d{2})-(\d{1,2}:\d{2})")
 
 CONTROL_ROOM_ROOT = Path(__file__).resolve().parents[2]
 
@@ -82,22 +83,179 @@ def parse_today_status(today_status_markdown: str) -> Dict[str, str]:
     return {"currentFocus": current_focus, "activeWork": active_work}
 
 
-def parse_workstream(today_status_markdown: str, timeline: List[Dict[str, str]], active_work: str) -> Dict[str, List[str]]:
-    """Assemble now/next/done swimlanes from TODAY_STATUS with safe fallbacks."""
-    now_lane = [active_work] if active_work else parse_section_bullets(today_status_markdown, "Now")
-    next_lane = parse_section_bullets(today_status_markdown, "Next 3 meaningful blocks")
-    done_lane = parse_section_bullets(today_status_markdown, "Last completed with proof")
+def parse_hhmm_to_minutes(value: str) -> Optional[int]:
+    try:
+        hour_str, minute_str = value.split(":", 1)
+        hour = int(hour_str)
+        minute = int(minute_str)
+    except ValueError:
+        return None
 
-    # Fallbacks when TODAY_STATUS is stale/missing.
-    if not now_lane and timeline:
-        now_lane = [timeline[0]["task"]]
-    if not next_lane and timeline:
-        next_lane = [block["task"] for block in timeline[1:4]]
+    if hour < 0 or hour > 23 or minute < 0 or minute > 59:
+        return None
+    return hour * 60 + minute
+
+
+def parse_time_range(value: str) -> Optional[Tuple[int, int]]:
+    match = TIME_RANGE_RE.search(value)
+    if not match:
+        return None
+
+    start = parse_hhmm_to_minutes(match.group(1))
+    end = parse_hhmm_to_minutes(match.group(2))
+    if start is None or end is None:
+        return None
+    return start, end
+
+
+def normalize_items(items: List[str], limit: int) -> List[str]:
+    seen: set[str] = set()
+    out: List[str] = []
+    for item in items:
+        text = item.strip()
+        if not text:
+            continue
+        if text in seen:
+            continue
+        seen.add(text)
+        out.append(text)
+        if len(out) >= limit:
+            break
+    return out
+
+
+def format_block(block: Dict[str, str]) -> str:
+    return f"{block.get('time', 'n/a')} — {block.get('task', '').strip()}".strip()
+
+
+def timeline_context(timeline: List[Dict[str, str]], now_local: dt.datetime) -> Dict[str, Any]:
+    """Return timeline slices around `now_local` (current, next, completed)."""
+    now_minutes = now_local.hour * 60 + now_local.minute
+
+    normalized: List[Dict[str, Any]] = []
+    for block in timeline:
+        block_time = block.get("time", "")
+        parsed = parse_time_range(block_time)
+        if parsed is None:
+            continue
+        normalized.append(
+            {
+                "time": block_time,
+                "task": block.get("task", ""),
+                "start": parsed[0],
+                "end": parsed[1],
+            }
+        )
+
+    current: Optional[Dict[str, Any]] = None
+    next_blocks: List[Dict[str, Any]] = []
+    completed: List[Dict[str, Any]] = []
+
+    for block in normalized:
+        if block["start"] <= now_minutes < block["end"]:
+            current = block
+        elif now_minutes < block["start"]:
+            next_blocks.append(block)
+        elif block["end"] <= now_minutes:
+            completed.append(block)
+
+    if current is None and not next_blocks and normalized:
+        # Past the final planned block for the day.
+        completed = normalized
 
     return {
-        "now": now_lane[:3],
-        "next": next_lane[:5],
-        "done": done_lane[:5],
+        "current": current,
+        "next": next_blocks,
+        "completed": completed,
+    }
+
+
+def is_stale_active_work(active_work: str, now_local: dt.datetime, grace_minutes: int = 10) -> bool:
+    parsed = parse_time_range(active_work)
+    if parsed is None:
+        return False
+
+    _, end = parsed
+    now_minutes = now_local.hour * 60 + now_local.minute
+    return now_minutes > (end + grace_minutes)
+
+
+def resolve_active_work(
+    raw_active_work: str,
+    timeline: List[Dict[str, str]],
+    now_local: dt.datetime,
+) -> str:
+    """Resolve active work with stale guard + timeline fallback."""
+    context = timeline_context(timeline, now_local)
+
+    if raw_active_work and not is_stale_active_work(raw_active_work, now_local):
+        return raw_active_work
+
+    current = context.get("current")
+    if current:
+        return format_block(current)
+
+    next_blocks = context.get("next") or []
+    if next_blocks:
+        return f"Next up: {format_block(next_blocks[0])}"
+
+    return raw_active_work
+
+
+def resolve_current_focus(raw_focus: str, active_work: str, timeline: List[Dict[str, str]], now_local: dt.datetime) -> str:
+    """Resolve current focus with robust fallbacks when TODAY_STATUS is stale/incomplete."""
+    normalized_focus = raw_focus.strip()
+    if normalized_focus and normalized_focus.lower() not in {"n/a", "na", "none", "unknown"}:
+        return normalized_focus
+
+    context = timeline_context(timeline, now_local)
+    current = context.get("current")
+    if current and current.get("task"):
+        return current["task"]
+
+    if active_work:
+        # If active_work includes a leading time-range, strip it for cleaner focus text.
+        stripped = TIME_RANGE_RE.sub("", active_work, count=1).lstrip(" —-:")
+        return stripped or active_work
+
+    next_blocks = context.get("next") or []
+    if next_blocks:
+        return next_blocks[0].get("task", "")
+
+    return "Reliability monitoring + scheduled execution"
+
+
+def parse_workstream(
+    today_status_markdown: str,
+    timeline: List[Dict[str, str]],
+    active_work: str,
+    now_local: dt.datetime,
+) -> Dict[str, List[str]]:
+    """Assemble now/next/done swimlanes from TODAY_STATUS with timeline-aware fallbacks."""
+    context = timeline_context(timeline, now_local)
+    current = context.get("current")
+    next_blocks = context.get("next") or []
+    completed = context.get("completed") or []
+
+    now_lane: List[str] = []
+    if current:
+        now_lane.append(format_block(current))
+    elif active_work:
+        now_lane.append(active_work)
+    else:
+        now_lane.extend(parse_section_bullets(today_status_markdown, "Now"))
+
+    next_lane = [format_block(block) for block in next_blocks[:3]]
+    next_lane.extend(parse_section_bullets(today_status_markdown, "Next 3 meaningful blocks"))
+
+    done_lane = parse_section_bullets(today_status_markdown, "Last completed with proof")
+    if not done_lane:
+        done_lane.extend([f"Completed: {format_block(block)}" for block in completed[-3:]])
+
+    return {
+        "now": normalize_items(now_lane, limit=3),
+        "next": normalize_items(next_lane, limit=5),
+        "done": normalize_items(done_lane, limit=5),
     }
 
 
@@ -340,17 +498,20 @@ def build_payload(workspace_root: Path, jobs_file: Path) -> Dict[str, Any]:
     status_parts = parse_today_status(status_text)
     timeline = parse_daily_plan_blocks(plan_text)
 
+    active_work = resolve_active_work(status_parts.get("activeWork", ""), timeline, now_local)
+    current_focus = resolve_current_focus(status_parts.get("currentFocus", ""), active_work, timeline, now_local)
+
     return {
         "generatedAt": dt.datetime.now(dt.timezone.utc).isoformat(),
         "generatedAtLocal": now_local.strftime("%Y-%m-%d %H:%M %Z"),
         "controlRoomVersion": control_room_version(),
-        "currentFocus": status_parts.get("currentFocus", ""),
-        "activeWork": status_parts.get("activeWork", ""),
+        "currentFocus": current_focus,
+        "activeWork": active_work,
         "reliability": reliability_status(workspace_root),
         "timeline": timeline,
         "nextJobs": next_jobs(jobs_file),
         "findings": recent_findings(memory_text),
-        "workstream": parse_workstream(status_text, timeline, status_parts.get("activeWork", "")),
+        "workstream": parse_workstream(status_text, timeline, active_work, now_local),
         "charts": {
             "jobSuccessTrend": job_success_trend(jobs_file),
             "reliabilityTrend": reliability_trend(Path("/Users/seankudrna/.openclaw/logs/reliability-watchdog.jsonl")),

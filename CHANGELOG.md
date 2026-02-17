@@ -1,5 +1,15 @@
 # Changelog
 
+## v1.0.1 - 2026-02-17
+
+### Fixed
+- Corrected stale status behavior where `Current Focus` could show `n/a` and `Now` could remain on an old time block.
+- Added timeline-aware fallback logic so runtime `activeWork/currentFocus/workstream.now` reflect the current DAILY_PLAN window when TODAY_STATUS is stale.
+- Added stale-guard for `Running now` time ranges to prevent outdated blocks from persisting on the dashboard.
+
+### Added
+- Expanded test coverage for stale active-work fallback and timeline-aware workstream rendering.
+
 ## v1.0.0 - 2026-02-17
 
 ### Added

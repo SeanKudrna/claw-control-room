@@ -31,7 +31,7 @@ Vite outputs static artifacts to `docs/`.
 This runs:
 - Python compile checks
 - Python tests (`scripts/tests/test_status_builder.py`, `scripts/tests/test_extract_release_notes.py`)
-- status payload build sanity check
+- status payload build sanity check (includes timeline-aware stale fallback coverage)
 - TypeScript typecheck
 - Vite production build
 

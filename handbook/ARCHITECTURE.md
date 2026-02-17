@@ -13,6 +13,7 @@ Claw Control Room provides a readable, near-real-time view of Claw's operations:
 ### 1) Data generation + publish (Python)
 - `scripts/build_status_json.py` is the CLI entrypoint for local snapshot generation.
 - Core payload assembly lives in `scripts/lib/status_builder.py`.
+- Payload builder applies timeline-aware stale-guard logic so `currentFocus` and `workstream.now` stay accurate even when `TODAY_STATUS.md` lags behind clock time.
 - `scripts/publish_status_gist.py` pushes fresh payloads to a GitHub Gist.
 - `scripts/publish_status.sh` is the operational wrapper used by cron.
 

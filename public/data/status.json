@@ -1,9 +1,9 @@
 {
-  "generatedAt": "2026-02-17T21:20:13.081451+00:00",
-  "generatedAtLocal": "2026-02-17 15:20 ",
-  "controlRoomVersion": "1.0.0",
-  "currentFocus": "",
-  "activeWork": "14:15-14:30 \u2014 PM block setup + dashboard/queue reconciliation before execution window",
+  "generatedAt": "2026-02-17T21:24:34.916633+00:00",
+  "generatedAtLocal": "2026-02-17 15:24 ",
+  "controlRoomVersion": "1.0.1",
+  "currentFocus": "Reliability deep-work block B (scheduled cron)",
+  "activeWork": "15:10-16:05 \u2014 Reliability deep-work block B (scheduled cron)",
   "reliability": {
     "status": "green"
   },
@@ -39,18 +39,13 @@
   ],
   "nextJobs": [
     {
-      "name": "Reliability watchdog hourly (self-heal + conditional alert)",
-      "nextRun": "15:20",
-      "lastStatus": "ok"
-    },
-    {
       "name": "Control room status publish (gist backend)",
-      "nextRun": "15:20",
+      "nextRun": "15:25",
       "lastStatus": "ok"
     },
     {
       "name": "Critical update failover guard",
-      "nextRun": "15:22",
+      "nextRun": "15:37",
       "lastStatus": "ok"
     },
     {
@@ -62,6 +57,11 @@
       "name": "Surprise value lane (daily)",
       "nextRun": "16:10",
       "lastStatus": null
+    },
+    {
+      "name": "Reliability watchdog hourly (self-heal + conditional alert)",
+      "nextRun": "16:20",
+      "lastStatus": "ok"
     },
     {
       "name": "Pre-5pm reliability checkpoint (DAILY_PLAN-driven)",
@@ -80,21 +80,23 @@
     }
   ],
   "findings": [
-    "typed status fetch layer + polling hook",
-    "upgraded UI cards/timeline/jobs/findings layout",
-    "Added npm toolchain and dependencies for maintainable UI expansion and easier future agent collaboration.",
-    "Updated quality gates to include Python checks + TypeScript typecheck + Vite production build.",
-    "Updated docs/contracts/changelog to reflect new architecture and workflow (`handbook/*`, `AGENTS.md`, `README.md`, `CHANGELOG.md`).",
-    "GitHub Pages updated to serve built app from `main:/docs`; deployment verified built successfully."
+    "bumps version, runs quality gate, commits/pushes, creates `vX.Y.Z` tag, and creates GitHub release from changelog notes.",
+    "Added release-notes extraction utility + tests (`scripts/extract_release_notes.py`, `scripts/tests/test_extract_release_notes.py`).",
+    "Released and published `v1.0.0`:",
+    "Tag: `v1.0.0`",
+    "Release: https://github.com/SeanKudrna/claw-control-room/releases/tag/v1.0.0",
+    "Updated gist status payload after release so runtime dashboard data includes `controlRoomVersion: 1.0.0`."
   ],
   "workstream": {
     "now": [
-      "14:15-14:30 \u2014 PM block setup + dashboard/queue reconciliation before execution window"
+      "15:10-16:05 \u2014 Reliability deep-work block B (scheduled cron)"
     ],
     "next": [
+      "16:50-16:58 \u2014 Pre-5pm reliability checkpoint (scheduled cron)",
+      "17:00-17:12 \u2014 Usage report + MVP user update window",
+      "17:12-18:30 \u2014 Post-run stabilization + next-action prep",
       "14:30-15:15 \u2014 Autonomy execution block (PM): ship one concrete reliability/capability improvement from queue",
-      "17:00-17:10 \u2014 Usage report cron run + delivery confirmation",
-      "17:10-17:25 \u2014 Post-run verification/self-heal if needed; update evidence for end-of-day status"
+      "17:00-17:10 \u2014 Usage report cron run + delivery confirmation"
     ],
     "done": [
       "13:10 capability build completed: `scripts/build_daily_priority_checklist.py` + `scripts/test_daily_priority_checklist.py`",
@@ -134,22 +136,10 @@
         "job": "Today dashboard refresh (every 3h)"
       },
       {
-        "label": "14:20",
-        "status": "ok",
-        "score": 1.0,
-        "job": "Reliability watchdog hourly (self-heal + conditional alert)"
-      },
-      {
         "label": "15:00",
         "status": "ok",
         "score": 1.0,
         "job": "Downtime gap auto-fill guard (quiet unless triggered)"
-      },
-      {
-        "label": "15:07",
-        "status": "ok",
-        "score": 1.0,
-        "job": "Critical update failover guard"
       },
       {
         "label": "15:10",
@@ -158,10 +148,22 @@
         "job": "Reliability deep-work block B (DAILY_PLAN-driven)"
       },
       {
-        "label": "15:15",
+        "label": "15:20",
+        "status": "ok",
+        "score": 1.0,
+        "job": "Reliability watchdog hourly (self-heal + conditional alert)"
+      },
+      {
+        "label": "15:20",
         "status": "ok",
         "score": 1.0,
         "job": "Control room status publish (gist backend)"
+      },
+      {
+        "label": "15:22",
+        "status": "ok",
+        "score": 1.0,
+        "job": "Critical update failover guard"
       }
     ],
     "reliabilityTrend": [
@@ -239,56 +241,6 @@
   },
   "activity": [
     {
-      "time": "n/a",
-      "category": "ui",
-      "text": "Added capability pipeline doc to standardize build->test->proof->document->operationalize flow."
-    },
-    {
-      "time": "13:42",
-      "category": "reliability",
-      "text": "Added/activated immediate workflow hardening layer: `TODAY_STATUS.md` refresh cadence + `Critical update failover guard` checks + dedupe ledger `status/failover-sent.json`."
-    },
-    {
-      "time": "13:42",
-      "category": "ui",
-      "text": "Dashboard contract now standardized to: running now, next 3 meaningful blocks, last proof, blockers, next action."
-    },
-    {
-      "time": "13:42",
-      "category": "reliability",
-      "text": "Immediate failover audit caught historical 7:00 usage-report failure root cause (disallowed model on that run); retry path is now stabilized on `gpt-5.3-codex` with noon success and next critical retry at 17:00."
-    },
-    {
-      "time": "n/a",
-      "category": "ui",
-      "text": "Sean explicitly wants high-quality, modular, well-commented, well-documented dashboard code using industry best practices."
-    },
-    {
-      "time": "n/a",
-      "category": "ui",
-      "text": "Documentation must be updated whenever code changes."
-    },
-    {
-      "time": "n/a",
-      "category": "ui",
-      "text": "Prioritize strong AGENTS.md engineering contract and maintainable repo structure as the dashboard grows."
-    },
-    {
-      "time": "14:55",
-      "category": "ui",
-      "text": "Implemented gist-backed status publishing so routine dashboard refreshes do not require repo commits."
-    },
-    {
-      "time": "14:55",
-      "category": "ops",
-      "text": "Added `scripts/publish_status_gist.py` and `scripts/publish_status.sh`."
-    },
-    {
-      "time": "14:55",
-      "category": "ui",
-      "text": "Dashboard now resolves runtime source from `data/source.json` (gist URL) with fallback to local status JSON."
-    },
-    {
       "time": "14:55",
       "category": "ops",
       "text": "Operational split is now explicit:"
@@ -357,6 +309,56 @@
       "time": "15:10",
       "category": "ui",
       "text": "GitHub Pages updated to serve built app from `main:/docs`; deployment verified built successfully."
+    },
+    {
+      "time": "15:22",
+      "category": "ui",
+      "text": "Added requested UI enhancements: now/next/done swimlanes, trend mini charts, and filterable activity feed."
+    },
+    {
+      "time": "15:22",
+      "category": "ui",
+      "text": "Added visible in-app version badge (header now shows current semver, currently v1.0.0)."
+    },
+    {
+      "time": "15:22",
+      "category": "ui",
+      "text": "Implemented semver release workflow as required:"
+    },
+    {
+      "time": "15:22",
+      "category": "ui",
+      "text": "`scripts/update_and_push.sh --version X.Y.Z --message ...`"
+    },
+    {
+      "time": "15:22",
+      "category": "ui",
+      "text": "bumps version, runs quality gate, commits/pushes, creates `vX.Y.Z` tag, and creates GitHub release from changelog notes."
+    },
+    {
+      "time": "15:22",
+      "category": "ui",
+      "text": "Added release-notes extraction utility + tests (`scripts/extract_release_notes.py`, `scripts/tests/test_extract_release_notes.py`)."
+    },
+    {
+      "time": "15:22",
+      "category": "ui",
+      "text": "Released and published `v1.0.0`:"
+    },
+    {
+      "time": "15:22",
+      "category": "ui",
+      "text": "Tag: `v1.0.0`"
+    },
+    {
+      "time": "15:22",
+      "category": "ui",
+      "text": "Release: https://github.com/SeanKudrna/claw-control-room/releases/tag/v1.0.0"
+    },
+    {
+      "time": "15:22",
+      "category": "ui",
+      "text": "Updated gist status payload after release so runtime dashboard data includes `controlRoomVersion: 1.0.0`."
     }
   ]
 }

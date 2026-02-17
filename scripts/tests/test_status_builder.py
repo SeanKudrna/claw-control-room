@@ -22,6 +22,7 @@ from scripts.lib.status_builder import (
     parse_today_status,
     parse_workstream,
     recent_activity,
+    resolve_active_work,
 )
 
 
@@ -56,10 +57,24 @@ class StatusBuilderTests(unittest.TestCase):
 - Completed one
 - Proof: command passed
 """
-        stream = parse_workstream(md, timeline=[], active_work="active now")
-        self.assertEqual(stream["now"][0], "active now")
+        now_local = dt.datetime.now().replace(hour=15, minute=30)
+        timeline = [{"time": "15:10-16:05", "task": "Reliability deep-work block B"}]
+
+        stream = parse_workstream(md, timeline=timeline, active_work="", now_local=now_local)
+        self.assertIn("15:10-16:05", stream["now"][0])
         self.assertIn("Block A", stream["next"][0])
         self.assertIn("Completed one", stream["done"][0])
+
+    def test_resolve_active_work_stale_fallback(self) -> None:
+        now_local = dt.datetime.now().replace(hour=15, minute=30)
+        timeline = [{"time": "15:10-16:05", "task": "Reliability deep-work block B"}]
+
+        resolved = resolve_active_work(
+            raw_active_work="14:15-14:30 — stale block",
+            timeline=timeline,
+            now_local=now_local,
+        )
+        self.assertIn("15:10-16:05", resolved)
 
     def test_recent_activity(self) -> None:
         md = """
@@ -76,13 +91,17 @@ class StatusBuilderTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as td:
             workspace = Path(td)
             (workspace / "memory").mkdir(parents=True, exist_ok=True)
+
+            now_local = dt.datetime.now()
+            start = (now_local - dt.timedelta(minutes=5)).strftime("%H:%M")
+            end = (now_local + dt.timedelta(minutes=25)).strftime("%H:%M")
+
             (workspace / "DAILY_PLAN.md").write_text(
-                "### 10:00-10:30 — Sample block\n", encoding="utf-8"
+                f"### {start}-{end} — Live sample block\n", encoding="utf-8"
             )
             (workspace / "TODAY_STATUS.md").write_text(
                 """
-- Primary focus: sample
-- Running now: test block
+- Running now: 01:00-01:10 — stale block
 
 ## Next 3 meaningful blocks
 - Next block
@@ -127,6 +146,8 @@ class StatusBuilderTests(unittest.TestCase):
             self.assertIn("workstream", payload)
             self.assertIn("charts", payload)
             self.assertIn("activity", payload)
+            self.assertIn("Live sample block", payload["currentFocus"])
+            self.assertIn("Live sample block", payload["workstream"]["now"][0])
 
 
 if __name__ == "__main__":

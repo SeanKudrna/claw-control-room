@@ -1,7 +1,7 @@
 # Claw Control Room
 
 A React + TypeScript dashboard (GitHub Pages) that gives a clear window into Claw's day:
-- current focus and active work
+- current focus and active work (with timeline-aware stale fallback)
 - now/next/done swimlanes
 - timeline of planned tasks
 - upcoming scheduled jobs
