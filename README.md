@@ -29,11 +29,12 @@ A React + TypeScript dashboard (GitHub Pages) that gives a clear window into Cla
 - job + reliability trend mini charts
 - filterable activity feed with default condensed view (latest 12) + expand/collapse
 - recent findings/wins
-- Skills tab renders as a full-width radial/branching game-style tree with one node per skill domain (no tier-per-card clutter), with dependency connectors behind nodes and outward hierarchy rings.
-- Each domain node now shows concise tier progression (`Tier X/5`) while retaining clear unlocked / in-progress / planned / locked visual states.
-- Skills tree uses a custom deterministic SVG+DOM layout (instead of a graph library) for faster load, easier visual control, and stricter readability guarantees (no node overlap/title clipping).
-- Skills node inspection is modal-based (click/tap to open details, escape/backdrop/close button to dismiss) and now includes a visual 5-tier ladder (definitions, differences, current highlight, complete tiers, and next unlock) while preserving full-width tree canvas.
-- Overflow skill maps support drag-pan (mouse + touch via pointer events) to preserve exploration/readability on desktop and mobile.
+- Skills tab now behaves as a full-tab pannable map surface (desktop + mobile), rather than a small inner viewport.
+- Skills placement follows a deterministic dependency-aware hub/branch sector model with fixed depth rings and stable ordering (`tier` → `name` → `id`) to prevent refresh jitter.
+- Skills map still renders one node per skill domain (no tier-per-card clutter) with connectors behind nodes and readability safeguards (no node overlap/title clipping/node clipping).
+- Each domain node shows concise progression (`Tier X/5`) while retaining clear unlocked / in-progress / planned / locked visual states.
+- Skills node inspection remains modal-based (click/tap to open details; escape/backdrop/close to dismiss) and includes the visual 5-tier ladder (definitions, differences, current highlight, complete tiers, and next unlock).
+- Overflow skill maps support drag-pan (mouse + touch via pointer events) with regression checks for desktop drag-pan + mobile touch-pan.
 
 ## Standards
 

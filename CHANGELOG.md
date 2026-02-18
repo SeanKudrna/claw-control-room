@@ -1,5 +1,22 @@
 # Changelog
 
+## v1.4.35 - 2026-02-18
+
+### Added
+- Added deterministic structured skills layout metadata (`depth`, `rootId`, `branchId`) to each rendered node for QA/regression observability.
+- Added issue #48 visual QA capture script (`scripts/tests/capture_issue48_screenshots.mjs`) and proof artifacts under `status/ui-validation/issue48-*.png`.
+
+### Changed
+- Reworked Skills tab into a full-tab pannable map surface so the map itself is the primary interaction area on desktop and mobile.
+- Replaced ad-hoc radial spread logic with an intentional dependency-aware hub/branch sector engine in `src/lib/skillTreeLayout.ts` (fixed depth rings, stable ordering, deterministic placement, and bounded angle separation).
+- Preserved modal click/tap details workflow while improving connector curvature and full-surface drag-pan behavior.
+
+### Tests
+- Expanded `scripts/tests/test_ui_regressions.mjs` with full-tab surface assertions, deterministic position-signature checks across refresh, node clipping guards, and explicit mobile touch-pan regression coverage.
+
+### Docs
+- Updated README + handbook architecture/development docs to document the structured layout model and full-tab skills-surface contract.
+
 ## v1.4.34 - 2026-02-18
 
 ### Added

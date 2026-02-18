@@ -82,6 +82,10 @@ body::after {
   gap: 14px;
 }
 
+.app-shell.skills-tab-active {
+  max-width: none;
+}
+
 h1,
 h2,
 h3 {
@@ -423,6 +427,10 @@ summary {
 .dashboard-grid {
   display: grid;
   gap: 16px;
+}
+
+.dashboard-grid.dashboard-grid-skills {
+  min-height: clamp(560px, calc(100dvh - 250px), 980px);
 }
 
 .section-header {
@@ -1012,9 +1020,20 @@ th {
   gap: 8px;
 }
 
-.skills-tree-stage {
+.skills-card {
   display: grid;
-  gap: 12px;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  gap: 10px;
+  min-height: clamp(560px, calc(100dvh - 250px), 980px);
+}
+
+.skills-surface-header {
+  display: grid;
+  gap: 8px;
+}
+
+.skills-surface-title-row {
+  margin-bottom: 0;
 }
 
 .skills-legend {
@@ -1061,17 +1080,18 @@ th {
 
 .skills-tree-map {
   position: relative;
-  border: 1px solid rgba(255, 255, 255, 0.11);
-  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 18px;
   background:
     radial-gradient(circle at 50% 50%, rgba(255, 77, 77, 0.11), transparent 34%),
     radial-gradient(circle at 20% 10%, rgba(120, 144, 255, 0.12), transparent 34%),
     radial-gradient(circle at 84% 14%, rgba(251, 191, 36, 0.1), transparent 30%),
     rgba(10, 15, 29, 0.98);
-  padding: 14px;
+  padding: 16px;
   isolation: isolate;
   overflow: auto;
-  min-height: min(70vh, 760px);
+  min-height: 0;
+  height: 100%;
   touch-action: none;
   cursor: default;
 }
@@ -1086,6 +1106,8 @@ th {
 
 .skills-tree-canvas {
   position: relative;
+  min-width: 100%;
+  min-height: 100%;
 }
 
 .skills-tree-lines {
@@ -1123,7 +1145,7 @@ th {
 .skill-node {
   position: absolute;
   z-index: 1;
-  width: 120px;
+  width: 132px;
   transform: translate(-50%, -50%);
   border: 1px solid rgba(166, 176, 210, 0.24);
   border-radius: 14px;
@@ -1132,7 +1154,7 @@ th {
   text-align: left;
   padding: 8px;
   cursor: pointer;
-  min-height: 104px;
+  min-height: 108px;
   display: grid;
   align-content: start;
   gap: 7px;
@@ -1614,14 +1636,13 @@ th {
     grid-template-columns: 1fr;
   }
 
-  .skills-tree-map {
-    min-height: min(64vh, 560px);
-    padding: 10px;
+  .dashboard-grid.dashboard-grid-skills,
+  .skills-card {
+    min-height: clamp(500px, calc(100dvh - 228px), 860px);
   }
 
-  .skills-mobile-list {
-    display: grid;
-    gap: 8px;
+  .skills-tree-map {
+    padding: 10px;
   }
 
   .skill-tier-step {

@@ -173,7 +173,7 @@ export default function App() {
             : 'Status refresh failed.';
 
   return (
-    <div className="app-shell">
+    <div className={`app-shell ${activeTab === 'skills' ? 'skills-tab-active' : ''}`}>
       <Header
         version={data?.controlRoomVersion ?? '0.0.0'}
         lastUpdatedLabel={lastUpdatedLabel}
@@ -206,7 +206,7 @@ export default function App() {
 
       {!data && loading && <div className="card">Loading status…</div>}
 
-      {data && <main className="dashboard-grid">{content}</main>}
+      {data && <main className={`dashboard-grid ${activeTab === 'skills' ? 'dashboard-grid-skills' : ''}`}>{content}</main>}
     </div>
   );
 }
