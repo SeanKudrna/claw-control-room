@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-02-18T16:28:22.795889+00:00",
-  "generatedAtLocal": "2026-02-18 10:28 ",
-  "controlRoomVersion": "1.4.32",
-  "currentFocus": "Publish proof + status sync",
+  "generatedAt": "2026-02-18T16:50:02.128680+00:00",
+  "generatedAtLocal": "2026-02-18 10:50 ",
+  "controlRoomVersion": "1.4.33",
+  "currentFocus": "downtime-guard monitoring/continuity mode.",
   "activeWork": "downtime-guard monitoring/continuity mode.",
   "reliability": {
     "status": "green"
@@ -44,12 +44,12 @@
   "nextJobs": [
     {
       "name": "Control room status publish (gist backend)",
-      "nextRun": "10:29",
+      "nextRun": "10:50",
       "lastStatus": "ok"
     },
     {
       "name": "Critical update failover guard",
-      "nextRun": "10:37",
+      "nextRun": "10:52",
       "lastStatus": "ok"
     },
     {
@@ -84,30 +84,30 @@
     }
   ],
   "findings": [
-    "Infinite Sprint directive: during background/heartbeat cycles, run continuous no-idle compounding improvements (scan for highest-leverage opportunities and execute autonomously overnight/daylong).",
-    "Overnight control-room sprint block 6 closeout completed (05:15 CST): full quality gate pass on v1.4.17, issue snapshot refreshed to 0 open, status gist republished, and complete handoff summary finalized in `status/overnight-control-room-log.md` (no additional patch required).",
-    "ClawPrime daily memory evolution pass completed (06:10 CST): distilled 3 durable patterns into `ClawPrime_Memory.md` (layered runtime-truth guardrails, explicit degraded/source semantics, issue-first gate-verified release loop), pruned redundancy, and tightened the default friction-fix sequence.",
-    "Workflow improvement auto-applied: added executable helper `scripts/clawprime_memory_evolution_helper.py` to auto-pull high-signal outcomes from recent memory + overnight log for faster daily memory evolution cycles.",
-    "Level-up directive from Sean: screenshot-based local visual verification is now a global default skill for UI work across all projects (not just control-room) before declaring completion.",
-    "Reinforced ClawPrime expectation: proactively conceive and build fun, out-of-the-box, high-visibility/high-utility features without waiting to be asked."
+    "Skills tab direction is now clear: it should feel like a genuine video-game skill tree (radial/branching node graph), not card rows with cosmetic connector lines.",
+    "Usability requirements for Skills view:",
+    "Tree should use full available width (avoid cramped half-width layout).",
+    "Skill details should open in a popup/modal instead of permanently consuming side-panel space.",
+    "If overflow/large map requires navigation, support click-and-drag panning.",
+    "QA lesson reinforced: screenshot-based visual verification must include real readability/hierarchy checks (line overlap, clipping, layering, navigation ergonomics), not just screenshot capture."
   ],
   "workstream": {
     "now": [
-      "Implement issue #45 in /Users/seankudrna/.openclaw/workspace/claw-control-room. Issue: https://github.com/SeanKudrna/claw-control-room/issues/45 Design direction: - Rework Skills t\u2026"
+      "Implement issue #46 end-to-end in /Users/seankudrna/.openclaw/workspace/claw-control-room. Issue: https://github.com/SeanKudrna/claw-control-room/issues/46 User-required outcomes: \u2026"
     ],
     "next": [
-      "10:20-10:45 \u2014 Publish proof + status sync",
-      "10:29 \u2014 Scheduled job: Control room status publish (gist backend)",
-      "10:37 \u2014 Scheduled job: Critical update failover guard",
+      "10:52 \u2014 Scheduled job: Critical update failover guard",
       "11:00 \u2014 Scheduled job: Downtime gap auto-fill guard (quiet unless triggered)",
-      "11:10 \u2014 Scheduled job: Reliability deep-work block A (DAILY_PLAN-driven)"
+      "11:10 \u2014 Scheduled job: Reliability deep-work block A (DAILY_PLAN-driven)",
+      "11:15 \u2014 Scheduled job: Today dashboard refresh (every 3h)",
+      "11:20 \u2014 Scheduled job: Reliability watchdog hourly (self-heal + conditional alert)"
     ],
     "done": [
-      "10:20 \u2014 Control-room product lane block (mandatory)",
-      "Autonomy daily planner (DAILY_PLAN source of truth)",
-      "Implement issue #42 end-to-end in /Users/seankudrna/.openclaw/workspace/claw-control-room. Issue: https://github.com/SeanKudrna/claw-control-room/issues/42 Feature goals: - Add new\u2026",
+      "09:10 \u2014 Control-room issue triage block (mandatory)",
+      "Critical update failover guard",
       "Finalize and ship issue #42 from current working tree in /Users/seankudrna/.openclaw/workspace/claw-control-room. Current state has local uncommitted implementation for skills tab/\u2026",
-      "Resume and finish the in-progress worktree changes for claw-control-room issue set #30 #31 #32. Repo: /Users/seankudrna/.openclaw/workspace/claw-control-room Current state: local w\u2026"
+      "Resume and finish the in-progress worktree changes for claw-control-room issue set #30 #31 #32. Repo: /Users/seankudrna/.openclaw/workspace/claw-control-room Current state: local w\u2026",
+      "Fix issue #40 in /Users/seankudrna/.openclaw/workspace/claw-control-room. Issue: https://github.com/SeanKudrna/claw-control-room/issues/40 Bug: in-progress timeline blocks are tran\u2026"
     ]
   },
   "charts": {
@@ -185,13 +185,13 @@
         "job": "Reliability watchdog hourly (self-heal + conditional alert)"
       },
       {
-        "label": "10:22",
+        "label": "10:37",
         "status": "ok",
         "score": 1.0,
         "job": "Critical update failover guard"
       },
       {
-        "label": "10:28",
+        "label": "10:49",
         "status": "ok",
         "score": 1.0,
         "job": "Control room status publish (gist backend)"
@@ -271,41 +271,6 @@
     ]
   },
   "activity": [
-    {
-      "time": "n/a",
-      "category": "ops",
-      "text": "Shipped claw-control-room `v1.4.6` for mobile visual bug: stabilized background gradient during collapse/expand and removed short-page squared footer band."
-    },
-    {
-      "time": "n/a",
-      "category": "ops",
-      "text": "Communication preference update from Sean: when a specifically requested task is kicked off as a background job, send immediate kickoff confirmation first, then completion update later."
-    },
-    {
-      "time": "n/a",
-      "category": "ops",
-      "text": "Runtime preference clarification from Sean: runtime should include real work done directly in main session (e.g., coding/tool execution), while plain chat-only turns should not count as running."
-    },
-    {
-      "time": "n/a",
-      "category": "ops",
-      "text": "Shipped claw-control-room `v1.4.10` runtime fix: prevent false `IDLE` during in-flight main-session work by including assistant `toolCall` signals + session lock awareness (chat-only still excluded)."
-    },
-    {
-      "time": "n/a",
-      "category": "ops",
-      "text": "Follow-up shipped `v1.4.11` to clear lingering false `RUNNING` rows: pending tool-call id tracking + lock extension only for unresolved in-flight calls."
-    },
-    {
-      "time": "n/a",
-      "category": "release",
-      "text": "Root-cause fix shipped `v1.4.12`: static fallback status snapshots are now runtime-sanitized (`idle`) so release-time active work cannot be baked into `public/docs data/status.json` and replayed as stale RUNNING rows when fallback/cached snapshot is used."
-    },
-    {
-      "time": "n/a",
-      "category": "ops",
-      "text": "Shipped `v1.4.18` (issue #27): clarified stale-carryover refresh success messaging (\"fetched but still stale\") and moved runtime details modal to body portal so sticky header can\u2019t overlap popup content."
-    },
     {
       "time": "n/a",
       "category": "ui",
@@ -390,6 +355,41 @@
       "time": "n/a",
       "category": "ui",
       "text": "Reinforced ClawPrime expectation: proactively conceive and build fun, out-of-the-box, high-visibility/high-utility features without waiting to be asked."
+    },
+    {
+      "time": "n/a",
+      "category": "ops",
+      "text": "Sean explicitly reinforced that ClawPrime should proactively invent and ship fun, out-of-the-box, high-utility, high-visibility features without waiting to be asked."
+    },
+    {
+      "time": "n/a",
+      "category": "ui",
+      "text": "Skills tab direction is now clear: it should feel like a genuine video-game skill tree (radial/branching node graph), not card rows with cosmetic connector lines."
+    },
+    {
+      "time": "n/a",
+      "category": "ui",
+      "text": "Usability requirements for Skills view:"
+    },
+    {
+      "time": "n/a",
+      "category": "ops",
+      "text": "Tree should use full available width (avoid cramped half-width layout)."
+    },
+    {
+      "time": "n/a",
+      "category": "ops",
+      "text": "Skill details should open in a popup/modal instead of permanently consuming side-panel space."
+    },
+    {
+      "time": "n/a",
+      "category": "ui",
+      "text": "If overflow/large map requires navigation, support click-and-drag panning."
+    },
+    {
+      "time": "n/a",
+      "category": "ops",
+      "text": "QA lesson reinforced: screenshot-based visual verification must include real readability/hierarchy checks (line overlap, clipping, layering, navigation ergonomics), not just screenshot capture."
     }
   ],
   "skills": {
@@ -490,7 +490,7 @@
         "/Users/seankudrna/.openclaw/workspace/ClawPrime_Memory.md"
       ],
       "deterministicSeed": "7b37e8fb9c86",
-      "lastProcessedAt": "2026-02-18T10:28:22.737188",
+      "lastProcessedAt": "2026-02-18T10:50:02.068325",
       "mode": "keyword-scan-v1"
     }
   },
@@ -499,7 +499,7 @@
     "isIdle": true,
     "activeCount": 0,
     "activeRuns": [],
-    "checkedAtMs": 1771432102737,
+    "checkedAtMs": 1771433402068,
     "source": "cron-run reconciliation + subagent registry [static fallback runtime sanitized]"
   }
 }

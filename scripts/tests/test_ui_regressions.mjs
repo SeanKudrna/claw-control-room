@@ -29,8 +29,38 @@ try {
   const skillNodeCount = await page.$$eval('.skills-card .skill-node', (nodes) => nodes.length);
   assert(skillNodeCount > 0, 'Skills tab should render at least one skill node.');
 
-  const skillDetailTitle = await page.$eval('.skill-detail h3', (node) => node.textContent?.trim() ?? '');
-  assert(skillDetailTitle.length > 0, 'Skills detail panel should render selected skill title.');
+  const initialScroll = await page.$eval('.skills-tree-map', (node) => ({ left: node.scrollLeft, top: node.scrollTop }));
+  await page.hover('.skills-tree-map');
+  await page.mouse.down();
+  await page.mouse.move(500, 220);
+  await page.mouse.up();
+  const pannedScroll = await page.$eval('.skills-tree-map', (node) => ({ left: node.scrollLeft, top: node.scrollTop }));
+  assert(
+    pannedScroll.left !== initialScroll.left || pannedScroll.top !== initialScroll.top,
+    `Skill map should pan on drag. Initial=${JSON.stringify(initialScroll)} next=${JSON.stringify(pannedScroll)}`,
+  );
+
+  const firstNode = page.locator('.skills-card .skill-node').first();
+  const firstNodeTitle = (await firstNode.locator('.skill-node-title').textContent())?.trim() ?? '';
+  await firstNode.click();
+
+  await page.waitForSelector('.skill-modal');
+  const modalTitle = (await page.textContent('.skill-modal h3'))?.trim() ?? '';
+  assert(modalTitle.length > 0, 'Skill modal should render selected skill title.');
+  assert.equal(modalTitle, firstNodeTitle, 'Skill modal title should match clicked node title.');
+
+  const modalFieldLabels = await page.$$eval('.skill-detail-grid dt', (nodes) => nodes.map((node) => node.textContent?.trim() ?? ''));
+  for (const expectedLabel of ['State', 'Learned', 'Level / Progress', 'Dependencies']) {
+    assert(modalFieldLabels.includes(expectedLabel), `Skill modal missing field: ${expectedLabel}`);
+  }
+
+  await page.keyboard.press('Escape');
+  await page.waitForSelector('.skill-modal', { state: 'detached' });
+
+  await firstNode.click();
+  await page.waitForSelector('.skill-modal');
+  await page.click('.skill-modal-close');
+  await page.waitForSelector('.skill-modal', { state: 'detached' });
 
   const skillReadability = await page.$$eval('.skills-card .skill-node', (nodes) => {
     const overlaps = [];
@@ -83,21 +113,17 @@ try {
       return value.total / Math.max(1, value.count);
     });
 
-    const firstNode = nodes[0];
-    const title = firstNode?.querySelector('.skill-node-title');
-    const detailPanel = document.querySelector('.skill-detail');
+    const firstNodeElement = nodes[0];
+    const title = firstNodeElement?.querySelector('.skill-node-title');
     const lineLayer = document.querySelector('.skills-tree-lines');
     const nodesLayer = document.querySelector('.skills-tree-nodes');
     const titleStyles = title ? window.getComputedStyle(title) : null;
-    const detailStyles = detailPanel ? window.getComputedStyle(detailPanel) : null;
 
     return {
       overlaps,
       titleOverflows,
       titleFontSizePx: titleStyles ? Number.parseFloat(titleStyles.fontSize) : 0,
       titleFontWeight: titleStyles?.fontWeight ?? '0',
-      detailPaddingTop: detailStyles ? Number.parseFloat(detailStyles.paddingTop) : 0,
-      detailGap: detailStyles ? Number.parseFloat(detailStyles.gap) : 0,
       lineZ: lineLayer ? window.getComputedStyle(lineLayer).zIndex : null,
       nodesZ: nodesLayer ? window.getComputedStyle(nodesLayer).zIndex : null,
       tierRadiusTrend,
@@ -109,8 +135,6 @@ try {
   assert.equal(skillReadability.titleOverflows.length, 0, `Skill node titles should not overflow container. Offenders: ${skillReadability.titleOverflows.join(', ')}`);
   assert(skillReadability.titleFontSizePx >= 15, `Skill title font size should be >= 15px; got ${skillReadability.titleFontSizePx}`);
   assert(Number.parseInt(skillReadability.titleFontWeight, 10) >= 700, `Skill title font weight should be bold; got ${skillReadability.titleFontWeight}`);
-  assert(skillReadability.detailPaddingTop >= 14, `Skill detail panel should have readable padding; got ${skillReadability.detailPaddingTop}`);
-  assert(skillReadability.detailGap >= 10, `Skill detail panel should have readable spacing gap; got ${skillReadability.detailGap}`);
   assert(skillReadability.edgeCount > 0, 'Skill tree should render dependency connectors.');
   assert(Number.parseInt(skillReadability.nodesZ ?? '0', 10) > Number.parseInt(skillReadability.lineZ ?? '0', 10), 'Skill nodes should render above connector lines.');
   const firstRadius = skillReadability.tierRadiusTrend[0] ?? 0;

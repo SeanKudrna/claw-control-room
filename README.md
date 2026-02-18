@@ -29,9 +29,10 @@ A React + TypeScript dashboard (GitHub Pages) that gives a clear window into Cla
 - job + reliability trend mini charts
 - filterable activity feed with default condensed view (latest 12) + expand/collapse
 - recent findings/wins
-- Skills tab now renders as a radial/branching game-style skill tree: dependency connectors stay behind nodes, hierarchy expands outward by tier, and node visuals clearly separate unlocked / in-progress / planned / locked states.
+- Skills tab now renders as a full-width radial/branching game-style tree: dependency connectors stay behind nodes, hierarchy expands outward by tier, and node visuals clearly separate unlocked / in-progress / planned / locked states.
 - Skills tree uses a custom deterministic SVG+DOM layout (instead of a graph library) for faster load, easier visual control, and stricter readability guarantees (no node overlap/title clipping).
-- mobile-friendly Skills fallback list preserves progression/state visibility and tap-to-inspect behavior when dense tree rendering is hidden.
+- Skills node inspection is now modal-based (click/tap to open details, escape/backdrop/close button to dismiss) so the tree retains full canvas width.
+- Overflow skill maps support drag-pan (mouse + touch via pointer events) to preserve exploration/readability on desktop and mobile.
 
 ## Standards
 

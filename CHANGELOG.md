@@ -1,5 +1,20 @@
 # Changelog
 
+## v1.4.33 - 2026-02-18
+
+### Added
+- Added modal-based skill details interaction with full metadata fields (state, learned date, level/progress, dependencies, description/effect) and close affordances (escape key, backdrop click, explicit close button).
+- Added pointer drag-pan support for overflowed skills map (mouse + touch) so full radial trees remain explorable without shrinking node readability.
+- Added issue #46 visual QA capture script (`scripts/tests/capture_issue46_screenshots.mjs`) and proof artifacts under `status/ui-validation/issue46-*.png`.
+
+### Changed
+- Removed persistent Skills side detail panel and restored full-width skill-tree canvas by default.
+- Preserved radial branch visuals/readability contracts from v1.4.32 while shifting node inspection to modal workflow.
+- Updated Playwright UI regression checks to validate modal open/close behavior and map drag-pan interaction contracts.
+
+### Docs
+- Updated README + handbook architecture/development docs for full-width map layout, modal detail contract, and drag-pan behavior.
+
 ## v1.4.32 - 2026-02-18
 
 ### Added

@@ -37,7 +37,8 @@ Claw Control Room provides a readable, near-real-time view of Claw's operations:
 - Information architecture uses tabbed views (`Overview`, `Operations`, `Insights`, `Skills`) plus collapsible sections to reduce visual overload.
 - Skills tab renders a deterministic radial/branching map using a custom SVG+DOM layout engine (`src/lib/skillTreeLayout.ts`) instead of a React graph runtime, prioritizing visual quality, dependency-line control, and lightweight bundle impact.
 - Dependency connectors are painted in an SVG layer beneath interactive node cards to avoid line/text collisions; node placement expands outward by tier ring to preserve hierarchy readability.
-- On narrow screens, Skills switches to a mobile fallback progression list (tap-to-select) while retaining the same detail side-panel data contract.
+- Skill details are presented in a modal dialog (not a persistent side panel), preserving full-width tree canvas while keeping detail data/metadata accessible.
+- Overflow map navigation supports pointer-driven drag-pan (mouse + touch), keeping the full radial map explorable at constrained viewport sizes.
 - Components rendered inside collapsible bodies support compact heading mode, so section titles stay in the summary row while inner content keeps accessibility labels without duplicate heading stacks.
 - Active tab is URL-hash persisted (`#tab-*`) for direct navigation/state restore.
 - Theme tokens align to OpenClaw website palette conventions (deep dark surface + coral/orange accents) for product continuity.
