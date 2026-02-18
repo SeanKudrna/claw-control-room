@@ -4,8 +4,8 @@
   "description": "Live window into Claw's day: tasks, progress, findings, and system health.",
   "start_url": "/claw-control-room/",
   "display": "standalone",
-  "background_color": "#050810",
-  "theme_color": "#050810",
+  "background_color": "#0a0f1a",
+  "theme_color": "#e63946",
   "icons": [
     {
       "src": "/claw-control-room/icons/icon-192.png",
