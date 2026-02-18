@@ -1,5 +1,11 @@
 # Changelog
 
+## v1.4.7 - 2026-02-17
+
+### Changed
+- Increased sticky tab-shell contrast with a darker translucent backdrop and stronger separation shadow.
+- Slightly boosted inactive tab text/background contrast for easier button visibility on mobile.
+
 ## v1.4.6 - 2026-02-17
 
 ### Fixed
