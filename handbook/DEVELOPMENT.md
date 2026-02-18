@@ -29,8 +29,10 @@ UI nav notes:
 - `Running now` stale-guard should expire single-time completed entries (not just explicit ranges).
 - `Next` lane should prefer future timed items; untimed carryover from status notes should only appear when no better timed source exists.
 - If timeline `next` blocks are far away, near-term scheduled jobs should be promoted into `next` lane to keep Overview aligned with Operations job schedule.
-- `Done` lane should exclude proof/evidence scaffolding bullets, auto-expire stale timestamped completions, and render newest completions first.
+- `Done` lane should exclude proof/evidence scaffolding bullets, auto-expire stale timestamped completions, render newest completions first, and display completion-time prefixes when derivable.
 - Refresh success helper text should explicitly call out stale carryover when the newest available payload is still old.
+- Refresh idle helper text should stay empty (show helper copy only for meaningful non-idle states).
+- Activity Feed category normalization should prevent `N/A` category chips/options from appearing; unknown values map to `ops`.
 - Runtime details modal should render via body portal with z-index above sticky tab/header layers.
 
 ## Build output for GitHub Pages

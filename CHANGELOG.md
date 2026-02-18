@@ -1,5 +1,16 @@
 # Changelog
 
+## v1.4.23 - 2026-02-18
+
+### Fixed
+- Done lane now prefixes completion times when derivable, so recency is visible at a glance while keeping newest-first ordering.
+- Activity Feed no longer surfaces `N/A` category noise in filter options/badges; unknown categories normalize to `OPS`.
+- Removed redundant idle helper text under Refresh (`Tap to refresh`) to reduce header clutter.
+
+### Added
+- Regression test coverage for done-lane timestamp formatting behavior.
+- Regression test coverage for activity-category normalization (`N/A` -> `ops`).
+
 ## v1.4.22 - 2026-02-18
 
 ### Fixed

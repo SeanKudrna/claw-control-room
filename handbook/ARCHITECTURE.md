@@ -19,6 +19,7 @@ Claw Control Room provides a readable, near-real-time view of Claw's operations:
 - `now` resolves to current runtime activity when present; otherwise the earliest upcoming scheduled event.
 - `next` is the ordered future remainder after `now`, with no past items.
 - `done` starts empty each day and only receives items that first appeared in `now` and later completed, rendered newest-first for scanability.
+- Done items expose leading completion-time prefixes when time is derivable, improving recency scanning in Overview.
 - Runtime detection reconciles session-store cron run keys against cron finished logs and active subagent registry runs.
 - Runtime semantics intentionally exclude main/interactive rows (cron + background/subagent only).
 - Control-room status publisher runs are intentionally excluded from runtime activity to avoid self-referential false-running states.
@@ -37,6 +38,7 @@ Claw Control Room provides a readable, near-real-time view of Claw's operations:
 - Theme tokens align to OpenClaw website palette conventions (deep dark surface + coral/orange accents) for product continuity.
 - Branding assets (favicon/home-screen icons + manifest) are served from `public/icons/` and linked in `index.html`.
 - Interaction system standardizes hover/active/focus-visible states across tabs, chips, refresh, and collapsible summaries for UX coherence.
+- Activity Feed normalizes unknown/`N/A` category values into `ops` so filter chips and badges remain clean and actionable.
 - Runtime details modal is rendered through a `document.body` portal so it always layers above sticky headers and card stacking contexts.
 - Viewport edge-fade scrims (top/bottom) are rendered as fixed non-interactive overlays to soften scroll exits without affecting input hit targets.
 - Build output: `docs/` (served by GitHub Pages).
@@ -54,6 +56,7 @@ Claw Control Room provides a readable, near-real-time view of Claw's operations:
 - Fallback behavior is fail-soft: configured source fetch attempts first, then local fallback snapshot is used when primary is unavailable/invalid.
 - Freshness age is recomputed on a timer between polls so stale data visibly ages even if payload timestamp is unchanged.
 - Refresh success copy distinguishes "updated" from "fetched but still stale" states to prevent false confidence when the newest available snapshot is still old.
+- Idle refresh helper text is intentionally blank to reduce redundant noise; helper copy appears only for meaningful states (refreshing/success/error).
 - This preserves commitless status refreshes while keeping a safe local fallback snapshot and honest degraded-state UX.
 
 ### 4) Versioning + release architecture
