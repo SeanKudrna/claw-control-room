@@ -139,6 +139,31 @@ class StatusBuilderTests(unittest.TestCase):
         )
         self.assertIn("15:10-16:05", resolved)
 
+    def test_resolve_active_work_stale_single_time_completed_item(self) -> None:
+        now_local = dt.datetime.now().replace(hour=7, minute=45)
+        timeline = [{"time": "13:20-13:45", "task": "Midday reliability + queue reconciliation"}]
+
+        resolved = resolve_active_work(
+            raw_active_work="01:00 downtime-guard reliability deep-work fallback (completed with fresh proof).",
+            timeline=timeline,
+            now_local=now_local,
+        )
+        self.assertIn("Next up:", resolved)
+        self.assertIn("13:20-13:45", resolved)
+
+    def test_parse_workstream_ignores_untimed_status_next_when_timeline_exists(self) -> None:
+        md = """
+## Next 3 meaningful blocks
+- Morning control-room overnight summary prep and handoff quality check.
+"""
+        now_local = dt.datetime.now().replace(hour=7, minute=45)
+        timeline = [{"time": "13:20-13:45", "task": "Midday reliability + queue reconciliation"}]
+
+        stream = parse_workstream(md, timeline=timeline, active_work="", now_local=now_local)
+        joined = "\n".join(stream["next"])
+        self.assertIn("13:20-13:45", joined)
+        self.assertNotIn("Morning control-room overnight summary prep", joined)
+
     def test_recent_activity(self) -> None:
         md = """
 ## 15:10 dashboard modernization

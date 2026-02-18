@@ -59,6 +59,14 @@ MAIN_SESSION_KEY = "agent:main:main"
 MAIN_SESSION_RUNTIME_MAX_AGE_MS = 2 * 60 * 1000
 MAIN_SESSION_PENDING_CALL_MAX_AGE_MS = 10 * 60 * 1000
 MAIN_SESSION_LOCK_STALE_MS = 30 * 60 * 1000
+ACTIVE_WORK_SINGLE_TIME_STALE_MINUTES = 90
+ACTIVE_WORK_COMPLETED_STALE_MINUTES = 15
+ACTIVE_WORK_COMPLETION_TOKENS = (
+    "complete",
+    "completed",
+    "done",
+    "finished",
+)
 EXCLUDED_RUNTIME_JOB_NAME_SUBSTRINGS = (
     "control room status publish",
 )
@@ -146,6 +154,13 @@ def parse_time_range(value: str) -> Optional[Tuple[int, int]]:
     if start is None or end is None:
         return None
     return start, end
+
+
+def parse_leading_time_minutes(value: str) -> Optional[int]:
+    match = HEADING_TIME_RE.match(value.strip())
+    if not match:
+        return None
+    return parse_hhmm_to_minutes(match.group(1))
 
 
 def normalize_semantic_text(value: str) -> str:
@@ -327,13 +342,35 @@ def timeline_context(timeline: List[Dict[str, str]], now_local: dt.datetime) -> 
 
 
 def is_stale_active_work(active_work: str, now_local: dt.datetime, grace_minutes: int = 10) -> bool:
-    parsed = parse_time_range(active_work)
-    if parsed is None:
+    text = active_work.strip()
+    if not text:
         return False
 
-    _, end = parsed
     now_minutes = now_local.hour * 60 + now_local.minute
-    return now_minutes > (end + grace_minutes)
+    lowered = text.lower()
+    has_completion_token = any(token in lowered for token in ACTIVE_WORK_COMPLETION_TOKENS)
+
+    parsed = parse_time_range(text)
+    if parsed is not None:
+        _, end = parsed
+        cutoff = ACTIVE_WORK_COMPLETED_STALE_MINUTES if has_completion_token else grace_minutes
+        return now_minutes > (end + cutoff)
+
+    single_time = parse_leading_time_minutes(text)
+    if single_time is not None:
+        if single_time > now_minutes:
+            # A leading future time likely represents upcoming work.
+            return False
+
+        age_minutes = now_minutes - single_time
+        cutoff = ACTIVE_WORK_COMPLETED_STALE_MINUTES if has_completion_token else ACTIVE_WORK_SINGLE_TIME_STALE_MINUTES
+        return age_minutes > cutoff
+
+    if has_completion_token:
+        # "running now" should not be a completed item with no current-time context.
+        return True
+
+    return False
 
 
 def resolve_active_work(
@@ -381,15 +418,24 @@ def resolve_current_focus(raw_focus: str, active_work: str, timeline: List[Dict[
     return "Reliability monitoring + scheduled execution"
 
 
-def is_future_or_untimed(item: str, now_local: dt.datetime) -> bool:
-    """Return True for future/no-time items, False for already-ended timed blocks."""
-    parsed = parse_time_range(item)
-    if parsed is None:
-        return True
+def has_time_hint(item: str) -> bool:
+    return parse_time_range(item) is not None or parse_leading_time_minutes(item) is not None
 
-    _, end = parsed
+
+def is_future_timed_item(item: str, now_local: dt.datetime) -> bool:
+    """Return True only for timed items that are still upcoming."""
     now_minutes = now_local.hour * 60 + now_local.minute
-    return end > now_minutes
+
+    parsed = parse_time_range(item)
+    if parsed is not None:
+        _, end = parsed
+        return end > now_minutes
+
+    single_time = parse_leading_time_minutes(item)
+    if single_time is None:
+        return False
+
+    return single_time > now_minutes
 
 
 def parse_workstream(
@@ -413,11 +459,12 @@ def parse_workstream(
         now_lane.extend(parse_section_bullets(today_status_markdown, "Now"))
 
     timeline_next = [format_block(block) for block in next_blocks[:3]]
-    status_next = [
-        item
-        for item in parse_section_bullets(today_status_markdown, "Next 3 meaningful blocks")
-        if is_future_or_untimed(item, now_local)
-    ]
+    raw_status_next = parse_section_bullets(today_status_markdown, "Next 3 meaningful blocks")
+    status_next = [item for item in raw_status_next if is_future_timed_item(item, now_local)]
+
+    if not timeline_next and not status_next:
+        # Only allow untimed carryover when there is no better timed source.
+        status_next = [item for item in raw_status_next if not has_time_hint(item)]
     next_lane = dedupe_next_lane(timeline_next, status_next)
 
     done_lane = parse_section_bullets(today_status_markdown, "Last completed with proof")

@@ -1,5 +1,18 @@
 # Changelog
 
+## v1.4.19 - 2026-02-18
+
+### Fixed
+- Prevented stale overnight/status carryover from persisting in `now` lane when `Running now` used single-time completed text (no explicit range).
+- Reduced stale `next` lane clutter from untimed leftover notes when timeline already provides valid future blocks.
+
+### Changed
+- Active-work staleness detection now handles single-time entries and completion phrasing, not only `HH:MM-HH:MM` ranges.
+- `parse_workstream` now prioritizes future timed `next` items and only falls back to untimed notes when no timed candidates exist.
+
+### Added
+- Regression tests for single-time stale active-work fallback and untimed-next suppression with timeline future blocks.
+
 ## v1.4.18 - 2026-02-18
 
 ### Fixed

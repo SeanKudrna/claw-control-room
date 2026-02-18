@@ -22,7 +22,7 @@ A React + TypeScript dashboard (GitHub Pages) that gives a clear window into Cla
 - custom lobster favicon + home-screen icons for mobile install branding
 - polished interaction states and focus-visible accessibility styling across controls
 - current focus and active work (with timeline-aware stale fallback)
-- now/next/done swimlanes (next lane dedupes overlapping timeline/status blocks using time overlap + token overlap)
+- now/next/done swimlanes (next lane dedupes overlapping timeline/status blocks using time overlap + token overlap, and auto-expires stale carryover from earlier windows)
 - timeline of planned tasks
 - upcoming scheduled jobs
 - job + reliability trend mini charts

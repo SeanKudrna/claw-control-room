@@ -1,9 +1,9 @@
 {
-  "generatedAt": "2026-02-18T12:51:08.151271+00:00",
-  "generatedAtLocal": "2026-02-18 06:51 ",
-  "controlRoomVersion": "1.4.18",
+  "generatedAt": "2026-02-18T13:51:58.387187+00:00",
+  "generatedAtLocal": "2026-02-18 07:51 ",
+  "controlRoomVersion": "1.4.19",
   "currentFocus": "reliability monitoring + overnight control-room continuity.",
-  "activeWork": "01:00 downtime-guard reliability deep-work fallback (completed with fresh proof).",
+  "activeWork": "Next up: 13:20-13:45 \u2014 Midday reliability + queue reconciliation",
   "reliability": {
     "status": "green"
   },
@@ -40,27 +40,17 @@
   "nextJobs": [
     {
       "name": "Critical update failover guard",
-      "nextRun": "06:52",
-      "lastStatus": "ok"
-    },
-    {
-      "name": "Usage report - 7am",
-      "nextRun": "07:00",
-      "lastStatus": "ok"
-    },
-    {
-      "name": "Downtime gap auto-fill guard (quiet unless triggered)",
-      "nextRun": "07:00",
+      "nextRun": "07:52",
       "lastStatus": "ok"
     },
     {
       "name": "Control room status publish (gist backend)",
-      "nextRun": "07:00",
+      "nextRun": "07:52",
       "lastStatus": "ok"
     },
     {
-      "name": "Reliability watchdog hourly (self-heal + conditional alert)",
-      "nextRun": "07:20",
+      "name": "Downtime gap auto-fill guard (quiet unless triggered)",
+      "nextRun": "08:00",
       "lastStatus": "ok"
     },
     {
@@ -74,9 +64,19 @@
       "lastStatus": "ok"
     },
     {
+      "name": "Reliability watchdog hourly (self-heal + conditional alert)",
+      "nextRun": "08:20",
+      "lastStatus": "ok"
+    },
+    {
       "name": "Daily plan preflight validator",
       "nextRun": "08:24",
       "lastStatus": null
+    },
+    {
+      "name": "Control room issue triage + QA intake",
+      "nextRun": "09:35",
+      "lastStatus": "ok"
     }
   ],
   "findings": [
@@ -89,14 +89,12 @@
   ],
   "workstream": {
     "now": [
-      "01:00 downtime-guard reliability deep-work fallback (completed with fresh proof)."
+      "Next up: 13:20-13:45 \u2014 Midday reliability + queue reconciliation"
     ],
     "next": [
       "13:20-13:45 \u2014 Midday reliability + queue reconciliation",
       "13:45-14:25 \u2014 Prepare 5pm update evidence pack",
-      "15:10-16:05 \u2014 Reliability deep-work block B (scheduled cron)",
-      "01:35 nightly stale-cron prune maintenance pass.",
-      "02:00 downtime guard reevaluation (trigger only if no substantive block is upcoming)."
+      "15:10-16:05 \u2014 Reliability deep-work block B (scheduled cron)"
     ],
     "done": [
       "04:00 CST downtime-guard reliability fallback completed.",
@@ -139,12 +137,6 @@
         "job": "Evolution profile refresh (helper, non-planner)"
       },
       {
-        "label": "20:00",
-        "status": "ok",
-        "score": 1.0,
-        "job": "Usage report - 7am"
-      },
-      {
         "label": "20:15",
         "status": "ok",
         "score": 1.0,
@@ -157,22 +149,10 @@
         "job": "Control room issue triage + QA intake"
       },
       {
-        "label": "22:59",
-        "status": "ok",
-        "score": 1.0,
-        "job": "Control room status publish (gist backend)"
-      },
-      {
         "label": "01:35",
         "status": "ok",
         "score": 1.0,
         "job": "Nightly stale cron prune (scripted)"
-      },
-      {
-        "label": "06:00",
-        "status": "ok",
-        "score": 1.0,
-        "job": "Downtime gap auto-fill guard (quiet unless triggered)"
       },
       {
         "label": "06:10",
@@ -181,34 +161,37 @@
         "job": "ClawPrime daily memory evolution pass"
       },
       {
-        "label": "06:20",
+        "label": "07:00",
+        "status": "ok",
+        "score": 1.0,
+        "job": "Usage report - 7am"
+      },
+      {
+        "label": "07:00",
+        "status": "ok",
+        "score": 1.0,
+        "job": "Downtime gap auto-fill guard (quiet unless triggered)"
+      },
+      {
+        "label": "07:20",
         "status": "ok",
         "score": 1.0,
         "job": "Reliability watchdog hourly (self-heal + conditional alert)"
       },
       {
-        "label": "06:37",
+        "label": "07:37",
         "status": "ok",
         "score": 1.0,
         "job": "Critical update failover guard"
+      },
+      {
+        "label": "07:51",
+        "status": "ok",
+        "score": 1.0,
+        "job": "Control room status publish (gist backend)"
       }
     ],
     "reliabilityTrend": [
-      {
-        "label": "00:07",
-        "status": "green",
-        "score": 1.0
-      },
-      {
-        "label": "00:20",
-        "status": "green",
-        "score": 1.0
-      },
-      {
-        "label": "00:51",
-        "status": "green",
-        "score": 1.0
-      },
       {
         "label": "01:20",
         "status": "green",
@@ -263,6 +246,21 @@
         "label": "06:20",
         "status": "green",
         "score": 1.0
+      },
+      {
+        "label": "06:51",
+        "status": "green",
+        "score": 1.0
+      },
+      {
+        "label": "07:20",
+        "status": "green",
+        "score": 1.0
+      },
+      {
+        "label": "07:51",
+        "status": "green",
+        "score": 1.0
       }
     ]
   },
@@ -296,6 +294,11 @@
       "time": "n/a",
       "category": "release",
       "text": "Root-cause fix shipped `v1.4.12`: static fallback status snapshots are now runtime-sanitized (`idle`) so release-time active work cannot be baked into `public/docs data/status.json` and replayed as stale RUNNING rows when fallback/cached snapshot is used."
+    },
+    {
+      "time": "n/a",
+      "category": "ops",
+      "text": "Shipped `v1.4.18` (issue #27): clarified stale-carryover refresh success messaging (\"fetched but still stale\") and moved runtime details modal to body portal so sticky header can\u2019t overlap popup content."
     },
     {
       "time": "n/a",
@@ -358,7 +361,7 @@
     "isIdle": true,
     "activeCount": 0,
     "activeRuns": [],
-    "checkedAtMs": 1771419068182,
+    "checkedAtMs": 1771422718417,
     "source": "cron-run reconciliation + subagent registry + main-session tool activity [static fallback runtime sanitized]"
   }
 }
