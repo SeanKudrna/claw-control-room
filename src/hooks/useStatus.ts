@@ -7,8 +7,10 @@ type FreshnessLevel = 'fresh' | 'aging' | 'stale';
 interface UseStatusResult {
   data: StatusPayload | null;
   loading: boolean;
+  refreshing: boolean;
   error: string | null;
   refresh: () => Promise<void>;
+  lastRefreshAtMs: number | null;
   lastUpdatedLabel: string;
   freshnessLevel: FreshnessLevel;
   freshnessLabel: string;
@@ -17,16 +19,24 @@ interface UseStatusResult {
 export function useStatus(refreshMs = 60_000): UseStatusResult {
   const [data, setData] = useState<StatusPayload | null>(null);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [lastRefreshAtMs, setLastRefreshAtMs] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const refresh = async () => {
     try {
+      if (!data) {
+        setLoading(true);
+      }
+      setRefreshing(true);
       setError(null);
       const next = await fetchStatus();
       setData(next);
+      setLastRefreshAtMs(Date.now());
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Unknown status error');
     } finally {
+      setRefreshing(false);
       setLoading(false);
     }
   };
@@ -68,8 +78,10 @@ export function useStatus(refreshMs = 60_000): UseStatusResult {
   return {
     data,
     loading,
+    refreshing,
     error,
     refresh,
+    lastRefreshAtMs,
     lastUpdatedLabel,
     freshnessLevel: freshness.level,
     freshnessLabel: freshness.label,

@@ -96,6 +96,12 @@ p {
   gap: 10px;
 }
 
+.refresh-control {
+  display: grid;
+  gap: 4px;
+  justify-items: end;
+}
+
 .updated-pill {
   border: 1px solid var(--border);
   background: var(--surface-2);
@@ -138,13 +144,55 @@ p {
   background: transparent;
   color: var(--text);
   border-radius: 10px;
-  padding: 7px 10px;
+  padding: 8px 12px;
+  min-height: 40px;
   cursor: pointer;
+  transition: transform 0.14s ease, border-color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.ghost-btn:hover {
+  border-color: rgba(122, 141, 245, 0.65);
+  background: rgba(122, 141, 245, 0.12);
+}
+
+.ghost-btn.is-pressed,
+.ghost-btn:active {
+  transform: translateY(1px) scale(0.985);
+}
+
+.ghost-btn.is-refreshing {
+  border-color: rgba(122, 141, 245, 0.8);
+  background: rgba(122, 141, 245, 0.2);
+  box-shadow: 0 0 0 3px rgba(122, 141, 245, 0.16);
+}
+
+.ghost-btn.is-success {
+  border-color: rgba(47, 199, 131, 0.7);
+  background: rgba(47, 199, 131, 0.18);
+  color: #ccffde;
+}
+
+.refresh-success-icon {
+  color: #8df0bf;
 }
 
 .ghost-btn:disabled {
-  opacity: 0.6;
+  opacity: 0.92;
   cursor: wait;
+}
+
+.refresh-helper {
+  font-size: 0.73rem;
+  color: var(--muted);
+  min-height: 1em;
+}
+
+.refresh-helper.refreshing {
+  color: #bfd0ff;
+}
+
+.refresh-helper.success {
+  color: #8df0bf;
 }
 
 .spin {
@@ -630,5 +678,21 @@ th {
 
   .hero-meta {
     justify-content: space-between;
+    flex-wrap: wrap;
+  }
+
+  .refresh-control {
+    justify-items: start;
+    width: 100%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ghost-btn,
+  .spin,
+  .collapse-chevron {
+    animation: none !important;
+    transition: none !important;
+    transform: none !important;
   }
 }

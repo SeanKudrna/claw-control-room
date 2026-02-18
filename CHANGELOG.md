@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Added
+- Refresh button now has tactile interaction states: press feedback, active spinner state while fetching, and short post-refresh confirmation.
+- Added reduced-motion-safe handling for refresh/collapse animations.
+
 ## v1.3.3 - 2026-02-17
 
 ### Fixed

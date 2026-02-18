@@ -6,6 +6,7 @@ A React + TypeScript dashboard (GitHub Pages) that gives a clear window into Cla
 - compact panel-body mode to avoid duplicate heading stacks inside collapsible sections
 - real-time runtime panel (idle vs running, active job list, live elapsed timers)
 - data freshness pill (fresh / aging / stale) based on payload generation time
+- tactile refresh interaction states (press, refreshing spinner, completion confirmation)
 - current focus and active work (with timeline-aware stale fallback)
 - now/next/done swimlanes (next lane dedupes overlapping timeline/status blocks using time overlap + token overlap)
 - timeline of planned tasks
