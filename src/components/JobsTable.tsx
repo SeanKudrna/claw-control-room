@@ -33,9 +33,9 @@ export function JobsTable({ jobs, hideHeading = false }: JobsTableProps) {
             )}
             {jobs.map((job, idx) => (
               <tr key={`${job.name}-${idx}`}>
-                <td>{job.nextRun}</td>
-                <td>{job.name}</td>
-                <td>
+                <td data-label="Time">{job.nextRun}</td>
+                <td data-label="Job">{job.name}</td>
+                <td data-label="Status">
                   <span className={`tiny-pill ${statusClass(job.lastStatus)}`}>{(job.lastStatus || 'n/a').toUpperCase()}</span>
                 </td>
               </tr>

@@ -10,6 +10,7 @@
   --ok: #2fc783;
   --warn: #d6a732;
   --error: #da5b5b;
+  --touch-target: 44px;
 }
 
 * {
@@ -21,12 +22,17 @@ body {
   font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
   background: radial-gradient(circle at top, #121936 0%, var(--bg) 60%);
   color: var(--text);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
 
 .app-shell {
   max-width: 1220px;
   margin: 0 auto;
-  padding: 20px 16px 36px;
+  padding: calc(18px + env(safe-area-inset-top))
+    calc(14px + env(safe-area-inset-right))
+    calc(34px + env(safe-area-inset-bottom))
+    calc(14px + env(safe-area-inset-left));
 }
 
 h1,
@@ -235,6 +241,7 @@ p {
   font-size: 0.84rem;
   font-weight: 700;
   padding: 8px 11px;
+  min-height: var(--touch-target);
   cursor: pointer;
 }
 
@@ -242,6 +249,13 @@ p {
   border-color: rgba(122, 141, 245, 0.65);
   background: rgba(122, 141, 245, 0.18);
   color: #d5dcff;
+}
+
+.ghost-btn,
+.tab-btn,
+.chip,
+summary {
+  touch-action: manipulation;
 }
 
 .tab-description {
@@ -588,7 +602,8 @@ th {
   border-radius: 999px;
   font-size: 0.73rem;
   font-weight: 700;
-  padding: 4px 9px;
+  padding: 6px 10px;
+  min-height: var(--touch-target);
   cursor: pointer;
 }
 
@@ -670,6 +685,16 @@ th {
   gap: 8px;
 }
 
+@media (max-width: 1024px) {
+  .app-shell {
+    max-width: none;
+  }
+
+  .trend-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 @media (max-width: 860px) {
   .hero {
     flex-direction: column;
@@ -684,6 +709,166 @@ th {
   .refresh-control {
     justify-items: start;
     width: 100%;
+  }
+}
+
+@media (max-width: 720px) {
+  .app-shell {
+    padding-top: calc(12px + env(safe-area-inset-top));
+    padding-bottom: calc(24px + env(safe-area-inset-bottom));
+  }
+
+  h1 {
+    font-size: 1.35rem;
+  }
+
+  .card,
+  .collapse-panel {
+    border-radius: 12px;
+  }
+
+  .hero-meta {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .updated-pill,
+  .freshness-pill {
+    font-size: 0.76rem;
+    padding: 7px 9px;
+  }
+
+  .refresh-control {
+    grid-column: 1 / -1;
+    justify-items: stretch;
+    gap: 6px;
+  }
+
+  .ghost-btn {
+    justify-content: center;
+    width: 100%;
+    min-height: 46px;
+  }
+
+  .tab-row {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    padding-bottom: 2px;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+
+  .tab-row::-webkit-scrollbar {
+    display: none;
+  }
+
+  .tab-btn {
+    flex: 0 0 auto;
+    min-width: 104px;
+  }
+
+  .collapse-panel > summary {
+    padding: 12px;
+  }
+
+  .collapse-content {
+    padding: 0 10px 10px;
+  }
+
+  .summary-grid,
+  .swimlane-grid,
+  .trend-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .runtime-item {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .runtime-meta {
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+
+  .timeline-item {
+    padding: 10px;
+  }
+
+  .mini-chart {
+    grid-template-columns: repeat(auto-fit, minmax(18px, 1fr));
+    gap: 6px;
+    min-height: 140px;
+  }
+
+  table,
+  thead,
+  tbody,
+  tr,
+  th,
+  td {
+    display: block;
+    width: 100%;
+  }
+
+  thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+
+  tbody {
+    display: grid;
+    gap: 10px;
+  }
+
+  tr {
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 10px;
+    padding: 8px 10px;
+    background: #0f1530;
+  }
+
+  td {
+    border-bottom: none;
+    padding: 5px 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.85rem;
+  }
+
+  td[data-label]::before {
+    content: attr(data-label);
+    color: var(--muted);
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+  }
+}
+
+@media (max-width: 480px) {
+  .title-row {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .version-pill {
+    font-size: 0.72rem;
+  }
+
+  .tab-description {
+    font-size: 0.8rem;
+  }
+
+  .runtime-timer {
+    font-size: 0.8rem;
   }
 }
 

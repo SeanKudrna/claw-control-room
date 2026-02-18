@@ -6,6 +6,9 @@
 - Refresh button now has tactile interaction states: press feedback, active spinner state while fetching, and short post-refresh confirmation.
 - Added reduced-motion-safe handling for refresh/collapse animations.
 
+### Changed
+- Reworked responsive behavior with a mobile-first pass: touch-friendly control sizing, horizontal tab scroller, stacked runtime/cards, safe-area padding, and mobile-optimized jobs table layout.
+
 ## v1.3.3 - 2026-02-17
 
 ### Fixed

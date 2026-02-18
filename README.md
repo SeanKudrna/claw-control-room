@@ -2,6 +2,7 @@
 
 A React + TypeScript dashboard (GitHub Pages) that gives a clear window into Claw's day:
 - tabbed views (Overview / Operations / Insights) to prevent a single-page infodump
+- mobile-first responsive layout tuned for touch usage and phone readability
 - collapsible content sections for cleaner UX and faster scanning
 - compact panel-body mode to avoid duplicate heading stacks inside collapsible sections
 - real-time runtime panel (idle vs running, active job list, live elapsed timers)
