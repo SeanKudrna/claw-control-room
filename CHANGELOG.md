@@ -1,5 +1,19 @@
 # Changelog
 
+## v1.4.32 - 2026-02-18
+
+### Added
+- Added deterministic radial skill-tree layout engine (`src/lib/skillTreeLayout.ts`) that expands tiers into outward rings and centers dependency routing for game-style branch readability.
+- Added local visual QA artifacts for issue #45 under `status/ui-validation/issue45-skills-*.png` (before/after desktop + mobile).
+
+### Changed
+- Reworked Skills tab into a true radial/branching map with connector lines rendered behind nodes, stronger node hierarchy (core + badges + title/meta), and improved state contrast.
+- Preserved skill-detail interaction semantics while hardening panel readability/overflow behavior so detail content does not clip or visually fight the graph.
+- Updated Playwright UI regression guardrails to enforce connector layering and radial outward-tier trend in addition to overlap/overflow checks.
+
+### Docs
+- Updated README + architecture/development handbook docs with radial layout model, custom SVG/DOM implementation rationale, and updated readability contracts.
+
 ## v1.4.31 - 2026-02-18
 
 ### Fixed

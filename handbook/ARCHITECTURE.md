@@ -35,7 +35,8 @@ Claw Control Room provides a readable, near-real-time view of Claw's operations:
   - `src/lib/statusApi.ts` source resolution/fetch logic
   - `src/types/status.ts` shared payload contracts
 - Information architecture uses tabbed views (`Overview`, `Operations`, `Insights`, `Skills`) plus collapsible sections to reduce visual overload.
-- Skills tab renders a deterministic tier-column layout with SVG connector paths derived from dependency edges, preserving a game-like progression-map visual without external graph runtime dependencies.
+- Skills tab renders a deterministic radial/branching map using a custom SVG+DOM layout engine (`src/lib/skillTreeLayout.ts`) instead of a React graph runtime, prioritizing visual quality, dependency-line control, and lightweight bundle impact.
+- Dependency connectors are painted in an SVG layer beneath interactive node cards to avoid line/text collisions; node placement expands outward by tier ring to preserve hierarchy readability.
 - On narrow screens, Skills switches to a mobile fallback progression list (tap-to-select) while retaining the same detail side-panel data contract.
 - Components rendered inside collapsible bodies support compact heading mode, so section titles stay in the summary row while inner content keeps accessibility labels without duplicate heading stacks.
 - Active tab is URL-hash persisted (`#tab-*`) for direct navigation/state restore.

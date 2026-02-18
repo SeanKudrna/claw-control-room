@@ -42,7 +42,16 @@ try {
       if (title && title.scrollWidth - title.clientWidth > 1) {
         titleOverflows.push(index);
       }
-      return { index, left: rect.left, right: rect.right, top: rect.top, bottom: rect.bottom };
+      return {
+        index,
+        tier: Number.parseInt(node.getAttribute('data-tier') ?? '0', 10),
+        cx: rect.left + rect.width / 2,
+        cy: rect.top + rect.height / 2,
+        left: rect.left,
+        right: rect.right,
+        top: rect.top,
+        bottom: rect.bottom,
+      };
     });
 
     for (let i = 0; i < rects.length; i += 1) {
@@ -54,9 +63,31 @@ try {
       }
     }
 
+    const mapRect = document.querySelector('.skills-tree-map')?.getBoundingClientRect();
+    const center = mapRect
+      ? { x: mapRect.left + mapRect.width / 2, y: mapRect.top + mapRect.height / 2 }
+      : { x: 0, y: 0 };
+
+    const avgRadiusByTier = new Map();
+    for (const rect of rects) {
+      const radius = Math.hypot(rect.cx - center.x, rect.cy - center.y);
+      const existing = avgRadiusByTier.get(rect.tier) ?? { total: 0, count: 0 };
+      existing.total += radius;
+      existing.count += 1;
+      avgRadiusByTier.set(rect.tier, existing);
+    }
+
+    const tiers = [...avgRadiusByTier.keys()].sort((a, b) => a - b);
+    const tierRadiusTrend = tiers.map((tier) => {
+      const value = avgRadiusByTier.get(tier);
+      return value.total / Math.max(1, value.count);
+    });
+
     const firstNode = nodes[0];
     const title = firstNode?.querySelector('.skill-node-title');
     const detailPanel = document.querySelector('.skill-detail');
+    const lineLayer = document.querySelector('.skills-tree-lines');
+    const nodesLayer = document.querySelector('.skills-tree-nodes');
     const titleStyles = title ? window.getComputedStyle(title) : null;
     const detailStyles = detailPanel ? window.getComputedStyle(detailPanel) : null;
 
@@ -67,6 +98,10 @@ try {
       titleFontWeight: titleStyles?.fontWeight ?? '0',
       detailPaddingTop: detailStyles ? Number.parseFloat(detailStyles.paddingTop) : 0,
       detailGap: detailStyles ? Number.parseFloat(detailStyles.gap) : 0,
+      lineZ: lineLayer ? window.getComputedStyle(lineLayer).zIndex : null,
+      nodesZ: nodesLayer ? window.getComputedStyle(nodesLayer).zIndex : null,
+      tierRadiusTrend,
+      edgeCount: document.querySelectorAll('.skills-tree-lines .skill-link').length,
     };
   });
 
@@ -76,6 +111,14 @@ try {
   assert(Number.parseInt(skillReadability.titleFontWeight, 10) >= 700, `Skill title font weight should be bold; got ${skillReadability.titleFontWeight}`);
   assert(skillReadability.detailPaddingTop >= 14, `Skill detail panel should have readable padding; got ${skillReadability.detailPaddingTop}`);
   assert(skillReadability.detailGap >= 10, `Skill detail panel should have readable spacing gap; got ${skillReadability.detailGap}`);
+  assert(skillReadability.edgeCount > 0, 'Skill tree should render dependency connectors.');
+  assert(Number.parseInt(skillReadability.nodesZ ?? '0', 10) > Number.parseInt(skillReadability.lineZ ?? '0', 10), 'Skill nodes should render above connector lines.');
+  const firstRadius = skillReadability.tierRadiusTrend[0] ?? 0;
+  const maxRadius = Math.max(...skillReadability.tierRadiusTrend);
+  assert(
+    maxRadius - firstRadius >= 180,
+    `Skill tiers should branch outward with meaningful radial spread. Got radii: ${skillReadability.tierRadiusTrend.join(', ')}`,
+  );
 
   await page.locator('text=Operations').first().click();
 

@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-02-18T16:14:35.432112+00:00",
-  "generatedAtLocal": "2026-02-18 10:14 ",
-  "controlRoomVersion": "1.4.31",
-  "currentFocus": "Control-room product lane block (mandatory)",
+  "generatedAt": "2026-02-18T16:28:22.795889+00:00",
+  "generatedAtLocal": "2026-02-18 10:28 ",
+  "controlRoomVersion": "1.4.32",
+  "currentFocus": "Publish proof + status sync",
   "activeWork": "downtime-guard monitoring/continuity mode.",
   "reliability": {
     "status": "green"
@@ -44,17 +44,12 @@
   "nextJobs": [
     {
       "name": "Control room status publish (gist backend)",
-      "nextRun": "10:15",
-      "lastStatus": "ok"
-    },
-    {
-      "name": "Reliability watchdog hourly (self-heal + conditional alert)",
-      "nextRun": "10:20",
+      "nextRun": "10:29",
       "lastStatus": "ok"
     },
     {
       "name": "Critical update failover guard",
-      "nextRun": "10:22",
+      "nextRun": "10:37",
       "lastStatus": "ok"
     },
     {
@@ -70,6 +65,11 @@
     {
       "name": "Today dashboard refresh (every 3h)",
       "nextRun": "11:15",
+      "lastStatus": "ok"
+    },
+    {
+      "name": "Reliability watchdog hourly (self-heal + conditional alert)",
+      "nextRun": "11:20",
       "lastStatus": "ok"
     },
     {
@@ -93,21 +93,21 @@
   ],
   "workstream": {
     "now": [
-      "P1 hotfix for issue #44 in /Users/seankudrna/.openclaw/workspace/claw-control-room. Issue: https://github.com/SeanKudrna/claw-control-room/issues/44 User feedback: current Skills t\u2026"
+      "Implement issue #45 in /Users/seankudrna/.openclaw/workspace/claw-control-room. Issue: https://github.com/SeanKudrna/claw-control-room/issues/45 Design direction: - Rework Skills t\u2026"
     ],
     "next": [
-      "09:10-10:20 \u2014 Control-room product lane block (mandatory)",
-      "10:15 \u2014 Scheduled job: Control room status publish (gist backend)",
-      "10:20 \u2014 Scheduled job: Reliability watchdog hourly (self-heal + conditional alert)",
       "10:20-10:45 \u2014 Publish proof + status sync",
-      "10:22 \u2014 Scheduled job: Critical update failover guard"
+      "10:29 \u2014 Scheduled job: Control room status publish (gist backend)",
+      "10:37 \u2014 Scheduled job: Critical update failover guard",
+      "11:00 \u2014 Scheduled job: Downtime gap auto-fill guard (quiet unless triggered)",
+      "11:10 \u2014 Scheduled job: Reliability deep-work block A (DAILY_PLAN-driven)"
     ],
     "done": [
-      "09:10 \u2014 Control-room issue triage block (mandatory)",
-      "Critical update failover guard",
-      "Fix issue #40 in /Users/seankudrna/.openclaw/workspace/claw-control-room. Issue: https://github.com/SeanKudrna/claw-control-room/issues/40 Bug: in-progress timeline blocks are tran\u2026",
-      "Implement issue #43 end-to-end in /Users/seankudrna/.openclaw/workspace/claw-control-room. Issue: https://github.com/SeanKudrna/claw-control-room/issues/43 User requirement: - Skil\u2026",
-      "Apply the latest UI refinements in /Users/seankudrna/.openclaw/workspace/claw-control-room. User-requested changes: 1) Remove helper text under refresh button during click/refresh/\u2026"
+      "10:20 \u2014 Control-room product lane block (mandatory)",
+      "Autonomy daily planner (DAILY_PLAN source of truth)",
+      "Implement issue #42 end-to-end in /Users/seankudrna/.openclaw/workspace/claw-control-room. Issue: https://github.com/SeanKudrna/claw-control-room/issues/42 Feature goals: - Add new\u2026",
+      "Finalize and ship issue #42 from current working tree in /Users/seankudrna/.openclaw/workspace/claw-control-room. Current state has local uncommitted implementation for skills tab/\u2026",
+      "Resume and finish the in-progress worktree changes for claw-control-room issue set #30 #31 #32. Repo: /Users/seankudrna/.openclaw/workspace/claw-control-room Current state: local w\u2026"
     ]
   },
   "charts": {
@@ -167,12 +167,6 @@
         "job": "Daily plan preflight validator"
       },
       {
-        "label": "09:20",
-        "status": "ok",
-        "score": 1.0,
-        "job": "Reliability watchdog hourly (self-heal + conditional alert)"
-      },
-      {
         "label": "09:35",
         "status": "ok",
         "score": 1.0,
@@ -185,24 +179,25 @@
         "job": "Downtime gap auto-fill guard (quiet unless triggered)"
       },
       {
-        "label": "10:07",
+        "label": "10:20",
+        "status": "ok",
+        "score": 1.0,
+        "job": "Reliability watchdog hourly (self-heal + conditional alert)"
+      },
+      {
+        "label": "10:22",
         "status": "ok",
         "score": 1.0,
         "job": "Critical update failover guard"
       },
       {
-        "label": "10:14",
+        "label": "10:28",
         "status": "ok",
         "score": 1.0,
         "job": "Control room status publish (gist backend)"
       }
     ],
     "reliabilityTrend": [
-      {
-        "label": "03:20",
-        "status": "green",
-        "score": 1.0
-      },
       {
         "label": "03:51",
         "status": "green",
@@ -265,6 +260,11 @@
       },
       {
         "label": "09:51",
+        "status": "green",
+        "score": 1.0
+      },
+      {
+        "label": "10:20",
         "status": "green",
         "score": 1.0
       }
@@ -490,7 +490,7 @@
         "/Users/seankudrna/.openclaw/workspace/ClawPrime_Memory.md"
       ],
       "deterministicSeed": "7b37e8fb9c86",
-      "lastProcessedAt": "2026-02-18T10:14:35.376633",
+      "lastProcessedAt": "2026-02-18T10:28:22.737188",
       "mode": "keyword-scan-v1"
     }
   },
@@ -499,7 +499,7 @@
     "isIdle": true,
     "activeCount": 0,
     "activeRuns": [],
-    "checkedAtMs": 1771431275377,
+    "checkedAtMs": 1771432102737,
     "source": "cron-run reconciliation + subagent registry [static fallback runtime sanitized]"
   }
 }

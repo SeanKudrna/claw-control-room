@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { computeSkillTreeLayout } from '../lib/skillTreeLayout';
 import type { SkillNode, SkillsPayload } from '../types/status';
 
 interface SkillsTreeProps {
@@ -34,71 +35,12 @@ export function SkillsTree({ skills }: SkillsTreeProps) {
     [skills.nodes],
   );
 
-  const tiers = useMemo(() => {
-    const values = new Set(skills.nodes.map((node) => node.tier));
-    return [...values].sort((a, b) => a - b);
-  }, [skills.nodes]);
-
   const layout = useMemo(() => {
-    const tierToCol = new Map<number, number>(tiers.map((tier, index) => [tier, index + 1]));
-    const positionById = new Map<string, { col: number; row: number }>();
-    const nodesByTier = new Map<number, SkillNode[]>();
-
-    for (const node of skills.nodes) {
-      const tierNodes = nodesByTier.get(node.tier) ?? [];
-      tierNodes.push(node);
-      nodesByTier.set(node.tier, tierNodes);
-    }
-
-    let maxRows = 1;
-
-    for (const tier of tiers) {
-      const tierNodes = (nodesByTier.get(tier) ?? []).sort((a, b) => a.name.localeCompare(b.name));
-      const usedRows = new Set<number>();
-
-      for (const node of tierNodes) {
-        const depRows = node.dependencies
-          .map((depId) => positionById.get(depId)?.row)
-          .filter((row): row is number => typeof row === 'number');
-
-        let desiredRow = depRows.length
-          ? Math.max(1, Math.round(depRows.reduce((sum, value) => sum + value, 0) / depRows.length))
-          : usedRows.size + 1;
-
-        while (usedRows.has(desiredRow)) desiredRow += 1;
-
-        usedRows.add(desiredRow);
-
-        const col = tierToCol.get(node.tier) ?? 1;
-        positionById.set(node.id, { col, row: desiredRow });
-        maxRows = Math.max(maxRows, desiredRow);
-      }
-    }
-
-    const edges = skills.nodes.flatMap((node) =>
-      node.dependencies
-        .map((depId) => {
-          const from = positionById.get(depId);
-          const to = positionById.get(node.id);
-          if (!from || !to) return null;
-
-          const fromNode = skills.nodes.find((candidate) => candidate.id === depId);
-          const edgeState = fromNode && toVisualState(fromNode) !== 'locked' ? 'unlocked' : 'locked';
-
-          return {
-            key: `${depId}->${node.id}`,
-            from,
-            to,
-            state: edgeState,
-          };
-        })
-        .filter((edge): edge is { key: string; from: { col: number; row: number }; to: { col: number; row: number }; state: 'locked' | 'unlocked' } =>
-          Boolean(edge),
-        ),
-    );
-
-    return { positionById, maxRows, edges };
-  }, [skills.nodes, tiers]);
+    const tierCount = new Set(skills.nodes.map((node) => node.tier)).size;
+    const width = Math.max(980, 840 + tierCount * 96);
+    const height = Math.max(760, 620 + tierCount * 50);
+    return computeSkillTreeLayout(skills.nodes, width, height);
+  }, [skills.nodes]);
 
   return (
     <section className="card skills-card">
@@ -112,62 +54,66 @@ export function SkillsTree({ skills }: SkillsTreeProps) {
       <div className="skills-grid">
         <div className="skills-tree-stage">
           <div className="skills-legend" aria-label="Skill states legend">
-            <span className="legend-item active">Active</span>
+            <span className="legend-item active">Unlocked</span>
             <span className="legend-item in-progress">In progress</span>
             <span className="legend-item planned">Planned</span>
             <span className="legend-item locked">Locked</span>
           </div>
 
-          <div
-            className="skills-tree-map"
-            style={{
-              ['--skills-cols' as string]: String(Math.max(1, tiers.length)),
-              ['--skills-rows' as string]: String(Math.max(1, layout.maxRows)),
-            }}
-            role="list"
-            aria-label="Game-style skill tree"
-          >
-            <svg className="skills-tree-lines" viewBox={`0 0 ${Math.max(1, tiers.length) * 200} ${Math.max(1, layout.maxRows) * 124}`} preserveAspectRatio="none" aria-hidden="true">
-              {layout.edges.map((edge) => {
-                const startX = (edge.from.col - 0.5) * 200;
-                const startY = (edge.from.row - 0.5) * 124;
-                const endX = (edge.to.col - 0.5) * 200;
-                const endY = (edge.to.row - 0.5) * 124;
-                const midX = startX + (endX - startX) * 0.52;
+          <div className="skills-tree-map" role="list" aria-label="Game-style skill tree">
+            <div className="skills-tree-canvas" style={{ width: layout.width, height: layout.height }}>
+              <svg className="skills-tree-lines" viewBox={`0 0 ${layout.width} ${layout.height}`} preserveAspectRatio="none" aria-hidden="true">
+                {layout.edges.map((edge) => {
+                  const from = layout.positions.get(edge.fromId);
+                  const to = layout.positions.get(edge.toId);
+                  if (!from || !to) return null;
+                  const curvature = 0.16;
+                  const cx1 = from.x + (layout.centerX - from.x) * curvature;
+                  const cy1 = from.y + (layout.centerY - from.y) * curvature;
+                  const cx2 = to.x + (layout.centerX - to.x) * curvature;
+                  const cy2 = to.y + (layout.centerY - to.y) * curvature;
+                  return (
+                    <path
+                      key={edge.key}
+                      className={`skill-link ${edge.state}`}
+                      d={`M ${from.x} ${from.y} C ${cx1} ${cy1}, ${cx2} ${cy2}, ${to.x} ${to.y}`}
+                    />
+                  );
+                })}
+              </svg>
 
-                return (
-                  <path
-                    key={edge.key}
-                    className={`skill-link ${edge.state}`}
-                    d={`M ${startX} ${startY} C ${midX} ${startY}, ${midX} ${endY}, ${endX} ${endY}`}
-                  />
-                );
-              })}
-            </svg>
+              <div className="skills-tree-nodes">
+                {skills.nodes.map((node) => {
+                  const pos = layout.positions.get(node.id) ?? { x: layout.centerX, y: layout.centerY };
+                  const visual = toVisualState(node);
+                  const isSelected = selected?.id === node.id;
 
-            {skills.nodes.map((node) => {
-              const pos = layout.positionById.get(node.id) ?? { col: 1, row: 1 };
-              const visual = toVisualState(node);
-              const isSelected = selected?.id === node.id;
-
-              return (
-                <button
-                  key={node.id}
-                  role="listitem"
-                  className={`skill-node ${visual} ${isSelected ? 'selected' : ''}`}
-                  onClick={() => setSelectedId(node.id)}
-                  title={`${node.name} (${stateLabel(visual)})`}
-                  style={{ gridColumn: pos.col, gridRow: pos.row }}
-                >
-                  <div className="skill-node-header">
-                    <span className="skill-node-tier">Tier {node.tier}</span>
-                    <span className={`skill-node-state ${visual}`}>{stateLabel(visual)}</span>
-                  </div>
-                  <div className="skill-node-title">{node.name}</div>
-                  <div className="skill-node-meta">Level {node.level} · {Math.round(node.progress * 100)}% complete</div>
-                </button>
-              );
-            })}
+                  return (
+                    <button
+                      key={node.id}
+                      role="listitem"
+                      data-node-id={node.id}
+                      data-tier={node.tier}
+                      className={`skill-node ${visual} ${isSelected ? 'selected' : ''}`}
+                      onClick={() => setSelectedId(node.id)}
+                      title={`${node.name} (${stateLabel(visual)})`}
+                      style={{
+                        left: `${pos.x}px`,
+                        top: `${pos.y}px`,
+                      }}
+                    >
+                      <span className="skill-node-core" aria-hidden="true" />
+                      <div className="skill-node-header">
+                        <span className="skill-node-tier">Tier {node.tier}</span>
+                        <span className={`skill-node-state ${visual}`}>{stateLabel(visual)}</span>
+                      </div>
+                      <div className="skill-node-title">{node.name}</div>
+                      <div className="skill-node-meta">Level {node.level} · {Math.round(node.progress * 100)}% complete</div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
           </div>
 
           <div className="skills-mobile-list" role="list" aria-label="Skill progression list">
