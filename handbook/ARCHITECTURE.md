@@ -29,7 +29,7 @@ Claw Control Room provides a readable, near-real-time view of Claw's operations:
 - Information architecture uses tabbed views (`Overview`, `Operations`, `Insights`) plus collapsible sections to reduce visual overload.
 - Components rendered inside collapsible bodies support compact heading mode, so section titles stay in the summary row while inner content keeps accessibility labels without duplicate heading stacks.
 - Active tab is URL-hash persisted (`#tab-*`) for direct navigation/state restore.
-- Theme tokens align to OpenClaw website palette conventions (deep dark surface + coral/cyan accents) for product continuity.
+- Theme tokens align to OpenClaw website palette conventions (deep dark surface + coral/orange accents) for product continuity.
 - Branding assets (favicon/home-screen icons + manifest) are served from `public/icons/` and linked in `index.html`.
 - Interaction system standardizes hover/active/focus-visible states across tabs, chips, refresh, and collapsible summaries for UX coherence.
 - Build output: `docs/` (served by GitHub Pages).

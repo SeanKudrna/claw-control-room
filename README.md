@@ -8,7 +8,7 @@ A React + TypeScript dashboard (GitHub Pages) that gives a clear window into Cla
 - real-time runtime panel (cron + interactive activity, live elapsed timers)
 - data freshness pill (fresh / aging / stale) based on payload generation time
 - tactile refresh interaction states (press, refreshing spinner, completion confirmation)
-- OpenClaw brand-aligned coral/cyan/dark theme palette for visual continuity
+- OpenClaw brand-aligned coral/orange/dark gradient palette for visual continuity
 - custom lobster favicon + home-screen icons for mobile install branding
 - polished interaction states and focus-visible accessibility styling across controls
 - current focus and active work (with timeline-aware stale fallback)

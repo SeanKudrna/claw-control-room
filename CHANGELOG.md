@@ -5,6 +5,10 @@
 ### Fixed
 - Rebuilt lobster favicon/home-screen icon set with full-bleed, high-contrast artwork so iOS home-screen installs show a clear, properly filled icon tile.
 
+### Changed
+- Shifted UI accents from cyan-forward to OpenClaw-style coral/orange/red gradients across interactive controls and runtime surfaces.
+- Updated app/theme metadata colors to match the warmer brand direction on mobile home-screen/PWA chrome.
+
 ## v1.4.1 - 2026-02-17
 
 ### Fixed
