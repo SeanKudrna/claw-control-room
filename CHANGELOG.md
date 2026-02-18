@@ -1,5 +1,10 @@
 # Changelog
 
+## v1.4.2 - 2026-02-17
+
+### Fixed
+- Rebuilt lobster favicon/home-screen icon set with full-bleed, high-contrast artwork so iOS home-screen installs show a clear, properly filled icon tile.
+
 ## v1.4.1 - 2026-02-17
 
 ### Fixed
