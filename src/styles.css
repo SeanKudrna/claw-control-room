@@ -775,6 +775,21 @@ summary {
   gap: 8px;
 }
 
+.timeline-status {
+  margin: 0 0 10px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+.timeline-status.current {
+  color: #ffd4c2;
+}
+
+.timeline-status.idle {
+  color: var(--muted);
+}
+
 .timeline-item {
   display: grid;
   gap: 4px;
@@ -784,14 +799,45 @@ summary {
   padding: 9px 10px;
 }
 
+.timeline-item.current {
+  border-left-color: #ff7b56;
+  background: linear-gradient(110deg, rgba(255, 123, 86, 0.2), rgba(17, 24, 39, 0.96));
+  box-shadow: 0 0 0 1px rgba(255, 123, 86, 0.38);
+}
+
 .timeline-time {
   color: #9df9ee;
   font-size: 0.86rem;
   font-weight: 600;
 }
 
+.timeline-item.current .timeline-time {
+  color: #ffe2d4;
+}
+
+.timeline-task-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
 .timeline-task {
   line-height: 1.35;
+}
+
+.timeline-current-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 170, 142, 0.75);
+  background: rgba(255, 123, 86, 0.22);
+  color: #ffe7dc;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  padding: 3px 8px;
 }
 
 .table-wrap {

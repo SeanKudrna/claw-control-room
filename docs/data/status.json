@@ -1,7 +1,7 @@
 {
-  "generatedAt": "2026-02-18T14:54:01.432791+00:00",
+  "generatedAt": "2026-02-18T14:54:48.052258+00:00",
   "generatedAtLocal": "2026-02-18 08:54 ",
-  "controlRoomVersion": "1.4.25",
+  "controlRoomVersion": "1.4.26",
   "currentFocus": "Control-room issue triage block (mandatory)",
   "activeWork": "downtime-guard monitoring/continuity mode.",
   "reliability": {
@@ -44,7 +44,7 @@
   "nextJobs": [
     {
       "name": "Control room status publish (gist backend)",
-      "nextRun": "08:54",
+      "nextRun": "08:55",
       "lastStatus": "ok"
     },
     {
@@ -96,11 +96,11 @@
       "Apply the latest UI refinements in /Users/seankudrna/.openclaw/workspace/claw-control-room. User-requested changes: 1) Remove helper text under refresh button during click/refresh/\u2026"
     ],
     "next": [
+      "08:55 \u2014 Scheduled job: Control room status publish (gist backend)",
       "09:00 \u2014 Scheduled job: Downtime gap auto-fill guard (quiet unless triggered)",
       "09:07 \u2014 Scheduled job: Critical update failover guard",
       "09:10-10:20 \u2014 Control-room product lane block (mandatory)",
-      "09:20 \u2014 Scheduled job: Reliability watchdog hourly (self-heal + conditional alert)",
-      "09:35 \u2014 Scheduled job: Control room issue triage + QA intake"
+      "09:20 \u2014 Scheduled job: Reliability watchdog hourly (self-heal + conditional alert)"
     ],
     "done": [
       "09:10 \u2014 Control-room issue triage block (mandatory)",
@@ -191,7 +191,7 @@
         "job": "Critical update failover guard"
       },
       {
-        "label": "08:52",
+        "label": "08:54",
         "status": "ok",
         "score": 1.0,
         "job": "Control room status publish (gist backend)"
@@ -387,7 +387,7 @@
     "isIdle": true,
     "activeCount": 0,
     "activeRuns": [],
-    "checkedAtMs": 1771426441382,
+    "checkedAtMs": 1771426488001,
     "source": "cron-run reconciliation + subagent registry [static fallback runtime sanitized]"
   }
 }

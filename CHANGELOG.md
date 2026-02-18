@@ -1,5 +1,17 @@
 # Changelog
 
+## v1.4.26 - 2026-02-18
+
+### Added
+- Execution Timeline now detects and highlights the current active block from existing `HH:MM-HH:MM` time ranges, including overnight-range safety.
+- Added an explicit timeline state line to avoid ambiguity when no block is currently active.
+
+### Changed
+- Current-block styling now uses a contrast-safe coral/orange treatment and a clear `Now` pill aligned with the AI theme.
+
+### Docs
+- Updated README timeline feature notes for current-block highlighting behavior.
+
 ## v1.4.25 - 2026-02-18
 
 ### Fixed
