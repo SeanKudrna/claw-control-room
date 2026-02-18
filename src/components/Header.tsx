@@ -58,11 +58,15 @@ export function Header({
     setFeedbackState('idle');
   }, [refreshing, lastRefreshAtMs, refreshOutcome]);
 
+  const staleAfterRefresh = feedbackState === 'success' && freshnessLevel === 'stale';
+
   const buttonLabel =
     feedbackState === 'refreshing'
       ? 'Refreshing…'
       : feedbackState === 'success'
-        ? 'Updated'
+        ? staleAfterRefresh
+          ? 'Fetched'
+          : 'Updated'
         : feedbackState === 'error'
           ? 'Retry refresh'
           : 'Refresh';
@@ -82,7 +86,11 @@ export function Header({
     feedbackState === 'refreshing'
       ? 'Updating data now…'
       : feedbackState === 'success'
-        ? 'Updated just now'
+        ? staleAfterRefresh
+          ? sourceMode === 'fallback'
+            ? `Fetched fallback snapshot — ${freshnessLabel.toLowerCase()}`
+            : `Fetched latest available data — ${freshnessLabel.toLowerCase()}`
+          : 'Updated just now'
         : feedbackState === 'error'
           ? `Refresh failed (${failureReason}) — showing last known good snapshot`
           : 'Tap to refresh';

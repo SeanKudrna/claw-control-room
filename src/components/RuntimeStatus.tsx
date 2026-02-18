@@ -1,5 +1,6 @@
 import { Activity, PauseCircle, X } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import type { RuntimeRun, StatusPayload } from '../types/status';
 
 function formatDuration(ms: number): string {
@@ -119,7 +120,7 @@ export function RuntimeStatus({ runtime }: { runtime: StatusPayload['runtime'] }
         </ul>
       )}
 
-      {selectedRun && (
+      {selectedRun && typeof document !== 'undefined' && createPortal(
         <div
           className="runtime-modal-backdrop"
           role="presentation"
@@ -169,7 +170,8 @@ export function RuntimeStatus({ runtime }: { runtime: StatusPayload['runtime'] }
               </div>
             </dl>
           </section>
-        </div>
+        </div>,
+        document.body,
       )}
 
       <p className="muted runtime-footnote">Source: {runtime.source}</p>

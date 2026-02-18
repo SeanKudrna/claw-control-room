@@ -26,6 +26,8 @@ UI nav notes:
 - Header source indicator should remain truthful (`Live source` vs `Fallback snapshot`) with fallback reason detail available from the latest fetch path.
 - If configured source fetch fails, fetch logic should attempt local fallback snapshot and explicitly mark fallback mode.
 - Freshness labels should age on a timer between polls (truthful stale-state progression).
+- Refresh success helper text should explicitly call out stale carryover when the newest available payload is still old.
+- Runtime details modal should render via body portal with z-index above sticky tab/header layers.
 
 ## Build output for GitHub Pages
 

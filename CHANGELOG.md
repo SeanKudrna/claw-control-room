@@ -1,5 +1,15 @@
 # Changelog
 
+## v1.4.18 - 2026-02-18
+
+### Fixed
+- Clarified refresh trust signal when a manual refresh succeeds but freshness remains stale, so users no longer see ambiguous "updated" feedback in stale-carryover scenarios.
+- Resolved runtime details popup layering issue where sticky header could overlap modal content on some layouts.
+
+### Changed
+- Header refresh success messaging now distinguishes true update vs "fetched but still stale" outcomes (with fallback-aware wording).
+- Runtime details modal now renders through a body portal with stronger overlay z-index/safe-area padding to guarantee readability above sticky layers.
+
 ## v1.4.17 - 2026-02-18
 
 ### Fixed

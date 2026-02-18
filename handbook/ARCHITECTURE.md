@@ -33,6 +33,7 @@ Claw Control Room provides a readable, near-real-time view of Claw's operations:
 - Theme tokens align to OpenClaw website palette conventions (deep dark surface + coral/orange accents) for product continuity.
 - Branding assets (favicon/home-screen icons + manifest) are served from `public/icons/` and linked in `index.html`.
 - Interaction system standardizes hover/active/focus-visible states across tabs, chips, refresh, and collapsible summaries for UX coherence.
+- Runtime details modal is rendered through a `document.body` portal so it always layers above sticky headers and card stacking contexts.
 - Viewport edge-fade scrims (top/bottom) are rendered as fixed non-interactive overlays to soften scroll exits without affecting input hit targets.
 - Build output: `docs/` (served by GitHub Pages).
 
@@ -48,6 +49,7 @@ Claw Control Room provides a readable, near-real-time view of Claw's operations:
 - Header now surfaces explicit source semantics (`Live source` vs `Fallback snapshot`) with fallback-reason detail so operators can see when they're in degraded mode even if data still loads.
 - Fallback behavior is fail-soft: configured source fetch attempts first, then local fallback snapshot is used when primary is unavailable/invalid.
 - Freshness age is recomputed on a timer between polls so stale data visibly ages even if payload timestamp is unchanged.
+- Refresh success copy distinguishes "updated" from "fetched but still stale" states to prevent false confidence when the newest available snapshot is still old.
 - This preserves commitless status refreshes while keeping a safe local fallback snapshot and honest degraded-state UX.
 
 ### 4) Versioning + release architecture

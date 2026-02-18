@@ -1,7 +1,7 @@
 {
-  "generatedAt": "2026-02-18T09:46:10.833720+00:00",
-  "generatedAtLocal": "2026-02-18 03:46 ",
-  "controlRoomVersion": "1.4.17",
+  "generatedAt": "2026-02-18T12:51:08.151271+00:00",
+  "generatedAtLocal": "2026-02-18 06:51 ",
+  "controlRoomVersion": "1.4.18",
   "currentFocus": "reliability monitoring + overnight control-room continuity.",
   "activeWork": "01:00 downtime-guard reliability deep-work fallback (completed with fresh proof).",
   "reliability": {
@@ -39,53 +39,53 @@
   ],
   "nextJobs": [
     {
-      "name": "Overnight control-room block 5",
-      "nextRun": "03:45",
-      "lastStatus": null
-    },
-    {
       "name": "Critical update failover guard",
-      "nextRun": "03:52",
+      "nextRun": "06:52",
       "lastStatus": "ok"
-    },
-    {
-      "name": "Downtime gap auto-fill guard (quiet unless triggered)",
-      "nextRun": "04:00",
-      "lastStatus": "ok"
-    },
-    {
-      "name": "Reliability watchdog hourly (self-heal + conditional alert)",
-      "nextRun": "04:20",
-      "lastStatus": "ok"
-    },
-    {
-      "name": "Overnight control-room block 6",
-      "nextRun": "05:15",
-      "lastStatus": null
-    },
-    {
-      "name": "ClawPrime daily memory evolution pass",
-      "nextRun": "06:10",
-      "lastStatus": null
-    },
-    {
-      "name": "Morning control-room overnight summary (6:20 AM)",
-      "nextRun": "06:20",
-      "lastStatus": null
     },
     {
       "name": "Usage report - 7am",
       "nextRun": "07:00",
       "lastStatus": "ok"
+    },
+    {
+      "name": "Downtime gap auto-fill guard (quiet unless triggered)",
+      "nextRun": "07:00",
+      "lastStatus": "ok"
+    },
+    {
+      "name": "Control room status publish (gist backend)",
+      "nextRun": "07:00",
+      "lastStatus": "ok"
+    },
+    {
+      "name": "Reliability watchdog hourly (self-heal + conditional alert)",
+      "nextRun": "07:20",
+      "lastStatus": "ok"
+    },
+    {
+      "name": "Today dashboard refresh (every 3h)",
+      "nextRun": "08:15",
+      "lastStatus": "ok"
+    },
+    {
+      "name": "Autonomy daily planner (DAILY_PLAN source of truth)",
+      "nextRun": "08:20",
+      "lastStatus": "ok"
+    },
+    {
+      "name": "Daily plan preflight validator",
+      "nextRun": "08:24",
+      "lastStatus": null
     }
   ],
   "findings": [
-    "Evolution directive: every heartbeat/background cycle, review last 3 tasks for friction, ship one proactive optimization/fix/automation, log it, and send a one-line \"I just leveled myself up\" win; if idle, select highest-ROI opportunity and execute autonomously.",
-    "Output rules directive (non-negotiable): completion replies max 3 bullets + one emoji (+ link/file if created), complex work format = \"Done. Summary | Decisions | Next auto-step\", and only show internal reasoning when Sean explicitly requests \"show reasoning\".",
-    "Tool Fusion protocol added: default to rapid multi-tool chaining and parallel-path execution (pick winner, kill losers), prioritize free/public 2026 resources/MVPs first, and auto-automate anything feasible in under ~5 minutes.",
     "Memory Evolution directive added: auto-create and maintain `ClawPrime_Memory.md`; after each task store 1\u20133 key learnings; run daily memory prune + high-ROI pattern strengthening + one workflow self-improvement.",
     "Safety + Delight lock directive: apply internal safety/reversibility/benefit checklist before file/account/external actions; ask only for truly irreversible actions; include a small delight layer and occasional \ud83d\udd25 energy (1-10) in completions.",
-    "Infinite Sprint directive: during background/heartbeat cycles, run continuous no-idle compounding improvements (scan for highest-leverage opportunities and execute autonomously overnight/daylong)."
+    "Infinite Sprint directive: during background/heartbeat cycles, run continuous no-idle compounding improvements (scan for highest-leverage opportunities and execute autonomously overnight/daylong).",
+    "Overnight control-room sprint block 6 closeout completed (05:15 CST): full quality gate pass on v1.4.17, issue snapshot refreshed to 0 open, status gist republished, and complete handoff summary finalized in `status/overnight-control-room-log.md` (no additional patch required).",
+    "ClawPrime daily memory evolution pass completed (06:10 CST): distilled 3 durable patterns into `ClawPrime_Memory.md` (layered runtime-truth guardrails, explicit degraded/source semantics, issue-first gate-verified release loop), pruned redundancy, and tightened the default friction-fix sequence.",
+    "Workflow improvement auto-applied: added executable helper `scripts/clawprime_memory_evolution_helper.py` to auto-pull high-signal outcomes from recent memory + overnight log for faster daily memory evolution cycles."
   ],
   "workstream": {
     "now": [
@@ -99,21 +99,15 @@
       "02:00 downtime guard reevaluation (trigger only if no substantive block is upcoming)."
     ],
     "done": [
-      "01:00 CST reliability reconciliation fallback completed.",
+      "04:00 CST downtime-guard reliability fallback completed.",
       "Proof:",
       "`python3 scripts/reliability_watchdog_report.py --window-hours 12` -> `Health: GREEN`, `missing=0, disabled=0, model_mismatch=0, delivery_mismatch=0`",
-      "`cron runs` for `Usage report - 7am` shows follow-up success (`status: ok`) after prior historical error.",
-      "Evidence file: `status/downtime-guard-deepwork-2026-02-18-0100.md`."
+      "`cron runs` audit confirms latest `Usage report - 7am` and `Usage report - 5pm` runs are both `status: ok`.",
+      "Evidence file: `status/downtime-guard-deepwork-2026-02-18-0400.md`."
     ]
   },
   "charts": {
     "jobSuccessTrend": [
-      {
-        "label": "16:50",
-        "status": "ok",
-        "score": 1.0,
-        "job": "Pre-5pm reliability checkpoint (DAILY_PLAN-driven)"
-      },
       {
         "label": "17:00",
         "status": "ok",
@@ -175,55 +169,31 @@
         "job": "Nightly stale cron prune (scripted)"
       },
       {
-        "label": "03:00",
+        "label": "06:00",
         "status": "ok",
         "score": 1.0,
         "job": "Downtime gap auto-fill guard (quiet unless triggered)"
       },
       {
-        "label": "03:20",
+        "label": "06:10",
+        "status": "ok",
+        "score": 1.0,
+        "job": "ClawPrime daily memory evolution pass"
+      },
+      {
+        "label": "06:20",
         "status": "ok",
         "score": 1.0,
         "job": "Reliability watchdog hourly (self-heal + conditional alert)"
       },
       {
-        "label": "03:37",
+        "label": "06:37",
         "status": "ok",
         "score": 1.0,
         "job": "Critical update failover guard"
       }
     ],
     "reliabilityTrend": [
-      {
-        "label": "22:00",
-        "status": "green",
-        "score": 1.0
-      },
-      {
-        "label": "22:20",
-        "status": "green",
-        "score": 1.0
-      },
-      {
-        "label": "22:51",
-        "status": "green",
-        "score": 1.0
-      },
-      {
-        "label": "23:20",
-        "status": "green",
-        "score": 1.0
-      },
-      {
-        "label": "23:51",
-        "status": "green",
-        "score": 1.0
-      },
-      {
-        "label": "00:00",
-        "status": "green",
-        "score": 1.0
-      },
       {
         "label": "00:07",
         "status": "green",
@@ -261,6 +231,36 @@
       },
       {
         "label": "03:20",
+        "status": "green",
+        "score": 1.0
+      },
+      {
+        "label": "03:51",
+        "status": "green",
+        "score": 1.0
+      },
+      {
+        "label": "04:20",
+        "status": "green",
+        "score": 1.0
+      },
+      {
+        "label": "04:51",
+        "status": "green",
+        "score": 1.0
+      },
+      {
+        "label": "05:20",
+        "status": "green",
+        "score": 1.0
+      },
+      {
+        "label": "05:51",
+        "status": "green",
+        "score": 1.0
+      },
+      {
+        "label": "06:20",
         "status": "green",
         "score": 1.0
       }
@@ -336,6 +336,21 @@
       "time": "n/a",
       "category": "ops",
       "text": "Infinite Sprint directive: during background/heartbeat cycles, run continuous no-idle compounding improvements (scan for highest-leverage opportunities and execute autonomously overnight/daylong)."
+    },
+    {
+      "time": "n/a",
+      "category": "ui",
+      "text": "Overnight control-room sprint block 6 closeout completed (05:15 CST): full quality gate pass on v1.4.17, issue snapshot refreshed to 0 open, status gist republished, and complete handoff summary finalized in `status/overnight-control-room-log.md` (no additional patch required)."
+    },
+    {
+      "time": "n/a",
+      "category": "release",
+      "text": "ClawPrime daily memory evolution pass completed (06:10 CST): distilled 3 durable patterns into `ClawPrime_Memory.md` (layered runtime-truth guardrails, explicit degraded/source semantics, issue-first gate-verified release loop), pruned redundancy, and tightened the default friction-fix sequence."
+    },
+    {
+      "time": "n/a",
+      "category": "ops",
+      "text": "Workflow improvement auto-applied: added executable helper `scripts/clawprime_memory_evolution_helper.py` to auto-pull high-signal outcomes from recent memory + overnight log for faster daily memory evolution cycles."
     }
   ],
   "runtime": {
@@ -343,7 +358,7 @@
     "isIdle": true,
     "activeCount": 0,
     "activeRuns": [],
-    "checkedAtMs": 1771407970864,
+    "checkedAtMs": 1771419068182,
     "source": "cron-run reconciliation + subagent registry + main-session tool activity [static fallback runtime sanitized]"
   }
 }

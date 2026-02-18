@@ -558,12 +558,12 @@ summary {
 .runtime-modal-backdrop {
   position: fixed;
   inset: 0;
-  z-index: 60;
+  z-index: 120;
   background: rgba(1, 3, 8, 0.72);
   display: flex;
   align-items: flex-end;
   justify-content: center;
-  padding: 14px;
+  padding: calc(14px + env(safe-area-inset-top)) 14px calc(14px + env(safe-area-inset-bottom));
 }
 
 .runtime-modal {
@@ -1095,7 +1095,7 @@ th {
   }
 
   .runtime-modal-backdrop {
-    padding: 10px;
+    padding: calc(10px + env(safe-area-inset-top)) 10px calc(10px + env(safe-area-inset-bottom));
   }
 
   .runtime-modal {
