@@ -1,7 +1,7 @@
 {
-  "generatedAt": "2026-02-18T01:42:13.436700+00:00",
-  "generatedAtLocal": "2026-02-17 19:42 ",
-  "controlRoomVersion": "1.4.2",
+  "generatedAt": "2026-02-18T01:53:29.655326+00:00",
+  "generatedAtLocal": "2026-02-17 19:53 ",
+  "controlRoomVersion": "1.4.3",
   "currentFocus": "Post-release verification and next-ticket readiness",
   "activeWork": "v1.4.0 shipped and verified live (UX/mobile/theme/favicon overhaul)",
   "reliability": {
@@ -40,17 +40,17 @@
   "nextJobs": [
     {
       "name": "Control room status publish (gist backend)",
-      "nextRun": "19:43",
-      "lastStatus": "ok"
-    },
-    {
-      "name": "Critical update failover guard",
-      "nextRun": "19:52",
+      "nextRun": "19:54",
       "lastStatus": "ok"
     },
     {
       "name": "Downtime gap auto-fill guard (quiet unless triggered)",
       "nextRun": "20:00",
+      "lastStatus": "ok"
+    },
+    {
+      "name": "Critical update failover guard",
+      "nextRun": "20:07",
       "lastStatus": "ok"
     },
     {
@@ -80,12 +80,12 @@
     }
   ],
   "findings": [
-    "Sean reported the dashboard still looked wrong for idle/running state; live verification after `v1.3.1` showed Runtime Status correctly at `IDLE` with no active background runs.",
     "New UX clarity gap identified: `Now` lane can still show a scheduled time block (from planning docs) while runtime is `IDLE`, which can feel contradictory to users.",
     "Durable improvement direction: keep runtime truth (`IDLE`/`RUNNING`) distinct from schedule truth (planned current block), and consider explicit labeling in UI to avoid confusion.",
     "Issue #1 shipped as `v1.3.2` (`refs #1`): Next-lane now dedupes overlapping timeline/status entries with time-range + semantic/token overlap; regression test added for exact 17:00 usage-report overlap case; issue #1 closed.",
     "Preference update: Sean wants shorter, high-signal summaries by default in chat updates.",
-    "Shipped control-room UX/branding overhaul as `v1.4.0` with one commit per ticket (#5-#9): tactile refresh interactions, mobile-first touch layout, OpenClaw coral/cyan theme alignment, custom lobster favicon + home-screen icons, and final accessibility/interaction polish. All related issues were opened first and then closed after release verification."
+    "Shipped control-room UX/branding overhaul as `v1.4.0` with one commit per ticket (#5-#9): tactile refresh interactions, mobile-first touch layout, OpenClaw coral/cyan theme alignment, custom lobster favicon + home-screen icons, and final accessibility/interaction polish. All related issues were opened first and then closed after release verification.",
+    "UX preference update from Sean: home-screen icon must be full-bleed and clearly recognizable; theme should prioritize OpenClaw warm coral/orange gradients over cyan-forward accents."
   ],
   "workstream": {
     "now": [
@@ -176,24 +176,19 @@
         "job": "Evolution profile refresh (helper, non-planner)"
       },
       {
-        "label": "19:37",
+        "label": "19:52",
         "status": "ok",
         "score": 1.0,
         "job": "Critical update failover guard"
       },
       {
-        "label": "19:42",
+        "label": "19:53",
         "status": "ok",
         "score": 1.0,
         "job": "Control room status publish (gist backend)"
       }
     ],
     "reliabilityTrend": [
-      {
-        "label": "12:51",
-        "status": "green",
-        "score": 1.0
-      },
       {
         "label": "13:20",
         "status": "green",
@@ -258,15 +253,15 @@
         "label": "19:20",
         "status": "green",
         "score": 1.0
+      },
+      {
+        "label": "19:51",
+        "status": "green",
+        "score": 1.0
       }
     ]
   },
   "activity": [
-    {
-      "time": "15:30",
-      "category": "release",
-      "text": "Added collapsible containers for major sections using native details/summary UX."
-    },
     {
       "time": "15:30",
       "category": "release",
@@ -381,6 +376,11 @@
       "time": "16:14",
       "category": "release",
       "text": "Shipped control-room UX/branding overhaul as `v1.4.0` with one commit per ticket (#5-#9): tactile refresh interactions, mobile-first touch layout, OpenClaw coral/cyan theme alignment, custom lobster favicon + home-screen icons, and final accessibility/interaction polish. All related issues were opened first and then closed after release verification."
+    },
+    {
+      "time": "16:14",
+      "category": "ops",
+      "text": "UX preference update from Sean: home-screen icon must be full-bleed and clearly recognizable; theme should prioritize OpenClaw warm coral/orange gradients over cyan-forward accents."
     }
   ],
   "runtime": {
@@ -388,7 +388,7 @@
     "isIdle": true,
     "activeCount": 0,
     "activeRuns": [],
-    "checkedAtMs": 1771378933467,
-    "source": "session-store + cron-run-log reconciliation + main-session heartbeat"
+    "checkedAtMs": 1771379609685,
+    "source": "cron-run reconciliation + subagent registry (background only)"
   }
 }
