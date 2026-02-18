@@ -169,17 +169,24 @@ export default function App() {
         lastUpdatedLabel={lastUpdatedLabel}
         freshnessLevel={freshnessLevel}
         freshnessLabel={freshnessLabel}
-        refreshing={refreshing}
-        lastRefreshAtMs={lastRefreshAtMs}
-        refreshOutcome={refreshOutcome}
-        errorCode={errorCode}
         sourceMode={sourceMode}
         sourceLabel={sourceLabel}
         sourceDetail={sourceDetail}
-        onRefresh={() => void refresh()}
       />
 
-      <TabBar tabs={TABS} activeTab={activeTab} onChange={setActiveTab} />
+      <TabBar
+        tabs={TABS}
+        activeTab={activeTab}
+        onChange={setActiveTab}
+        refreshing={refreshing}
+        lastRefreshAtMs={lastRefreshAtMs}
+        refreshOutcome={refreshOutcome}
+        freshnessLevel={freshnessLevel}
+        freshnessLabel={freshnessLabel}
+        sourceMode={sourceMode}
+        errorCode={errorCode}
+        onRefresh={() => void refresh()}
+      />
 
       {error && (
         <div className="error-banner">

@@ -47,7 +47,7 @@ Claw Control Room provides a readable, near-real-time view of Claw's operations:
 - Primary runtime source: Gist URL from `public/data/source.json`.
 - Fallback source: `public/data/status.json`.
 - Fallback payload is runtime-sanitized (`idle`, no active runs) so cached/static fallback cannot present stale `RUNNING` activity.
-- Frontend polling keeps showing the last known good snapshot when refresh fails, and header state explicitly marks failure/retry instead of implying success.
+- Frontend polling keeps showing the last known good snapshot when refresh fails, and sticky tab-row refresh state explicitly marks failure/retry instead of implying success.
 - Polling is concurrency-safe: every refresh gets a monotonic request sequence and abort controller; only the newest successful request may commit state.
 - Aborted superseded requests are intentionally silent (no false error banners) to avoid degraded-noise during quick retry/manual refresh patterns.
 - Refresh failures are normalized into stable error codes (network/http/payload/source) so UI copy can distinguish failure class while preserving last-known-good behavior.

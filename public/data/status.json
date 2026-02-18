@@ -1,7 +1,7 @@
 {
-  "generatedAt": "2026-02-18T14:43:46.512915+00:00",
-  "generatedAtLocal": "2026-02-18 08:43 ",
-  "controlRoomVersion": "1.4.23",
+  "generatedAt": "2026-02-18T14:48:57.559310+00:00",
+  "generatedAtLocal": "2026-02-18 08:48 ",
+  "controlRoomVersion": "1.4.24",
   "currentFocus": "Control-room issue triage block (mandatory)",
   "activeWork": "downtime-guard monitoring/continuity mode.",
   "reliability": {
@@ -44,7 +44,7 @@
   "nextJobs": [
     {
       "name": "Control room status publish (gist backend)",
-      "nextRun": "08:44",
+      "nextRun": "08:49",
       "lastStatus": "ok"
     },
     {
@@ -93,14 +93,14 @@
   ],
   "workstream": {
     "now": [
-      "08:44 \u2014 Scheduled job: Control room status publish (gist backend)"
+      "Implement issue #37 in /Users/seankudrna/.openclaw/workspace/claw-control-room. Issue: https://github.com/SeanKudrna/claw-control-room/issues/37 Goal: Move refresh control into sti\u2026"
     ],
     "next": [
+      "08:49 \u2014 Scheduled job: Control room status publish (gist backend)",
       "08:52 \u2014 Scheduled job: Critical update failover guard",
       "09:00 \u2014 Scheduled job: Downtime gap auto-fill guard (quiet unless triggered)",
       "09:10-10:20 \u2014 Control-room product lane block (mandatory)",
-      "09:20 \u2014 Scheduled job: Reliability watchdog hourly (self-heal + conditional alert)",
-      "09:35 \u2014 Scheduled job: Control room issue triage + QA intake"
+      "09:20 \u2014 Scheduled job: Reliability watchdog hourly (self-heal + conditional alert)"
     ],
     "done": [
       "Autonomy daily planner (DAILY_PLAN source of truth)",
@@ -191,7 +191,7 @@
         "job": "Critical update failover guard"
       },
       {
-        "label": "08:43",
+        "label": "08:48",
         "status": "ok",
         "score": 1.0,
         "job": "Control room status publish (gist backend)"
@@ -323,6 +323,11 @@
     },
     {
       "time": "n/a",
+      "category": "release",
+      "text": "Orchestration directive reinforced: proactively split multi-change requests into coordinated parallel subagents and batch-release when useful (ClawPrime auto-orchestration behavior)."
+    },
+    {
+      "time": "n/a",
       "category": "reliability",
       "text": "Sean directed an overnight steering sprint for claw-control-room (reliability + UX + transparency focus) to run through the night and deliver a strong 6:20-6:30 AM summary."
     },
@@ -382,7 +387,7 @@
     "isIdle": true,
     "activeCount": 0,
     "activeRuns": [],
-    "checkedAtMs": 1771425826466,
+    "checkedAtMs": 1771426137502,
     "source": "cron-run reconciliation + subagent registry [static fallback runtime sanitized]"
   }
 }

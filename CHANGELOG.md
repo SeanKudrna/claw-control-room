@@ -1,5 +1,15 @@
 # Changelog
 
+## v1.4.24 - 2026-02-18
+
+### Changed
+- Moved the refresh control out of the hero/header cluster into the sticky tab shell, right-aligned and visually separated from Overview/Operations/Insights tab buttons.
+- Preserved refresh helper semantics and state truthfulness (`refreshing` / `success` / `error`) while relocating control wiring from `Header` to `TabBar`.
+- Updated sticky tab-shell responsive behavior so tabs and refresh control stack cleanly on smaller screens without losing touch usability.
+
+### Docs
+- Updated README and handbook architecture/development notes to reflect sticky tab-row refresh ownership.
+
 ## v1.4.23 - 2026-02-18
 
 ### Fixed

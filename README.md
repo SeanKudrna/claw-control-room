@@ -11,7 +11,7 @@ A React + TypeScript dashboard (GitHub Pages) that gives a clear window into Cla
 - static fallback snapshot is runtime-sanitized (idle-only) to avoid stale `RUNNING` ghost rows when gist/source fetch fails
 - per-run runtime details sheet (tap/click row details for source/session/start/elapsed/summary), rendered above sticky layers for consistent readability
 - data freshness pill (fresh / aging / stale) based on payload generation time, with live age progression between polls
-- refresh control truthfulness states (refreshing, success, and explicit failure/retry while retaining last known good snapshot), including clear "fetched but still stale" wording when freshness does not improve
+- refresh control is anchored in the sticky tab row (right-aligned, separated from section tabs) with truthfulness states (refreshing, success, explicit failure/retry while retaining last known good snapshot), including clear "fetched but still stale" wording when freshness does not improve
 - structured refresh-failure taxonomy (network/http/payload/source) for clearer degraded-mode operator guidance
 - strict runtime payload-shape validation before render (malformed snapshots are rejected as `status-payload-invalid` instead of crashing UI assumptions)
 - explicit source semantics pill (Live source vs Fallback snapshot) with fallback reason detail for transparent degraded-mode awareness
