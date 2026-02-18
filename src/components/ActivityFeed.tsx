@@ -2,9 +2,19 @@ import { useMemo, useState } from 'react';
 import type { ActivityItem } from '../types/status';
 
 const ORDER = ['all', 'ui', 'reliability', 'release', 'docs', 'ops'] as const;
+const CATEGORY_ORDER = ORDER.filter((item) => item !== 'all');
 const DEFAULT_VISIBLE_ITEMS = 12;
 
 type FilterValue = (typeof ORDER)[number];
+type ActivityCategory = (typeof CATEGORY_ORDER)[number];
+
+function normalizeActivityCategory(category: string): ActivityCategory {
+  const normalized = category.trim().toLowerCase();
+  if (CATEGORY_ORDER.includes(normalized as ActivityCategory)) {
+    return normalized as ActivityCategory;
+  }
+  return 'ops';
+}
 
 interface ActivityFeedProps {
   activity: ActivityItem[];
@@ -17,11 +27,11 @@ export function ActivityFeed({ activity, hideHeading = false }: ActivityFeedProp
 
   const filtered = useMemo(() => {
     if (filter === 'all') return activity;
-    return activity.filter((item) => item.category === filter);
+    return activity.filter((item) => normalizeActivityCategory(item.category) === filter);
   }, [activity, filter]);
 
   const availableFilters = useMemo(() => {
-    const present = new Set(activity.map((item) => item.category));
+    const present = new Set(activity.map((item) => normalizeActivityCategory(item.category)));
     return ORDER.filter((item) => item === 'all' || present.has(item));
   }, [activity]);
 
@@ -66,15 +76,18 @@ export function ActivityFeed({ activity, hideHeading = false }: ActivityFeedProp
 
       <ul className="activity-list">
         {filtered.length === 0 && <li className="muted">No activity items in this filter.</li>}
-        {visibleItems.map((item, idx) => (
-          <li key={`${item.time}-${item.category}-${idx}`} className="activity-item">
-            <div className="activity-item-meta">
-              <span className="tiny-pill neutral">{item.time}</span>
-              <span className={`tiny-pill ${item.category}`}>{item.category.toUpperCase()}</span>
-            </div>
-            <p className="activity-item-text">{item.text}</p>
-          </li>
-        ))}
+        {visibleItems.map((item, idx) => {
+          const normalizedCategory = normalizeActivityCategory(item.category);
+          return (
+            <li key={`${item.time}-${item.category}-${idx}`} className="activity-item">
+              <div className="activity-item-meta">
+                <span className="tiny-pill neutral">{item.time}</span>
+                <span className={`tiny-pill ${normalizedCategory}`}>{normalizedCategory.toUpperCase()}</span>
+              </div>
+              <p className="activity-item-text">{item.text}</p>
+            </li>
+          );
+        })}
       </ul>
     </section>
   );
