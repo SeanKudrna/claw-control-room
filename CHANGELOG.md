@@ -8,6 +8,7 @@
 
 ### Changed
 - Reworked responsive behavior with a mobile-first pass: touch-friendly control sizing, horizontal tab scroller, stacked runtime/cards, safe-area padding, and mobile-optimized jobs table layout.
+- Shifted the dashboard color system to match OpenClaw website palette conventions (deep dark surfaces + coral/cyan accents).
 
 ## v1.3.3 - 2026-02-17
 

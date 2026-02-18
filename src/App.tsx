@@ -38,7 +38,17 @@ function resolveInitialTab(): string {
 }
 
 export default function App() {
-  const { data, loading, error, refresh, lastUpdatedLabel, freshnessLevel, freshnessLabel } = useStatus();
+  const {
+    data,
+    loading,
+    refreshing,
+    error,
+    refresh,
+    lastRefreshAtMs,
+    lastUpdatedLabel,
+    freshnessLevel,
+    freshnessLabel,
+  } = useStatus();
   const [activeTab, setActiveTab] = useState<string>(resolveInitialTab());
 
   useEffect(() => {
@@ -143,7 +153,8 @@ export default function App() {
         lastUpdatedLabel={lastUpdatedLabel}
         freshnessLevel={freshnessLevel}
         freshnessLabel={freshnessLabel}
-        refreshing={loading}
+        refreshing={refreshing}
+        lastRefreshAtMs={lastRefreshAtMs}
         onRefresh={() => void refresh()}
       />
 

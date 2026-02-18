@@ -1,15 +1,18 @@
 :root {
   color-scheme: dark;
-  --bg: #090d1a;
-  --surface: #121936;
-  --surface-2: #171f45;
-  --border: #2a3568;
-  --text: #e8ecff;
-  --muted: #9eaad6;
-  --accent: #7a8df5;
-  --ok: #2fc783;
-  --warn: #d6a732;
-  --error: #da5b5b;
+  --bg: #050810;
+  --surface: #0a0f1a;
+  --surface-2: #111827;
+  --border: rgba(136, 146, 176, 0.24);
+  --text: #f0f4ff;
+  --muted: #8892b0;
+  --accent: #00e5cc;
+  --accent-strong: #14b8a6;
+  --coral: #ff4d4d;
+  --coral-mid: #e63946;
+  --ok: #14b8a6;
+  --warn: #fbbf24;
+  --error: #ff4d4d;
   --touch-target: 44px;
 }
 
@@ -20,7 +23,7 @@
 body {
   margin: 0;
   font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
-  background: radial-gradient(circle at top, #121936 0%, var(--bg) 60%);
+  background: radial-gradient(circle at top, #111827 0%, var(--bg) 62%);
   color: var(--text);
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
@@ -65,7 +68,7 @@ p {
 }
 
 .card {
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0));
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.01));
   border: 1px solid var(--border);
   border-radius: 14px;
   padding: 14px;
@@ -87,9 +90,9 @@ p {
 }
 
 .version-pill {
-  border: 1px solid rgba(122, 141, 245, 0.6);
-  background: rgba(122, 141, 245, 0.18);
-  color: #c7d0ff;
+  border: 1px solid rgba(255, 77, 77, 0.5);
+  background: rgba(255, 77, 77, 0.16);
+  color: #ffd7d7;
   border-radius: 999px;
   font-size: 0.78rem;
   font-weight: 700;
@@ -126,8 +129,8 @@ p {
 
 .freshness-pill.fresh {
   color: #c8ffd6;
-  background: rgba(47, 199, 131, 0.2);
-  border: 1px solid rgba(47, 199, 131, 0.55);
+  background: rgba(20, 184, 166, 0.22);
+  border: 1px solid rgba(20, 184, 166, 0.55);
 }
 
 .freshness-pill.aging {
@@ -138,8 +141,8 @@ p {
 
 .freshness-pill.stale {
   color: #ffd2d2;
-  background: rgba(218, 91, 91, 0.18);
-  border: 1px solid rgba(218, 91, 91, 0.5);
+  background: rgba(255, 77, 77, 0.18);
+  border: 1px solid rgba(255, 77, 77, 0.5);
 }
 
 .ghost-btn {
@@ -157,8 +160,8 @@ p {
 }
 
 .ghost-btn:hover {
-  border-color: rgba(122, 141, 245, 0.65);
-  background: rgba(122, 141, 245, 0.12);
+  border-color: rgba(0, 229, 204, 0.6);
+  background: rgba(0, 229, 204, 0.12);
 }
 
 .ghost-btn.is-pressed,
@@ -167,19 +170,19 @@ p {
 }
 
 .ghost-btn.is-refreshing {
-  border-color: rgba(122, 141, 245, 0.8);
-  background: rgba(122, 141, 245, 0.2);
-  box-shadow: 0 0 0 3px rgba(122, 141, 245, 0.16);
+  border-color: rgba(0, 229, 204, 0.72);
+  background: rgba(0, 229, 204, 0.18);
+  box-shadow: 0 0 0 3px rgba(0, 229, 204, 0.14);
 }
 
 .ghost-btn.is-success {
-  border-color: rgba(47, 199, 131, 0.7);
-  background: rgba(47, 199, 131, 0.18);
-  color: #ccffde;
+  border-color: rgba(20, 184, 166, 0.7);
+  background: rgba(20, 184, 166, 0.18);
+  color: #d7fff8;
 }
 
 .refresh-success-icon {
-  color: #8df0bf;
+  color: #7ff7ea;
 }
 
 .ghost-btn:disabled {
@@ -194,11 +197,11 @@ p {
 }
 
 .refresh-helper.refreshing {
-  color: #bfd0ff;
+  color: #a9fff4;
 }
 
 .refresh-helper.success {
-  color: #8df0bf;
+  color: #7ff7ea;
 }
 
 .spin {
@@ -215,8 +218,8 @@ p {
   display: flex;
   align-items: center;
   gap: 8px;
-  background: rgba(218, 91, 91, 0.12);
-  border: 1px solid rgba(218, 91, 91, 0.35);
+  background: rgba(255, 77, 77, 0.12);
+  border: 1px solid rgba(255, 77, 77, 0.35);
   color: #ffd5d5;
   border-radius: 12px;
   padding: 10px 12px;
@@ -235,7 +238,7 @@ p {
 
 .tab-btn {
   border: 1px solid var(--border);
-  background: #10173a;
+  background: rgba(255, 255, 255, 0.05);
   color: var(--muted);
   border-radius: 10px;
   font-size: 0.84rem;
@@ -246,9 +249,9 @@ p {
 }
 
 .tab-btn.active {
-  border-color: rgba(122, 141, 245, 0.65);
-  background: rgba(122, 141, 245, 0.18);
-  color: #d5dcff;
+  border-color: rgba(0, 229, 204, 0.55);
+  background: rgba(0, 229, 204, 0.16);
+  color: #d2fff9;
 }
 
 .ghost-btn,
@@ -323,7 +326,7 @@ summary {
 }
 
 .runtime-card {
-  border-color: rgba(122, 141, 245, 0.35);
+  border-color: rgba(0, 229, 204, 0.32);
 }
 
 .runtime-pill {
@@ -335,15 +338,15 @@ summary {
 }
 
 .runtime-pill.idle {
-  color: #bbd2ff;
-  background: rgba(130, 142, 180, 0.22);
-  border: 1px solid rgba(130, 142, 180, 0.45);
+  color: #d7e2ff;
+  background: rgba(136, 146, 176, 0.2);
+  border: 1px solid rgba(136, 146, 176, 0.45);
 }
 
 .runtime-pill.running {
-  color: #c8ffd6;
-  background: rgba(47, 199, 131, 0.2);
-  border: 1px solid rgba(47, 199, 131, 0.55);
+  color: #d7fff8;
+  background: rgba(0, 229, 204, 0.16);
+  border: 1px solid rgba(0, 229, 204, 0.48);
 }
 
 .runtime-idle-row {
@@ -367,7 +370,7 @@ summary {
   justify-content: space-between;
   gap: 8px;
   border: 1px solid rgba(255, 255, 255, 0.08);
-  background: #0f1530;
+  background: rgba(17, 24, 39, 0.9);
   border-radius: 10px;
   padding: 8px 10px;
 }
@@ -389,8 +392,8 @@ summary {
   font-size: 0.84rem;
   font-weight: 800;
   color: #c7ffd5;
-  background: rgba(47, 199, 131, 0.18);
-  border: 1px solid rgba(47, 199, 131, 0.35);
+  background: rgba(20, 184, 166, 0.2);
+  border: 1px solid rgba(20, 184, 166, 0.35);
   border-radius: 8px;
   padding: 2px 7px;
 }
@@ -428,23 +431,23 @@ summary {
 }
 
 .status-badge.green {
-  background: rgba(47, 199, 131, 0.16);
-  color: #8df0bf;
+  background: rgba(20, 184, 166, 0.18);
+  color: #7ff7ea;
 }
 
 .status-badge.yellow {
   background: rgba(214, 167, 50, 0.18);
-  color: #f5d78c;
+  color: #ffd577;
 }
 
 .status-badge.red {
-  background: rgba(218, 91, 91, 0.18);
+  background: rgba(255, 77, 77, 0.18);
   color: #ffb0b0;
 }
 
 .status-badge.unknown {
-  background: rgba(130, 142, 180, 0.2);
-  color: #cdd6fa;
+  background: rgba(136, 146, 176, 0.2);
+  color: #d8deef;
 }
 
 .swimlane-grid {
@@ -457,11 +460,11 @@ summary {
   border-radius: 12px;
   padding: 10px;
   border: 1px solid rgba(255, 255, 255, 0.08);
-  background: #0f1530;
+  background: rgba(17, 24, 39, 0.9);
 }
 
 .lane.now {
-  border-color: rgba(122, 141, 245, 0.55);
+  border-color: rgba(0, 229, 204, 0.45);
 }
 
 .lane.next {
@@ -469,7 +472,7 @@ summary {
 }
 
 .lane.done {
-  border-color: rgba(47, 199, 131, 0.45);
+  border-color: rgba(20, 184, 166, 0.45);
 }
 
 .lane ul {
@@ -498,7 +501,7 @@ summary {
   border: 1px solid rgba(255, 255, 255, 0.07);
   border-radius: 10px;
   padding: 8px 8px 6px;
-  background: #0f1530;
+  background: rgba(17, 24, 39, 0.9);
 }
 
 .mini-bar-wrap {
@@ -513,20 +516,20 @@ summary {
   width: 100%;
   min-width: 10px;
   border-radius: 4px 4px 2px 2px;
-  background: rgba(130, 142, 180, 0.75);
+  background: rgba(136, 146, 176, 0.75);
   margin-top: auto;
 }
 
 .mini-bar.ok,
 .mini-bar.green,
 .mini-bar.success {
-  background: rgba(47, 199, 131, 0.85);
+  background: rgba(20, 184, 166, 0.85);
 }
 
 .mini-bar.error,
 .mini-bar.failed,
 .mini-bar.red {
-  background: rgba(218, 91, 91, 0.88);
+  background: rgba(255, 77, 77, 0.88);
 }
 
 .mini-bar.yellow,
@@ -552,13 +555,13 @@ summary {
   display: grid;
   gap: 4px;
   border-left: 3px solid var(--accent);
-  background: #0f1530;
+  background: rgba(17, 24, 39, 0.9);
   border-radius: 8px;
   padding: 9px 10px;
 }
 
 .timeline-time {
-  color: #b3c1f7;
+  color: #9df9ee;
   font-size: 0.86rem;
   font-weight: 600;
 }
@@ -597,7 +600,7 @@ th {
 
 .chip {
   border: 1px solid var(--border);
-  background: #10173a;
+  background: rgba(17, 24, 39, 0.85);
   color: var(--muted);
   border-radius: 999px;
   font-size: 0.73rem;
@@ -608,9 +611,9 @@ th {
 }
 
 .chip.active {
-  background: rgba(122, 141, 245, 0.18);
-  color: #c7d0ff;
-  border-color: rgba(122, 141, 245, 0.6);
+  background: rgba(0, 229, 204, 0.16);
+  color: #d2fff9;
+  border-color: rgba(0, 229, 204, 0.5);
 }
 
 .activity-list {
@@ -639,43 +642,43 @@ th {
 }
 
 .tiny-pill.ok {
-  background: rgba(47, 199, 131, 0.16);
-  color: #8df0bf;
+  background: rgba(20, 184, 166, 0.18);
+  color: #7ff7ea;
 }
 
 .tiny-pill.error {
-  background: rgba(218, 91, 91, 0.18);
+  background: rgba(255, 77, 77, 0.18);
   color: #ffb0b0;
 }
 
 .tiny-pill.neutral {
-  background: rgba(130, 142, 180, 0.2);
-  color: #cdd6fa;
+  background: rgba(136, 146, 176, 0.2);
+  color: #d8deef;
 }
 
 .tiny-pill.ui {
-  background: rgba(122, 141, 245, 0.2);
-  color: #c7d0ff;
+  background: rgba(0, 229, 204, 0.18);
+  color: #d2fff9;
 }
 
 .tiny-pill.reliability {
-  background: rgba(47, 199, 131, 0.16);
-  color: #8df0bf;
+  background: rgba(20, 184, 166, 0.18);
+  color: #7ff7ea;
 }
 
 .tiny-pill.release {
   background: rgba(214, 167, 50, 0.18);
-  color: #f5d78c;
+  color: #ffd577;
 }
 
 .tiny-pill.docs {
   background: rgba(150, 166, 214, 0.2);
-  color: #d3ddff;
+  color: #e1e7fb;
 }
 
 .tiny-pill.ops {
-  background: rgba(130, 142, 180, 0.2);
-  color: #cdd6fa;
+  background: rgba(136, 146, 176, 0.2);
+  color: #d8deef;
 }
 
 .findings {
@@ -830,7 +833,7 @@ th {
     border: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: 10px;
     padding: 8px 10px;
-    background: #0f1530;
+    background: rgba(17, 24, 39, 0.9);
   }
 
   td {
