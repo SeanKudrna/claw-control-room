@@ -164,6 +164,41 @@ class StatusBuilderTests(unittest.TestCase):
         self.assertIn("13:20-13:45", joined)
         self.assertNotIn("Morning control-room overnight summary prep", joined)
 
+    def test_parse_workstream_prioritizes_near_term_jobs_when_timeline_far(self) -> None:
+        md = """
+## Next 3 meaningful blocks
+- 13:20-13:45 — Midday reliability + queue reconciliation
+"""
+        now_local = dt.datetime.now().replace(hour=8, minute=0)
+        timeline = [{"time": "13:20-13:45", "task": "Midday reliability + queue reconciliation"}]
+
+        stream = parse_workstream(
+            md,
+            timeline=timeline,
+            active_work="",
+            now_local=now_local,
+            near_term_jobs=["08:15 — Scheduled job: Today dashboard refresh (every 3h)"],
+        )
+        self.assertEqual(stream["next"][0], "08:15 — Scheduled job: Today dashboard refresh (every 3h)")
+
+    def test_parse_workstream_done_filters_proof_lines_and_stale_items(self) -> None:
+        md = """
+## Last completed with proof
+- 2026-02-17 01:00 old fallback completed
+- 08:10 fresh completion captured
+- Proof:
+- `python3 scripts/reliability_watchdog_report.py --window-hours 12`
+"""
+        now_local = dt.datetime(2026, 2, 18, 8, 30)
+        timeline: list[dict[str, str]] = []
+
+        stream = parse_workstream(md, timeline=timeline, active_work="", now_local=now_local)
+        self.assertIn("08:10 fresh completion captured", stream["done"])
+        done_joined = "\n".join(stream["done"])
+        self.assertNotIn("old fallback", done_joined)
+        self.assertNotIn("Proof:", done_joined)
+        self.assertNotIn("reliability_watchdog_report", done_joined)
+
     def test_recent_activity(self) -> None:
         md = """
 ## 15:10 dashboard modernization

@@ -15,7 +15,9 @@ Claw Control Room provides a readable, near-real-time view of Claw's operations:
 - Core payload assembly lives in `scripts/lib/status_builder.py`.
 - Payload builder applies timeline-aware stale-guard logic so `currentFocus` and `workstream.now` stay accurate even when `TODAY_STATUS.md` lags behind clock time.
 - Workstream `next` lane uses time-range overlap plus semantic/token overlap to dedupe overlapping timeline/status items, keeping timeline blocks canonical.
+- `next` lane now also blends near-term scheduled jobs (from cron state) and prioritizes them when DAILY_PLAN upcoming blocks are too far out for current-time operations.
 - Active-work stale guard now handles both time ranges and single-time completed lines (e.g., `01:00 ... completed`) so old overnight entries do not persist as current daytime work.
+- Done-lane freshness now filters stale timestamped carryover and strips proof/evidence scaffolding lines so completion rows stay actionable.
 - When timeline future blocks exist, untimed carryover items from `TODAY_STATUS` are suppressed in `next` to keep daily sequencing fresh.
 - Runtime detection reconciles session-store cron run keys against cron finished logs, active subagent registry runs, and main-session tool activity. Runtime rows include source type (cron, background subagent, or main-session task).
 - Main-session runtime detection is tool-activity driven (assistant tool calls + tool results) with pending-call-aware lock handling for in-flight turns; completed calls age out normally so plain chat back-and-forth does not trigger `RUNNING` by itself.

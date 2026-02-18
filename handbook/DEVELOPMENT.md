@@ -28,6 +28,8 @@ UI nav notes:
 - Freshness labels should age on a timer between polls (truthful stale-state progression).
 - `Running now` stale-guard should expire single-time completed entries (not just explicit ranges).
 - `Next` lane should prefer future timed items; untimed carryover from status notes should only appear when no better timed source exists.
+- If timeline `next` blocks are far away, near-term scheduled jobs should be promoted into `next` lane to keep Overview aligned with Operations job schedule.
+- `Done` lane should exclude proof/evidence scaffolding bullets and auto-expire stale timestamped completions.
 - Refresh success helper text should explicitly call out stale carryover when the newest available payload is still old.
 - Runtime details modal should render via body portal with z-index above sticky tab/header layers.
 
@@ -61,7 +63,7 @@ python3 scripts/build_status_json.py --live-runtime
 This runs:
 - Python compile checks
 - Python tests (`scripts/tests/test_status_builder.py`, `scripts/tests/test_extract_release_notes.py`, `scripts/tests/test_issue_snapshot.py`, `scripts/tests/test_collapsible_heading_compact.py`)
-- status payload build sanity check (includes timeline-aware stale fallback, next-lane dedupe with time/token overlap, and runtime detection wiring for cron/subagent/main-session tool activity + pending-call-aware in-flight signal)
+- status payload build sanity check (includes timeline-aware stale fallback, next-lane dedupe/prioritization with near-term job blending, done-lane freshness filtering, and runtime detection wiring for cron/subagent/main-session tool activity + pending-call-aware in-flight signal)
 - TypeScript typecheck
 - Vite production build
 

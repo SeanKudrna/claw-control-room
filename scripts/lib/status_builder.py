@@ -67,6 +67,14 @@ ACTIVE_WORK_COMPLETION_TOKENS = (
     "done",
     "finished",
 )
+WORKSTREAM_DONE_MAX_AGE_MINUTES = 6 * 60
+WORKSTREAM_NEXT_JOB_HORIZON_MINUTES = 2 * 60
+WORKSTREAM_NEXT_JOB_PRIORITY_WINDOW_MINUTES = 90
+WORKSTREAM_DONE_PROOF_PREFIXES = (
+    "proof",
+    "evidence",
+    "command",
+)
 EXCLUDED_RUNTIME_JOB_NAME_SUBSTRINGS = (
     "control room status publish",
 )
@@ -161,6 +169,63 @@ def parse_leading_time_minutes(value: str) -> Optional[int]:
     if not match:
         return None
     return parse_hhmm_to_minutes(match.group(1))
+
+
+def infer_time_anchor(item: str, now_local: dt.datetime) -> Optional[dt.datetime]:
+    """Infer a local datetime anchor from a text item across common timestamp formats."""
+    text = item.strip()
+    if not text:
+        return None
+
+    iso_match = re.search(r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(?::\d{2})?(?:Z|[+-]\d{2}:?\d{2})?", text)
+    if iso_match:
+        parsed_ms = parse_timestamp_ms(iso_match.group(0))
+        if parsed_ms is not None:
+            return dt.datetime.fromtimestamp(parsed_ms / 1000, dt.timezone.utc).astimezone(now_local.tzinfo)
+
+    dated_match = re.search(r"(\d{4}-\d{2}-\d{2})[ T](\d{1,2}:\d{2})", text)
+    if dated_match:
+        try:
+            parsed = dt.datetime.fromisoformat(f"{dated_match.group(1)} {dated_match.group(2)}")
+            return parsed.replace(tzinfo=now_local.tzinfo)
+        except ValueError:
+            pass
+
+    parsed_range = parse_time_range(text)
+    if parsed_range is not None:
+        anchor_minutes = parsed_range[1]
+    else:
+        single_time = parse_leading_time_minutes(text)
+        if single_time is None:
+            return None
+        anchor_minutes = single_time
+
+    anchor = now_local.replace(hour=anchor_minutes // 60, minute=anchor_minutes % 60, second=0, microsecond=0)
+    if anchor > now_local + dt.timedelta(hours=12):
+        anchor -= dt.timedelta(days=1)
+    return anchor
+
+
+def is_done_item_fresh(item: str, now_local: dt.datetime, max_age_minutes: int = WORKSTREAM_DONE_MAX_AGE_MINUTES) -> bool:
+    anchor = infer_time_anchor(item, now_local)
+    if anchor is None:
+        return True
+    return (now_local - anchor) <= dt.timedelta(minutes=max_age_minutes)
+
+
+def is_proof_scaffolding_line(item: str) -> bool:
+    stripped = item.strip()
+    if not stripped:
+        return True
+
+    lower = stripped.lower().strip(":")
+    if any(lower.startswith(prefix) for prefix in WORKSTREAM_DONE_PROOF_PREFIXES):
+        return True
+
+    if stripped.startswith("`"):
+        return True
+
+    return False
 
 
 def normalize_semantic_text(value: str) -> str:
@@ -443,6 +508,7 @@ def parse_workstream(
     timeline: List[Dict[str, str]],
     active_work: str,
     now_local: dt.datetime,
+    near_term_jobs: Optional[List[str]] = None,
 ) -> Dict[str, List[str]]:
     """Assemble now/next/done swimlanes from TODAY_STATUS with timeline-aware fallbacks."""
     context = timeline_context(timeline, now_local)
@@ -465,9 +531,27 @@ def parse_workstream(
     if not timeline_next and not status_next:
         # Only allow untimed carryover when there is no better timed source.
         status_next = [item for item in raw_status_next if not has_time_hint(item)]
+
     next_lane = dedupe_next_lane(timeline_next, status_next)
 
-    done_lane = parse_section_bullets(today_status_markdown, "Last completed with proof")
+    near_term_jobs = near_term_jobs or []
+    next_timeline_start = next_blocks[0]["start"] if next_blocks else None
+    now_minutes = now_local.hour * 60 + now_local.minute
+    timeline_is_far = (
+        next_timeline_start is None
+        or (next_timeline_start - now_minutes) > WORKSTREAM_NEXT_JOB_PRIORITY_WINDOW_MINUTES
+    )
+    if near_term_jobs and timeline_is_far:
+        next_lane = dedupe_next_lane(near_term_jobs, next_lane)
+    elif near_term_jobs:
+        next_lane = dedupe_next_lane(next_lane, near_term_jobs)
+
+    raw_done = parse_section_bullets(today_status_markdown, "Last completed with proof")
+    done_lane = [
+        item
+        for item in raw_done
+        if not is_proof_scaffolding_line(item) and is_done_item_fresh(item, now_local)
+    ]
     if not done_lane:
         done_lane.extend([f"Completed: {format_block(block)}" for block in completed[-3:]])
 
@@ -534,6 +618,49 @@ def next_jobs(jobs_file: Path, limit: int = 8) -> List[Dict[str, Any]]:
         )
 
     return out
+
+
+def near_term_job_markers(
+    jobs_file: Path,
+    now_local: dt.datetime,
+    horizon_minutes: int = WORKSTREAM_NEXT_JOB_HORIZON_MINUTES,
+    limit: int = 3,
+) -> List[str]:
+    """Return near-term scheduled jobs as next-lane candidates."""
+    content = read_text(jobs_file)
+    if not content:
+        return []
+
+    try:
+        doc = json.loads(content)
+    except json.JSONDecodeError:
+        return []
+
+    now_utc = now_local.astimezone(dt.timezone.utc)
+    horizon = now_utc + dt.timedelta(minutes=horizon_minutes)
+    candidates: List[Tuple[int, str]] = []
+
+    for job in doc.get("jobs", []):
+        if not isinstance(job, dict) or not job.get("enabled"):
+            continue
+
+        state = job.get("state", {})
+        next_run_ms = state.get("nextRunAtMs")
+        if not isinstance(next_run_ms, int):
+            continue
+
+        next_run_utc = dt.datetime.fromtimestamp(next_run_ms / 1000, dt.timezone.utc)
+        if next_run_utc < now_utc or next_run_utc > horizon:
+            continue
+
+        local_label = next_run_utc.astimezone(now_local.tzinfo).strftime("%H:%M")
+        name = str(job.get("name", "")).strip()
+        if not name:
+            continue
+        candidates.append((next_run_ms, f"{local_label} — Scheduled job: {name}"))
+
+    candidates.sort(key=lambda pair: pair[0])
+    return [text for _, text in candidates[:limit]]
 
 
 def recent_findings(memory_markdown: str, limit: int = 6) -> List[str]:
@@ -1232,6 +1359,9 @@ def build_payload(workspace_root: Path, jobs_file: Path) -> Dict[str, Any]:
     active_work = resolve_active_work(status_parts.get("activeWork", ""), timeline, now_local)
     current_focus = resolve_current_focus(status_parts.get("currentFocus", ""), active_work, timeline, now_local)
 
+    next_jobs_rows = next_jobs(jobs_file)
+    next_lane_jobs = near_term_job_markers(jobs_file, now_local)
+
     return {
         "generatedAt": dt.datetime.now(dt.timezone.utc).isoformat(),
         "generatedAtLocal": now_local.strftime("%Y-%m-%d %H:%M %Z"),
@@ -1240,9 +1370,15 @@ def build_payload(workspace_root: Path, jobs_file: Path) -> Dict[str, Any]:
         "activeWork": active_work,
         "reliability": reliability_status(workspace_root),
         "timeline": timeline,
-        "nextJobs": next_jobs(jobs_file),
+        "nextJobs": next_jobs_rows,
         "findings": recent_findings(memory_text),
-        "workstream": parse_workstream(status_text, timeline, active_work, now_local),
+        "workstream": parse_workstream(
+            status_text,
+            timeline,
+            active_work,
+            now_local,
+            near_term_jobs=next_lane_jobs,
+        ),
         "charts": {
             "jobSuccessTrend": job_success_trend(jobs_file),
             "reliabilityTrend": reliability_trend(Path("/Users/seankudrna/.openclaw/logs/reliability-watchdog.jsonl")),

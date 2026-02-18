@@ -1,5 +1,18 @@
 # Changelog
 
+## v1.4.20 - 2026-02-18
+
+### Fixed
+- Removed stale done-lane carryover from old timestamped completion bullets and excluded proof scaffolding (`Proof:`, command/evidence bullets) from done items.
+- Corrected Overview/Operations mismatch where far-out DAILY_PLAN blocks could dominate `next` while near-term scheduled jobs were imminent.
+
+### Changed
+- Workstream `next` lane now injects near-term scheduled job markers (from cron `nextRunAtMs`) and prioritizes them when timeline blocks are beyond a near-term window.
+- Added robust done timestamp inference across multiple formats (ISO/date-time, dated HH:MM, HH:MM range, single HH:MM) for freshness filtering without format lock-in.
+
+### Added
+- Regression tests for near-term next-job prioritization and done-lane stale/proof filtering.
+
 ## v1.4.19 - 2026-02-18
 
 ### Fixed
