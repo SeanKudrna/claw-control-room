@@ -1,7 +1,7 @@
 {
-  "generatedAt": "2026-02-18T15:13:38.571441+00:00",
-  "generatedAtLocal": "2026-02-18 09:13 ",
-  "controlRoomVersion": "1.4.28",
+  "generatedAt": "2026-02-18T15:50:58.104405+00:00",
+  "generatedAtLocal": "2026-02-18 09:50 ",
+  "controlRoomVersion": "1.4.29",
   "currentFocus": "Control-room product lane block (mandatory)",
   "activeWork": "downtime-guard monitoring/continuity mode.",
   "reliability": {
@@ -44,27 +44,22 @@
   "nextJobs": [
     {
       "name": "Control room status publish (gist backend)",
-      "nextRun": "09:14",
-      "lastStatus": "ok"
-    },
-    {
-      "name": "Reliability watchdog hourly (self-heal + conditional alert)",
-      "nextRun": "09:20",
+      "nextRun": "09:51",
       "lastStatus": "ok"
     },
     {
       "name": "Critical update failover guard",
-      "nextRun": "09:22",
-      "lastStatus": "ok"
-    },
-    {
-      "name": "Control room issue triage + QA intake",
-      "nextRun": "09:35",
+      "nextRun": "09:52",
       "lastStatus": "ok"
     },
     {
       "name": "Downtime gap auto-fill guard (quiet unless triggered)",
       "nextRun": "10:00",
+      "lastStatus": "ok"
+    },
+    {
+      "name": "Reliability watchdog hourly (self-heal + conditional alert)",
+      "nextRun": "10:20",
       "lastStatus": "ok"
     },
     {
@@ -81,33 +76,38 @@
       "name": "Usage report - noon",
       "nextRun": "12:00",
       "lastStatus": "ok"
+    },
+    {
+      "name": "Capability build block (plan+result pings)",
+      "nextRun": "13:10",
+      "lastStatus": "ok"
     }
   ],
   "findings": [
-    "Memory Evolution directive added: auto-create and maintain `ClawPrime_Memory.md`; after each task store 1\u20133 key learnings; run daily memory prune + high-ROI pattern strengthening + one workflow self-improvement.",
-    "Safety + Delight lock directive: apply internal safety/reversibility/benefit checklist before file/account/external actions; ask only for truly irreversible actions; include a small delight layer and occasional \ud83d\udd25 energy (1-10) in completions.",
     "Infinite Sprint directive: during background/heartbeat cycles, run continuous no-idle compounding improvements (scan for highest-leverage opportunities and execute autonomously overnight/daylong).",
     "Overnight control-room sprint block 6 closeout completed (05:15 CST): full quality gate pass on v1.4.17, issue snapshot refreshed to 0 open, status gist republished, and complete handoff summary finalized in `status/overnight-control-room-log.md` (no additional patch required).",
     "ClawPrime daily memory evolution pass completed (06:10 CST): distilled 3 durable patterns into `ClawPrime_Memory.md` (layered runtime-truth guardrails, explicit degraded/source semantics, issue-first gate-verified release loop), pruned redundancy, and tightened the default friction-fix sequence.",
-    "Workflow improvement auto-applied: added executable helper `scripts/clawprime_memory_evolution_helper.py` to auto-pull high-signal outcomes from recent memory + overnight log for faster daily memory evolution cycles."
+    "Workflow improvement auto-applied: added executable helper `scripts/clawprime_memory_evolution_helper.py` to auto-pull high-signal outcomes from recent memory + overnight log for faster daily memory evolution cycles.",
+    "Level-up directive from Sean: screenshot-based local visual verification is now a global default skill for UI work across all projects (not just control-room) before declaring completion.",
+    "Reinforced ClawPrime expectation: proactively conceive and build fun, out-of-the-box, high-visibility/high-utility features without waiting to be asked."
   ],
   "workstream": {
     "now": [
-      "Implement issue #41 in /Users/seankudrna/.openclaw/workspace/claw-control-room. Issue: https://github.com/SeanKudrna/claw-control-room/issues/41 Must-fix items: 1) Activity Feed st\u2026"
+      "Finalize and ship issue #42 from current working tree in /Users/seankudrna/.openclaw/workspace/claw-control-room. Current state has local uncommitted implementation for skills tab/\u2026"
     ],
     "next": [
       "09:10-10:20 \u2014 Control-room product lane block (mandatory)",
-      "09:14 \u2014 Scheduled job: Control room status publish (gist backend)",
-      "09:20 \u2014 Scheduled job: Reliability watchdog hourly (self-heal + conditional alert)",
-      "09:22 \u2014 Scheduled job: Critical update failover guard",
-      "09:35 \u2014 Scheduled job: Control room issue triage + QA intake"
+      "09:51 \u2014 Scheduled job: Control room status publish (gist backend)",
+      "09:52 \u2014 Scheduled job: Critical update failover guard",
+      "10:00 \u2014 Scheduled job: Downtime gap auto-fill guard (quiet unless triggered)",
+      "10:20 \u2014 Scheduled job: Reliability watchdog hourly (self-heal + conditional alert)"
     ],
     "done": [
+      "Critical update failover guard",
       "Autonomy daily planner (DAILY_PLAN source of truth)",
+      "Implement issue #42 end-to-end in /Users/seankudrna/.openclaw/workspace/claw-control-room. Issue: https://github.com/SeanKudrna/claw-control-room/issues/42 Feature goals: - Add new\u2026",
       "Resume and finish the in-progress worktree changes for claw-control-room issue set #30 #31 #32. Repo: /Users/seankudrna/.openclaw/workspace/claw-control-room Current state: local w\u2026",
-      "Fix issue #40 in /Users/seankudrna/.openclaw/workspace/claw-control-room. Issue: https://github.com/SeanKudrna/claw-control-room/issues/40 Bug: in-progress timeline blocks are tran\u2026",
-      "Apply the latest UI refinements in /Users/seankudrna/.openclaw/workspace/claw-control-room. User-requested changes: 1) Remove helper text under refresh button during click/refresh/\u2026",
-      "Implement issue #37 in /Users/seankudrna/.openclaw/workspace/claw-control-room. Issue: https://github.com/SeanKudrna/claw-control-room/issues/37 Goal: Move refresh control into sti\u2026"
+      "Fix issue #40 in /Users/seankudrna/.openclaw/workspace/claw-control-room. Issue: https://github.com/SeanKudrna/claw-control-room/issues/40 Bug: in-progress timeline blocks are tran\u2026"
     ]
   },
   "charts": {
@@ -129,12 +129,6 @@
         "status": "ok",
         "score": 1.0,
         "job": "Evolution profile refresh (helper, non-planner)"
-      },
-      {
-        "label": "21:35",
-        "status": "ok",
-        "score": 1.0,
-        "job": "Control room issue triage + QA intake"
       },
       {
         "label": "01:35",
@@ -167,12 +161,6 @@
         "job": "Autonomy daily planner (DAILY_PLAN source of truth)"
       },
       {
-        "label": "08:20",
-        "status": "ok",
-        "score": 1.0,
-        "job": "Reliability watchdog hourly (self-heal + conditional alert)"
-      },
-      {
         "label": "08:24",
         "status": "ok",
         "score": 1.0,
@@ -185,24 +173,31 @@
         "job": "Downtime gap auto-fill guard (quiet unless triggered)"
       },
       {
-        "label": "09:07",
+        "label": "09:20",
+        "status": "ok",
+        "score": 1.0,
+        "job": "Reliability watchdog hourly (self-heal + conditional alert)"
+      },
+      {
+        "label": "09:35",
+        "status": "ok",
+        "score": 1.0,
+        "job": "Control room issue triage + QA intake"
+      },
+      {
+        "label": "09:37",
         "status": "ok",
         "score": 1.0,
         "job": "Critical update failover guard"
       },
       {
-        "label": "09:13",
+        "label": "09:50",
         "status": "ok",
         "score": 1.0,
         "job": "Control room status publish (gist backend)"
       }
     ],
     "reliabilityTrend": [
-      {
-        "label": "02:20",
-        "status": "green",
-        "score": 1.0
-      },
       {
         "label": "02:51",
         "status": "green",
@@ -265,6 +260,11 @@
       },
       {
         "label": "08:51",
+        "status": "green",
+        "score": 1.0
+      },
+      {
+        "label": "09:20",
         "status": "green",
         "score": 1.0
       }
@@ -380,14 +380,126 @@
       "time": "n/a",
       "category": "ops",
       "text": "Workflow improvement auto-applied: added executable helper `scripts/clawprime_memory_evolution_helper.py` to auto-pull high-signal outcomes from recent memory + overnight log for faster daily memory evolution cycles."
+    },
+    {
+      "time": "n/a",
+      "category": "ui",
+      "text": "Level-up directive from Sean: screenshot-based local visual verification is now a global default skill for UI work across all projects (not just control-room) before declaring completion."
+    },
+    {
+      "time": "n/a",
+      "category": "ui",
+      "text": "Reinforced ClawPrime expectation: proactively conceive and build fun, out-of-the-box, high-visibility/high-utility features without waiting to be asked."
     }
   ],
+  "skills": {
+    "activeCount": 6,
+    "plannedCount": 0,
+    "lockedCount": 0,
+    "nodes": [
+      {
+        "id": "runtime-orchestration",
+        "name": "Runtime Orchestration",
+        "description": "Coordinate cron and subagent execution lanes into one deterministic runtime view.",
+        "effect": "Keeps now/next/done and runtime surfaces synchronized.",
+        "state": "active",
+        "tier": 1,
+        "dependencies": [],
+        "learnedAt": "2026-02-18",
+        "level": 5,
+        "progress": 1.0
+      },
+      {
+        "id": "reliability-guardrails",
+        "name": "Reliability Guardrails",
+        "description": "Detect and surface degraded states with explicit fallback semantics.",
+        "effect": "Improves trust by preventing silent failure modes.",
+        "state": "active",
+        "tier": 2,
+        "dependencies": [
+          "runtime-orchestration"
+        ],
+        "learnedAt": "2026-02-18",
+        "level": 5,
+        "progress": 1.0
+      },
+      {
+        "id": "ui-systems",
+        "name": "UI Systems",
+        "description": "Ship mobile-first, accessible dashboard interactions and visual hierarchy.",
+        "effect": "Raises scanability and interaction quality across devices.",
+        "state": "active",
+        "tier": 3,
+        "dependencies": [
+          "runtime-orchestration"
+        ],
+        "learnedAt": "2026-02-18",
+        "level": 5,
+        "progress": 1.0
+      },
+      {
+        "id": "observability",
+        "name": "Observability",
+        "description": "Turn activity, trend, and source signals into operator-ready insight.",
+        "effect": "Accelerates diagnosis and informed execution decisions.",
+        "state": "active",
+        "tier": 4,
+        "dependencies": [
+          "runtime-orchestration"
+        ],
+        "learnedAt": "2026-02-18",
+        "level": 5,
+        "progress": 1.0
+      },
+      {
+        "id": "release-operations",
+        "name": "Release Operations",
+        "description": "Run semver, quality gate, proof, and publish workflow consistently.",
+        "effect": "Keeps delivery predictable with auditable release evidence.",
+        "state": "active",
+        "tier": 5,
+        "dependencies": [
+          "reliability-guardrails",
+          "observability"
+        ],
+        "learnedAt": "2026-02-18",
+        "level": 5,
+        "progress": 1.0
+      },
+      {
+        "id": "memory-evolution",
+        "name": "Memory Evolution",
+        "description": "Extract durable patterns from memory artifacts and reinforce high-ROI behaviors.",
+        "effect": "Compounds operational quality through deterministic learning loops.",
+        "state": "active",
+        "tier": 6,
+        "dependencies": [
+          "reliability-guardrails",
+          "ui-systems"
+        ],
+        "learnedAt": "2026-02-18",
+        "level": 5,
+        "progress": 1.0
+      }
+    ],
+    "evolution": {
+      "sourceArtifacts": [
+        "/Users/seankudrna/.openclaw/workspace/memory/2026-02-18.md",
+        "/Users/seankudrna/.openclaw/workspace/memory/2026-02-17.md",
+        "/Users/seankudrna/.openclaw/workspace/memory/2026-02-16.md",
+        "/Users/seankudrna/.openclaw/workspace/ClawPrime_Memory.md"
+      ],
+      "deterministicSeed": "7b37e8fb9c86",
+      "lastProcessedAt": "2026-02-18T09:50:58.044048",
+      "mode": "keyword-scan-v1"
+    }
+  },
   "runtime": {
     "status": "idle",
     "isIdle": true,
     "activeCount": 0,
     "activeRuns": [],
-    "checkedAtMs": 1771427618514,
+    "checkedAtMs": 1771429858044,
     "source": "cron-run reconciliation + subagent registry [static fallback runtime sanitized]"
   }
 }

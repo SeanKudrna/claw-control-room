@@ -1,5 +1,22 @@
 # Changelog
 
+## v1.4.29 - 2026-02-18
+
+### Added
+- Added a new `Skills` tab with a game-like skill tree view showing active, planned, and locked skills.
+- Added interactive skill detail inspection (tap/click node) with description, effect, learned date, level, progress, tier, and dependency data.
+- Added first-pass autonomous skill evolution payload sourced deterministically from workspace memory artifacts (`memory/YYYY-MM-DD.md` + `ClawPrime_Memory.md`).
+
+### Changed
+- Extended status payload/types/contracts to include a typed `skills` object and evolution metadata.
+- Expanded payload validation to enforce `skills` shape before committing snapshot state.
+
+### Tests
+- Added deterministic skills-evolution regression coverage in `scripts/tests/test_status_builder.py` and expanded payload-shape assertions.
+
+### Docs
+- Updated README + architecture/development handbook docs for Skills tab UX and evolution-input path.
+
 ## v1.4.28 - 2026-02-18
 
 ### Fixed

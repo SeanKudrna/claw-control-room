@@ -7,12 +7,14 @@ Claw Control Room provides a readable, near-real-time view of Claw's operations:
 - planned timeline + upcoming jobs
 - reliability posture and trend
 - activity feed and findings
+- skills progression map with deterministic evolution inputs
 
 ## High-level design
 
 ### 1) Data generation + publish (Python)
 - `scripts/build_status_json.py` is the CLI entrypoint for local snapshot generation.
 - Core payload assembly lives in `scripts/lib/status_builder.py`.
+- Skills payload assembly is deterministic (`build_skills_payload`): keyword-weighted extraction from `memory/YYYY-MM-DD.md` + `ClawPrime_Memory.md` builds active/planned/locked nodes and evolution metadata (source artifact list + deterministic seed).
 - Payload builder applies timeline-aware stale-guard logic so `currentFocus` and `workstream.now` stay accurate even when `TODAY_STATUS.md` lags behind clock time.
 - Workstream now/next/done is built from a unified chronological event model: timeline blocks (`DAILY_PLAN`), scheduled jobs (`nextRunAtMs`), and active runtime rows.
 - Deterministic lane-state rules define `now`, `next`, and `done` transitions (including day reset), removing ad-hoc stale carryover behavior.
@@ -32,7 +34,7 @@ Claw Control Room provides a readable, near-real-time view of Claw's operations:
   - `src/hooks/useStatus.ts` polling + load state + refresh outcome/freshness aging logic
   - `src/lib/statusApi.ts` source resolution/fetch logic
   - `src/types/status.ts` shared payload contracts
-- Information architecture uses tabbed views (`Overview`, `Operations`, `Insights`) plus collapsible sections to reduce visual overload.
+- Information architecture uses tabbed views (`Overview`, `Operations`, `Insights`, `Skills`) plus collapsible sections to reduce visual overload.
 - Components rendered inside collapsible bodies support compact heading mode, so section titles stay in the summary row while inner content keeps accessibility labels without duplicate heading stacks.
 - Active tab is URL-hash persisted (`#tab-*`) for direct navigation/state restore.
 - Theme tokens align to OpenClaw website palette conventions (deep dark surface + coral/orange accents) for product continuity.

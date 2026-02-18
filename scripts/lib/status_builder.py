@@ -14,6 +14,7 @@ import json
 import os
 import re
 import subprocess
+import hashlib
 from collections import deque
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
@@ -79,6 +80,59 @@ EXCLUDED_RUNTIME_JOB_NAME_SUBSTRINGS = (
     "control room status publish",
 )
 WORKSTREAM_STATE_FILE = Path("/Users/seankudrna/.openclaw/workspace/status/control-room-workstream-state.json")
+CLAWPRIME_MEMORY_FILE = "ClawPrime_Memory.md"
+SKILL_KEYWORDS: Dict[str, Tuple[str, ...]] = {
+    "runtime-orchestration": ("runtime", "orchestration", "scheduler", "cron", "subagent", "queue"),
+    "reliability-guardrails": ("reliability", "watchdog", "self-heal", "guardrail", "failover", "degraded"),
+    "ui-systems": ("ui", "ux", "dashboard", "react", "mobile", "accessibility"),
+    "release-operations": ("release", "tag", "version", "changelog", "publish", "quality gate"),
+    "memory-evolution": ("memory", "evolution", "artifact", "learning", "pattern", "distilled"),
+    "observability": ("trend", "signal", "telemetry", "monitor", "status", "source"),
+}
+SKILL_CATALOG: List[Dict[str, Any]] = [
+    {
+        "id": "runtime-orchestration",
+        "name": "Runtime Orchestration",
+        "description": "Coordinate cron and subagent execution lanes into one deterministic runtime view.",
+        "effect": "Keeps now/next/done and runtime surfaces synchronized.",
+        "dependencies": [],
+    },
+    {
+        "id": "reliability-guardrails",
+        "name": "Reliability Guardrails",
+        "description": "Detect and surface degraded states with explicit fallback semantics.",
+        "effect": "Improves trust by preventing silent failure modes.",
+        "dependencies": ["runtime-orchestration"],
+    },
+    {
+        "id": "ui-systems",
+        "name": "UI Systems",
+        "description": "Ship mobile-first, accessible dashboard interactions and visual hierarchy.",
+        "effect": "Raises scanability and interaction quality across devices.",
+        "dependencies": ["runtime-orchestration"],
+    },
+    {
+        "id": "observability",
+        "name": "Observability",
+        "description": "Turn activity, trend, and source signals into operator-ready insight.",
+        "effect": "Accelerates diagnosis and informed execution decisions.",
+        "dependencies": ["runtime-orchestration"],
+    },
+    {
+        "id": "release-operations",
+        "name": "Release Operations",
+        "description": "Run semver, quality gate, proof, and publish workflow consistently.",
+        "effect": "Keeps delivery predictable with auditable release evidence.",
+        "dependencies": ["reliability-guardrails", "observability"],
+    },
+    {
+        "id": "memory-evolution",
+        "name": "Memory Evolution",
+        "description": "Extract durable patterns from memory artifacts and reinforce high-ROI behaviors.",
+        "effect": "Compounds operational quality through deterministic learning loops.",
+        "dependencies": ["reliability-guardrails", "ui-systems"],
+    },
+]
 WORKSTREAM_RUNTIME_NOW_LIMIT = 1
 WORKSTREAM_NEXT_LIMIT = 5
 WORKSTREAM_DONE_LIMIT = 5
@@ -919,6 +973,89 @@ def recent_activity(memory_markdown: str, limit: int = 24) -> List[Dict[str, str
     return activities[-limit:]
 
 
+
+def gather_skill_artifacts(workspace_root: Path, now_local: dt.datetime) -> List[Tuple[str, str]]:
+    artifacts: List[Tuple[str, str]] = []
+    memory_root = workspace_root / "memory"
+    for offset in range(0, 7):
+        target = now_local - dt.timedelta(days=offset)
+        path = memory_root / f"{target.strftime('%Y-%m-%d')}.md"
+        text = read_text(path)
+        if text:
+            artifacts.append((str(path), text.lower()))
+
+    clawprime_path = workspace_root / CLAWPRIME_MEMORY_FILE
+    clawprime_text = read_text(clawprime_path)
+    if clawprime_text:
+        artifacts.append((str(clawprime_path), clawprime_text.lower()))
+    return artifacts
+
+
+def build_skills_payload(workspace_root: Path, now_local: dt.datetime) -> Dict[str, Any]:
+    artifacts = gather_skill_artifacts(workspace_root, now_local)
+    weighted_text = "\n".join(text for _, text in artifacts)
+    artifact_sources = [path for path, _ in artifacts]
+
+    skill_nodes: List[Dict[str, Any]] = []
+    active_count = 0
+    planned_count = 0
+    locked_count = 0
+
+    for tier, spec in enumerate(SKILL_CATALOG, start=1):
+        skill_id = spec["id"]
+        hits = 0
+        for keyword in SKILL_KEYWORDS.get(skill_id, ()): 
+            hits += weighted_text.count(keyword)
+
+        progress = max(0.0, min(1.0, hits / 8.0))
+        level = max(0, min(5, int(progress * 5)))
+
+        deps = spec.get("dependencies", [])
+        deps_met = all(any(node.get("id") == dep and node.get("state") == "active" for node in skill_nodes) for dep in deps)
+
+        if level >= 3 and deps_met:
+            state = "active"
+            active_count += 1
+            learned_at = now_local.date().isoformat()
+        elif progress > 0 and deps_met:
+            state = "planned"
+            planned_count += 1
+            learned_at = None
+        else:
+            state = "locked"
+            locked_count += 1
+            learned_at = None
+
+        skill_nodes.append(
+            {
+                "id": skill_id,
+                "name": spec["name"],
+                "description": spec["description"],
+                "effect": spec["effect"],
+                "state": state,
+                "tier": tier,
+                "dependencies": deps,
+                "learnedAt": learned_at,
+                "level": level,
+                "progress": round(progress, 2),
+            }
+        )
+
+    seed_input = "|".join(artifact_sources + [now_local.strftime("%Y-%m-%d")])
+    deterministic_seed = hashlib.sha256(seed_input.encode("utf-8")).hexdigest()[:12]
+    return {
+        "activeCount": active_count,
+        "plannedCount": planned_count,
+        "lockedCount": locked_count,
+        "nodes": skill_nodes,
+        "evolution": {
+            "sourceArtifacts": artifact_sources,
+            "deterministicSeed": deterministic_seed,
+            "lastProcessedAt": now_local.isoformat(),
+            "mode": "keyword-scan-v1",
+        },
+    }
+
 def status_score(status: str) -> float:
     normalized = (status or "unknown").lower()
     if normalized in {"ok", "green", "success"}:
@@ -1574,6 +1711,7 @@ def build_payload(workspace_root: Path, jobs_file: Path) -> Dict[str, Any]:
             "reliabilityTrend": reliability_trend(Path("/Users/seankudrna/.openclaw/logs/reliability-watchdog.jsonl")),
         },
         "activity": recent_activity(memory_text),
+        "skills": build_skills_payload(workspace_root, now_local),
         "runtime": runtime,
     }
 

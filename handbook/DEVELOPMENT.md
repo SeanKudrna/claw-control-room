@@ -15,7 +15,7 @@ npm run dev
 ```
 
 UI nav notes:
-- Tabs are hash-driven (`#tab-overview`, `#tab-operations`, `#tab-insights`).
+- Tabs are hash-driven (`#tab-overview`, `#tab-operations`, `#tab-insights`, `#tab-skills`).
 - Major sections are collapsible via native `<details>` wrappers.
 - Sticky tab shell uses a translucent contrast layer; viewport edge-fade overlays are fixed and non-interactive.
 - Sticky tab-row refresh feedback should remain attempt-accurate (`refreshing` / `success` / `error`) and never report success for failed polls.
@@ -36,6 +36,8 @@ UI nav notes:
 - Refresh idle helper text should stay empty (show helper copy only for meaningful non-idle states).
 - Activity Feed category normalization should prevent `N/A` category chips/options from appearing; unknown values map to `ops`, and `N/A` timestamp pills should not render in item metadata.
 - Runtime details modal should render via body portal with z-index above sticky tab/header layers.
+- Skills tree interactions should work on desktop hover/click and mobile tap (node selection drives side-panel detail rendering).
+- Skills evolution ingestion is deterministic and artifact-driven (workspace memory files only; no network/LLM mutation in builder path).
 
 ## Build output for GitHub Pages
 

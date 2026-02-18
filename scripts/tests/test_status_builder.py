@@ -19,6 +19,7 @@ if str(ROOT) not in sys.path:
 
 from scripts.lib.status_builder import (
     build_payload,
+    build_skills_payload,
     build_workstream_lanes,
     parse_daily_plan_blocks,
     parse_today_status,
@@ -552,6 +553,27 @@ class StatusBuilderTests(unittest.TestCase):
             self.assertEqual(runtime["status"], "idle")
             self.assertEqual(runtime["activeCount"], 0)
 
+    def test_build_skills_payload_is_deterministic(self) -> None:
+        with tempfile.TemporaryDirectory() as td:
+            workspace = Path(td)
+            (workspace / "memory").mkdir(parents=True, exist_ok=True)
+            now_local = dt.datetime(2026, 2, 18, 9, 0)
+            (workspace / "memory" / "2026-02-18.md").write_text(
+                "- reliability watchdog and runtime scheduler updates\n- release changelog publish\n",
+                encoding="utf-8",
+            )
+            (workspace / "ClawPrime_Memory.md").write_text(
+                "memory evolution pattern reliability dashboard\n",
+                encoding="utf-8",
+            )
+
+            payload_a = build_skills_payload(workspace, now_local)
+            payload_b = build_skills_payload(workspace, now_local)
+
+            self.assertEqual(payload_a["evolution"]["deterministicSeed"], payload_b["evolution"]["deterministicSeed"])
+            self.assertGreaterEqual(len(payload_a["nodes"]), 1)
+            self.assertIn("activeCount", payload_a)
+
     def test_build_payload_shape(self) -> None:
         with tempfile.TemporaryDirectory() as td:
             workspace = Path(td)
@@ -611,6 +633,7 @@ class StatusBuilderTests(unittest.TestCase):
             self.assertIn("workstream", payload)
             self.assertIn("charts", payload)
             self.assertIn("activity", payload)
+            self.assertIn("skills", payload)
             self.assertIn("runtime", payload)
             self.assertIn("Live sample block", payload["currentFocus"])
             self.assertGreaterEqual(len(payload["workstream"]["now"]), 1)

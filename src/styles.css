@@ -1012,6 +1012,82 @@ th {
   gap: 8px;
 }
 
+.skills-grid {
+  display: grid;
+  grid-template-columns: 1.25fr 1fr;
+  gap: 12px;
+}
+
+.skills-tree {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 8px;
+}
+
+.skill-node {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: rgba(17, 24, 39, 0.92);
+  color: var(--text);
+  text-align: left;
+  padding: 10px;
+  cursor: pointer;
+}
+
+.skill-node.active {
+  border-color: rgba(230, 57, 70, 0.6);
+  background: rgba(230, 57, 70, 0.16);
+}
+
+.skill-node.planned {
+  border-color: rgba(251, 191, 36, 0.6);
+}
+
+.skill-node.locked {
+  opacity: 0.78;
+}
+
+.skill-node.selected {
+  box-shadow: 0 0 0 2px rgba(255, 77, 77, 0.32);
+}
+
+.skill-node-title {
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.skill-node-meta {
+  margin-top: 4px;
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+
+.skill-detail {
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(17, 24, 39, 0.86);
+  border-radius: 10px;
+  padding: 10px;
+  display: grid;
+  gap: 8px;
+}
+
+.skill-detail-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.skill-detail-grid div {
+  display: grid;
+  gap: 3px;
+}
+
+.skill-evolution {
+  font-size: 0.76rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  padding-top: 8px;
+}
+
 @media (max-width: 1024px) {
   .app-shell {
     max-width: none;
@@ -1111,7 +1187,12 @@ th {
 
   .summary-grid,
   .swimlane-grid,
-  .trend-grid {
+  .trend-grid,
+  .skills-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .skill-detail-grid {
     grid-template-columns: 1fr;
   }
 

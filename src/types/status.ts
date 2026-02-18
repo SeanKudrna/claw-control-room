@@ -36,6 +36,34 @@ export interface RuntimeRun {
   activityType?: 'cron' | 'subagent';
 }
 
+export type SkillState = 'active' | 'planned' | 'locked';
+
+export interface SkillNode {
+  id: string;
+  name: string;
+  description: string;
+  effect: string;
+  state: SkillState;
+  tier: number;
+  dependencies: string[];
+  learnedAt: string | null;
+  level: number;
+  progress: number;
+}
+
+export interface SkillsPayload {
+  activeCount: number;
+  plannedCount: number;
+  lockedCount: number;
+  nodes: SkillNode[];
+  evolution: {
+    sourceArtifacts: string[];
+    deterministicSeed: string;
+    lastProcessedAt: string;
+    mode: string;
+  };
+}
+
 export interface StatusPayload {
   generatedAt: string;
   generatedAtLocal: string;
@@ -58,6 +86,7 @@ export interface StatusPayload {
     reliabilityTrend: TrendPoint[];
   };
   activity: ActivityItem[];
+  skills: SkillsPayload;
   runtime: {
     status: 'idle' | 'running';
     isIdle: boolean;

@@ -25,6 +25,13 @@ try {
     'Activity feed pills should not display N/A labels.',
   );
 
+  await page.locator('text=Skills').first().click();
+  const skillNodeCount = await page.$$eval('.skills-tree .skill-node', (nodes) => nodes.length);
+  assert(skillNodeCount > 0, 'Skills tab should render at least one skill node.');
+
+  const skillDetailTitle = await page.$eval('.skill-detail h3', (node) => node.textContent?.trim() ?? '');
+  assert(skillDetailTitle.length > 0, 'Skills detail panel should render selected skill title.');
+
   await page.locator('text=Operations').first().click();
 
   const timelineStatusText = await page.$eval('body', (body) => {

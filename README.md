@@ -1,7 +1,7 @@
 # Claw Control Room
 
 A React + TypeScript dashboard (GitHub Pages) that gives a clear window into Claw's day:
-- tabbed views (Overview / Operations / Insights) to prevent a single-page infodump
+- tabbed views (Overview / Operations / Insights / Skills) to prevent a single-page infodump
 - sticky section navigation shell for faster movement between tabs on phones (translucent contrast-tuned)
 - subtle top/bottom viewport edge fades so scrolling content exits more smoothly
 - mobile-first responsive layout tuned for touch usage and phone readability
@@ -29,6 +29,7 @@ A React + TypeScript dashboard (GitHub Pages) that gives a clear window into Cla
 - job + reliability trend mini charts
 - filterable activity feed with default condensed view (latest 12) + expand/collapse
 - recent findings/wins
+- Skills tab with game-style skill tree (active/planned/locked nodes), click-to-inspect details, and deterministic evolution metadata
 
 ## Standards
 
@@ -103,6 +104,7 @@ Runtime status builder reads from:
 - `~/.openclaw/workspace/DAILY_PLAN.md`
 - `~/.openclaw/workspace/TODAY_STATUS.md`
 - `~/.openclaw/workspace/memory/YYYY-MM-DD.md`
+- `~/.openclaw/workspace/ClawPrime_Memory.md` (skills evolution artifact source)
 - `~/.openclaw/agents/main/sessions/sessions.json`
 - `~/.openclaw/subagents/runs.json` (background/subagent runtime registry)
 - `~/.openclaw/subagents/runs.json`

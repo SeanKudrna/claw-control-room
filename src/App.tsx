@@ -7,6 +7,7 @@ import { Header } from './components/Header';
 import { JobsTable } from './components/JobsTable';
 import { RuntimeStatus } from './components/RuntimeStatus';
 import { SummaryCards } from './components/SummaryCards';
+import { SkillsTree } from './components/SkillsTree';
 import { TabBar, type DashboardTab } from './components/TabBar';
 import { Timeline } from './components/Timeline';
 import { TrendCharts } from './components/TrendCharts';
@@ -28,6 +29,11 @@ const TABS: DashboardTab[] = [
     id: 'insights',
     label: 'Insights',
     description: 'Activity stream and findings/wins for context and review.',
+  },
+  {
+    id: 'skills',
+    label: 'Skills',
+    description: 'Game-style growth map with active, planned, and locked capabilities.',
   },
 ];
 
@@ -106,6 +112,10 @@ export default function App() {
           </CollapsibleSection>
         </>
       );
+    }
+
+    if (activeTab === 'skills') {
+      return <SkillsTree skills={data.skills} />;
     }
 
     return (

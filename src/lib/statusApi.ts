@@ -131,6 +131,21 @@ function validateStatusPayload(payload: unknown): payload is StatusPayload {
 
   if (!Array.isArray(payload.activity)) return false;
 
+  if (!isRecord(payload.skills)) return false;
+  if (
+    typeof payload.skills.activeCount !== 'number' ||
+    typeof payload.skills.plannedCount !== 'number' ||
+    typeof payload.skills.lockedCount !== 'number' ||
+    !Array.isArray(payload.skills.nodes) ||
+    !isRecord(payload.skills.evolution) ||
+    !isStringArray(payload.skills.evolution.sourceArtifacts) ||
+    !hasStringField(payload.skills.evolution, 'deterministicSeed') ||
+    !hasStringField(payload.skills.evolution, 'lastProcessedAt') ||
+    !hasStringField(payload.skills.evolution, 'mode')
+  ) {
+    return false;
+  }
+
   if (!isRecord(payload.runtime)) return false;
   if (
     (payload.runtime.status !== 'idle' && payload.runtime.status !== 'running') ||
