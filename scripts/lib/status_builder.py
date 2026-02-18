@@ -52,6 +52,8 @@ CONTROL_ROOM_ROOT = Path(__file__).resolve().parents[2]
 SESSIONS_STORE_PATH = Path("/Users/seankudrna/.openclaw/agents/main/sessions/sessions.json")
 CRON_RUNS_DIR = Path("/Users/seankudrna/.openclaw/cron/runs")
 CRON_RUN_SESSION_KEY_RE = re.compile(r"^agent:main:cron:([^:]+):run:([^:]+)$")
+MAIN_SESSION_KEY = "agent:main:main"
+MAIN_SESSION_ACTIVE_WINDOW_MS = 3 * 60 * 1000
 EXCLUDED_RUNTIME_JOB_NAME_SUBSTRINGS = (
     "control room status publish",
 )
@@ -674,13 +676,15 @@ def runtime_activity(
     sessions_store_path: Path = SESSIONS_STORE_PATH,
     runs_dir: Path = CRON_RUNS_DIR,
     max_age_ms: int = 6 * 60 * 60 * 1000,
+    main_session_window_ms: int = MAIN_SESSION_ACTIVE_WINDOW_MS,
 ) -> Dict[str, Any]:
-    """Return real-time runtime/idle state from cron run sessions.
+    """Return real-time runtime/idle state from cron + interactive sessions.
 
     Detection model:
     - read run-session records from sessions store (`agent:main:cron:<jobId>:run:<sessionId>`)
     - reconcile against cron run logs (`runs/<jobId>.jsonl`) finished entries
     - sessions present but not finished are considered actively running
+    - treat recent `agent:main:main` heartbeats as interactive activity
 
     This gives deterministic active-run visibility and timer start timestamps.
     """
@@ -734,6 +738,34 @@ def runtime_activity(
     finished_cache: Dict[str, set[str]] = {}
     active_runs: List[Dict[str, Any]] = []
 
+    main_meta = sessions_doc.get(MAIN_SESSION_KEY)
+    if isinstance(main_meta, dict):
+        updated_at_ms = main_meta.get("updatedAt")
+        if isinstance(updated_at_ms, int):
+            inactivity_ms = now_ms - updated_at_ms
+            if 0 <= inactivity_ms <= main_session_window_ms:
+                session_id = main_meta.get("sessionId")
+                if not isinstance(session_id, str) or not session_id:
+                    session_id = "main-session"
+
+                started_local = (
+                    dt.datetime.fromtimestamp(updated_at_ms / 1000, dt.timezone.utc)
+                    .astimezone()
+                    .strftime("%Y-%m-%d %H:%M:%S")
+                )
+
+                active_runs.append(
+                    {
+                        "jobId": "main-session",
+                        "jobName": "Main session",
+                        "sessionId": session_id,
+                        "startedAtMs": updated_at_ms,
+                        "startedAtLocal": started_local,
+                        "runningForMs": max(0, inactivity_ms),
+                        "activityType": "interactive",
+                    }
+                )
+
     for key, meta in sessions_doc.items():
         if not isinstance(key, str) or not isinstance(meta, dict):
             continue
@@ -776,6 +808,7 @@ def runtime_activity(
                 "startedAtMs": started_at_ms,
                 "startedAtLocal": started_local,
                 "runningForMs": running_for_ms,
+                "activityType": "cron",
             }
         )
 
@@ -787,7 +820,7 @@ def runtime_activity(
         "activeCount": len(active_runs),
         "activeRuns": active_runs,
         "checkedAtMs": now_ms,
-        "source": "session-store + cron-run-log reconciliation",
+        "source": "session-store + cron-run-log reconciliation + main-session heartbeat",
     }
 
 

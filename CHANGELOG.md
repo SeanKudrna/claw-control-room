@@ -11,6 +11,7 @@
 - Reworked responsive behavior with a mobile-first pass: touch-friendly control sizing, horizontal tab scroller, stacked runtime/cards, safe-area padding, and mobile-optimized jobs table layout.
 - Shifted the dashboard color system to match OpenClaw website palette conventions (deep dark surfaces + coral/cyan accents).
 - Added final UX polish pass for consistent hover/focus/active states, improved control transitions, and stronger keyboard accessibility visibility.
+- Runtime activity now includes recent main-session heartbeat detection so the dashboard reflects interactive work (not cron-only), with cron vs interactive source labels.
 
 ## v1.3.4 - 2026-02-17
 

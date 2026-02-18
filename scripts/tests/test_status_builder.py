@@ -200,6 +200,63 @@ class StatusBuilderTests(unittest.TestCase):
             self.assertEqual(runtime["activeCount"], 1)
             self.assertEqual(runtime["activeRuns"][0]["sessionId"], "session-active")
             self.assertEqual(runtime["activeRuns"][0]["jobName"], "Job One")
+            self.assertEqual(runtime["activeRuns"][0]["activityType"], "cron")
+
+    def test_runtime_activity_detects_main_session_activity(self) -> None:
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            jobs_file = root / "jobs.json"
+            sessions_file = root / "sessions.json"
+            runs_dir = root / "runs"
+            runs_dir.mkdir(parents=True, exist_ok=True)
+
+            jobs_file.write_text(json.dumps({"jobs": []}), encoding="utf-8")
+
+            now_ms = int(dt.datetime.now(dt.timezone.utc).timestamp() * 1000)
+            sessions_file.write_text(
+                json.dumps(
+                    {
+                        "agent:main:main": {
+                            "sessionId": "session-main",
+                            "updatedAt": now_ms - 25_000,
+                        },
+                    }
+                ),
+                encoding="utf-8",
+            )
+
+            runtime = runtime_activity(jobs_file, sessions_file, runs_dir)
+            self.assertEqual(runtime["status"], "running")
+            self.assertEqual(runtime["activeCount"], 1)
+            self.assertEqual(runtime["activeRuns"][0]["sessionId"], "session-main")
+            self.assertEqual(runtime["activeRuns"][0]["activityType"], "interactive")
+
+    def test_runtime_activity_ignores_stale_main_session(self) -> None:
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            jobs_file = root / "jobs.json"
+            sessions_file = root / "sessions.json"
+            runs_dir = root / "runs"
+            runs_dir.mkdir(parents=True, exist_ok=True)
+
+            jobs_file.write_text(json.dumps({"jobs": []}), encoding="utf-8")
+
+            now_ms = int(dt.datetime.now(dt.timezone.utc).timestamp() * 1000)
+            sessions_file.write_text(
+                json.dumps(
+                    {
+                        "agent:main:main": {
+                            "sessionId": "session-main",
+                            "updatedAt": now_ms - (10 * 60 * 1000),
+                        },
+                    }
+                ),
+                encoding="utf-8",
+            )
+
+            runtime = runtime_activity(jobs_file, sessions_file, runs_dir)
+            self.assertEqual(runtime["status"], "idle")
+            self.assertEqual(runtime["activeCount"], 0)
 
     def test_runtime_activity_excludes_status_publish_job(self) -> None:
         with tempfile.TemporaryDirectory() as td:

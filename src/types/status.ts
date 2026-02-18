@@ -31,6 +31,7 @@ export interface RuntimeRun {
   startedAtMs: number;
   startedAtLocal: string;
   runningForMs: number;
+  activityType?: 'cron' | 'interactive';
 }
 
 export interface StatusPayload {

@@ -24,10 +24,16 @@ export function RuntimeStatus({ runtime }: { runtime: StatusPayload['runtime'] }
   }, []);
 
   const rows = useMemo(() => {
-    return runtime.activeRuns.map((run) => ({
-      ...run,
-      elapsedLabel: formatDuration(nowMs - run.startedAtMs),
-    }));
+    return runtime.activeRuns.map((run) => {
+      const activityType = run.activityType ?? 'cron';
+      return {
+        ...run,
+        activityType,
+        elapsedLabel: formatDuration(nowMs - run.startedAtMs),
+        sourceLabel: activityType === 'interactive' ? 'Interactive' : 'Cron',
+        timePrefix: activityType === 'interactive' ? 'last active' : 'since',
+      };
+    });
   }, [runtime.activeRuns, nowMs]);
 
   const isIdle = runtime.isIdle || runtime.activeRuns.length === 0;
@@ -44,7 +50,7 @@ export function RuntimeStatus({ runtime }: { runtime: StatusPayload['runtime'] }
       {isIdle && (
         <div className="runtime-idle-row">
           <PauseCircle size={16} />
-          <span>No active background job runs right now.</span>
+          <span>No active cron or interactive work right now.</span>
         </div>
       )}
 
@@ -55,10 +61,13 @@ export function RuntimeStatus({ runtime }: { runtime: StatusPayload['runtime'] }
               <div className="runtime-main">
                 <Activity size={14} />
                 <strong>{run.jobName}</strong>
+                <span className={`runtime-source runtime-source-${run.activityType}`}>
+                  {run.sourceLabel}
+                </span>
               </div>
               <div className="runtime-meta">
                 <span className="runtime-timer">{run.elapsedLabel}</span>
-                <span className="muted">since {run.startedAtLocal}</span>
+                <span className="muted">{run.timePrefix} {run.startedAtLocal}</span>
               </div>
             </li>
           ))}
