@@ -30,8 +30,8 @@ export function RuntimeStatus({ runtime }: { runtime: StatusPayload['runtime'] }
         ...run,
         activityType,
         elapsedLabel: formatDuration(nowMs - run.startedAtMs),
-        sourceLabel: activityType === 'interactive' ? 'Interactive' : 'Cron',
-        timePrefix: activityType === 'interactive' ? 'last active' : 'since',
+        sourceLabel: activityType === 'subagent' ? 'Background' : 'Cron',
+        timePrefix: 'since',
       };
     });
   }, [runtime.activeRuns, nowMs]);
@@ -50,7 +50,7 @@ export function RuntimeStatus({ runtime }: { runtime: StatusPayload['runtime'] }
       {isIdle && (
         <div className="runtime-idle-row">
           <PauseCircle size={16} />
-          <span>No active cron or interactive work right now.</span>
+          <span>No active background work right now.</span>
         </div>
       )}
 

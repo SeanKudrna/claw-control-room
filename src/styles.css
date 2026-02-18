@@ -429,6 +429,7 @@ summary {
   border-color: rgba(45, 212, 191, 0.4);
 }
 
+.runtime-source-subagent,
 .runtime-source-interactive {
   color: #ffe9b3;
   background: rgba(251, 191, 36, 0.16);

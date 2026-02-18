@@ -1,5 +1,11 @@
 # Changelog
 
+## v1.4.3 - 2026-02-17
+
+### Fixed
+- Runtime panel now reports background activity only: cron runs + active subagent/background tasks.
+- Foreground chat heartbeat (`agent:main:main`) is excluded so chatting does not falsely show `RUNNING`.
+
 ## v1.4.2 - 2026-02-17
 
 ### Fixed

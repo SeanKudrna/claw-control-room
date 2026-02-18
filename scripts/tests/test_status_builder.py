@@ -202,59 +202,86 @@ class StatusBuilderTests(unittest.TestCase):
             self.assertEqual(runtime["activeRuns"][0]["jobName"], "Job One")
             self.assertEqual(runtime["activeRuns"][0]["activityType"], "cron")
 
-    def test_runtime_activity_detects_main_session_activity(self) -> None:
+    def test_runtime_activity_detects_active_subagent_runs(self) -> None:
         with tempfile.TemporaryDirectory() as td:
             root = Path(td)
             jobs_file = root / "jobs.json"
             sessions_file = root / "sessions.json"
             runs_dir = root / "runs"
+            subagent_runs_file = root / "subagent-runs.json"
             runs_dir.mkdir(parents=True, exist_ok=True)
 
             jobs_file.write_text(json.dumps({"jobs": []}), encoding="utf-8")
+            sessions_file.write_text(json.dumps({}), encoding="utf-8")
 
             now_ms = int(dt.datetime.now(dt.timezone.utc).timestamp() * 1000)
-            sessions_file.write_text(
+            subagent_runs_file.write_text(
                 json.dumps(
                     {
-                        "agent:main:main": {
-                            "sessionId": "session-main",
-                            "updatedAt": now_ms - 25_000,
+                        "version": 2,
+                        "runs": {
+                            "run-1": {
+                                "runId": "run-1",
+                                "childSessionKey": "agent:main:subagent:abc123",
+                                "label": "Investigate dashboard UX",
+                                "createdAt": now_ms - 45_000,
+                                "startedAt": now_ms - 40_000,
+                            }
                         },
                     }
                 ),
                 encoding="utf-8",
             )
 
-            runtime = runtime_activity(jobs_file, sessions_file, runs_dir)
+            runtime = runtime_activity(
+                jobs_file,
+                sessions_store_path=sessions_file,
+                runs_dir=runs_dir,
+                subagent_registry_path=subagent_runs_file,
+            )
             self.assertEqual(runtime["status"], "running")
             self.assertEqual(runtime["activeCount"], 1)
-            self.assertEqual(runtime["activeRuns"][0]["sessionId"], "session-main")
-            self.assertEqual(runtime["activeRuns"][0]["activityType"], "interactive")
+            self.assertEqual(runtime["activeRuns"][0]["activityType"], "subagent")
+            self.assertIn("subagent:run-1", runtime["activeRuns"][0]["jobId"])
 
-    def test_runtime_activity_ignores_stale_main_session(self) -> None:
+    def test_runtime_activity_ignores_ended_subagent_runs(self) -> None:
         with tempfile.TemporaryDirectory() as td:
             root = Path(td)
             jobs_file = root / "jobs.json"
             sessions_file = root / "sessions.json"
             runs_dir = root / "runs"
+            subagent_runs_file = root / "subagent-runs.json"
             runs_dir.mkdir(parents=True, exist_ok=True)
 
             jobs_file.write_text(json.dumps({"jobs": []}), encoding="utf-8")
+            sessions_file.write_text(json.dumps({}), encoding="utf-8")
 
             now_ms = int(dt.datetime.now(dt.timezone.utc).timestamp() * 1000)
-            sessions_file.write_text(
+            subagent_runs_file.write_text(
                 json.dumps(
                     {
-                        "agent:main:main": {
-                            "sessionId": "session-main",
-                            "updatedAt": now_ms - (10 * 60 * 1000),
+                        "version": 2,
+                        "runs": {
+                            "run-1": {
+                                "runId": "run-1",
+                                "childSessionKey": "agent:main:subagent:abc123",
+                                "label": "Ended task",
+                                "createdAt": now_ms - 60_000,
+                                "startedAt": now_ms - 55_000,
+                                "endedAt": now_ms - 5_000,
+                            }
                         },
                     }
                 ),
                 encoding="utf-8",
             )
 
-            runtime = runtime_activity(jobs_file, sessions_file, runs_dir)
+            runtime = runtime_activity(
+                jobs_file,
+                sessions_store_path=sessions_file,
+                runs_dir=runs_dir,
+                subagent_registry_path=subagent_runs_file,
+            )
             self.assertEqual(runtime["status"], "idle")
             self.assertEqual(runtime["activeCount"], 0)
 

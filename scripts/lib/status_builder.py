@@ -51,9 +51,8 @@ NEXT_LANE_DEDUPE_OVERLAP_RATIO_THRESHOLD = 0.3
 CONTROL_ROOM_ROOT = Path(__file__).resolve().parents[2]
 SESSIONS_STORE_PATH = Path("/Users/seankudrna/.openclaw/agents/main/sessions/sessions.json")
 CRON_RUNS_DIR = Path("/Users/seankudrna/.openclaw/cron/runs")
+SUBAGENT_REGISTRY_PATH = Path("/Users/seankudrna/.openclaw/subagents/runs.json")
 CRON_RUN_SESSION_KEY_RE = re.compile(r"^agent:main:cron:([^:]+):run:([^:]+)$")
-MAIN_SESSION_KEY = "agent:main:main"
-MAIN_SESSION_ACTIVE_WINDOW_MS = 3 * 60 * 1000
 EXCLUDED_RUNTIME_JOB_NAME_SUBSTRINGS = (
     "control room status publish",
 )
@@ -671,22 +670,80 @@ def finished_run_session_ids(job_id: str, runs_dir: Path, cache: Dict[str, set[s
     return finished
 
 
+def active_subagent_runs(subagent_registry_path: Path, now_ms: int) -> List[Dict[str, Any]]:
+    """Read active sub-agent/background runs from subagent registry."""
+    if not subagent_registry_path.exists():
+        return []
+
+    try:
+        registry = json.loads(subagent_registry_path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError:
+        return []
+
+    if not isinstance(registry, dict):
+        return []
+
+    runs = registry.get("runs")
+    if not isinstance(runs, dict):
+        return []
+
+    active: List[Dict[str, Any]] = []
+    for run_id, entry in runs.items():
+        if not isinstance(run_id, str) or not isinstance(entry, dict):
+            continue
+
+        if isinstance(entry.get("endedAt"), int):
+            continue
+
+        started_at_ms = entry.get("startedAt")
+        if not isinstance(started_at_ms, int):
+            started_at_ms = entry.get("createdAt")
+        if not isinstance(started_at_ms, int):
+            continue
+
+        started_local = (
+            dt.datetime.fromtimestamp(started_at_ms / 1000, dt.timezone.utc)
+            .astimezone()
+            .strftime("%Y-%m-%d %H:%M:%S")
+        )
+
+        label = entry.get("label")
+        if not isinstance(label, str) or not label.strip():
+            label = "Background task"
+
+        child_session_key = entry.get("childSessionKey")
+        session_id = child_session_key if isinstance(child_session_key, str) and child_session_key else run_id
+
+        active.append(
+            {
+                "jobId": f"subagent:{run_id}",
+                "jobName": label,
+                "sessionId": session_id,
+                "startedAtMs": started_at_ms,
+                "startedAtLocal": started_local,
+                "runningForMs": max(0, now_ms - started_at_ms),
+                "activityType": "subagent",
+            }
+        )
+
+    return active
+
+
 def runtime_activity(
     jobs_file: Path,
     sessions_store_path: Path = SESSIONS_STORE_PATH,
     runs_dir: Path = CRON_RUNS_DIR,
+    subagent_registry_path: Path = SUBAGENT_REGISTRY_PATH,
     max_age_ms: int = 6 * 60 * 60 * 1000,
-    main_session_window_ms: int = MAIN_SESSION_ACTIVE_WINDOW_MS,
 ) -> Dict[str, Any]:
-    """Return real-time runtime/idle state from cron + interactive sessions.
+    """Return real-time runtime/idle state from background work only.
 
     Detection model:
-    - read run-session records from sessions store (`agent:main:cron:<jobId>:run:<sessionId>`)
+    - read cron run-session records from sessions store (`agent:main:cron:<jobId>:run:<sessionId>`)
     - reconcile against cron run logs (`runs/<jobId>.jsonl`) finished entries
-    - sessions present but not finished are considered actively running
-    - treat recent `agent:main:main` heartbeats as interactive activity
+    - include active sub-agent/background runs from subagent registry
 
-    This gives deterministic active-run visibility and timer start timestamps.
+    Foreground chat activity in `agent:main:main` is intentionally excluded.
     """
     now_ms = int(dt.datetime.now(dt.timezone.utc).timestamp() * 1000)
 
@@ -738,34 +795,6 @@ def runtime_activity(
     finished_cache: Dict[str, set[str]] = {}
     active_runs: List[Dict[str, Any]] = []
 
-    main_meta = sessions_doc.get(MAIN_SESSION_KEY)
-    if isinstance(main_meta, dict):
-        updated_at_ms = main_meta.get("updatedAt")
-        if isinstance(updated_at_ms, int):
-            inactivity_ms = now_ms - updated_at_ms
-            if 0 <= inactivity_ms <= main_session_window_ms:
-                session_id = main_meta.get("sessionId")
-                if not isinstance(session_id, str) or not session_id:
-                    session_id = "main-session"
-
-                started_local = (
-                    dt.datetime.fromtimestamp(updated_at_ms / 1000, dt.timezone.utc)
-                    .astimezone()
-                    .strftime("%Y-%m-%d %H:%M:%S")
-                )
-
-                active_runs.append(
-                    {
-                        "jobId": "main-session",
-                        "jobName": "Main session",
-                        "sessionId": session_id,
-                        "startedAtMs": updated_at_ms,
-                        "startedAtLocal": started_local,
-                        "runningForMs": max(0, inactivity_ms),
-                        "activityType": "interactive",
-                    }
-                )
-
     for key, meta in sessions_doc.items():
         if not isinstance(key, str) or not isinstance(meta, dict):
             continue
@@ -812,6 +841,7 @@ def runtime_activity(
             }
         )
 
+    active_runs.extend(active_subagent_runs(subagent_registry_path, now_ms))
     active_runs.sort(key=lambda item: item.get("startedAtMs", 0))
 
     return {
@@ -820,7 +850,7 @@ def runtime_activity(
         "activeCount": len(active_runs),
         "activeRuns": active_runs,
         "checkedAtMs": now_ms,
-        "source": "session-store + cron-run-log reconciliation + main-session heartbeat",
+        "source": "cron-run reconciliation + subagent registry (background only)",
     }
 
 

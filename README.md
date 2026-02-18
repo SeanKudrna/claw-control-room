@@ -5,7 +5,7 @@ A React + TypeScript dashboard (GitHub Pages) that gives a clear window into Cla
 - mobile-first responsive layout tuned for touch usage and phone readability
 - collapsible content sections for cleaner UX and faster scanning
 - compact panel-body mode to avoid duplicate heading stacks inside collapsible sections
-- real-time runtime panel (cron + interactive activity, live elapsed timers)
+- real-time runtime panel (background-only: cron + subagent activity, live elapsed timers)
 - data freshness pill (fresh / aging / stale) based on payload generation time
 - tactile refresh interaction states (press, refreshing spinner, completion confirmation)
 - OpenClaw brand-aligned coral/orange/dark gradient palette for visual continuity
