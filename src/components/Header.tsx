@@ -93,7 +93,7 @@ export function Header({
           : 'Updated just now'
         : feedbackState === 'error'
           ? `Refresh failed (${failureReason}) — showing last known good snapshot`
-          : 'Tap to refresh';
+          : '';
 
   return (
     <header className="hero card">
