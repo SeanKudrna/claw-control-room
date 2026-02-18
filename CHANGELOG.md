@@ -1,5 +1,15 @@
 # Changelog
 
+## v1.4.13 - 2026-02-17
+
+### Fixed
+- Freshness pill no longer freezes between payload updates; age now progresses on a timer so stale-state visibility remains truthful even when source timestamps do not change.
+- Header refresh control no longer reports a false "Updated" success state after failed refresh attempts.
+
+### Changed
+- `useStatus` now tracks latest refresh outcome (`idle`/`success`/`error`) and exposes it to the header for attempt-accurate feedback.
+- Header refresh helper/button messaging now explicitly signals degraded mode (`Refresh failed — showing last known good snapshot`) and offers retry affordance.
+
 ## v1.4.12 - 2026-02-17
 
 ### Fixed

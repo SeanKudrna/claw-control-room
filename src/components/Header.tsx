@@ -1,4 +1,4 @@
-import { CheckCircle2, RefreshCw } from 'lucide-react';
+import { AlertTriangle, CheckCircle2, RefreshCw } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 interface HeaderProps {
@@ -8,10 +8,11 @@ interface HeaderProps {
   freshnessLabel: string;
   refreshing: boolean;
   lastRefreshAtMs: number | null;
+  refreshOutcome: 'idle' | 'success' | 'error';
   onRefresh: () => void;
 }
 
-type RefreshFeedbackState = 'idle' | 'refreshing' | 'success';
+type RefreshFeedbackState = 'idle' | 'refreshing' | 'success' | 'error';
 
 export function Header({
   version,
@@ -20,6 +21,7 @@ export function Header({
   freshnessLabel,
   refreshing,
   lastRefreshAtMs,
+  refreshOutcome,
   onRefresh,
 }: HeaderProps) {
   const [isPressed, setIsPressed] = useState(false);
@@ -31,32 +33,40 @@ export function Header({
       return;
     }
 
-    if (!lastRefreshAtMs) {
-      setFeedbackState('idle');
+    if (refreshOutcome === 'error') {
+      setFeedbackState('error');
       return;
     }
 
-    setFeedbackState('success');
-    const timer = window.setTimeout(() => {
-      setFeedbackState('idle');
-    }, 1400);
+    if (refreshOutcome === 'success' && lastRefreshAtMs) {
+      setFeedbackState('success');
+      const timer = window.setTimeout(() => {
+        setFeedbackState('idle');
+      }, 1400);
 
-    return () => window.clearTimeout(timer);
-  }, [refreshing, lastRefreshAtMs]);
+      return () => window.clearTimeout(timer);
+    }
+
+    setFeedbackState('idle');
+  }, [refreshing, lastRefreshAtMs, refreshOutcome]);
 
   const buttonLabel =
     feedbackState === 'refreshing'
       ? 'Refreshing…'
       : feedbackState === 'success'
         ? 'Updated'
-        : 'Refresh';
+        : feedbackState === 'error'
+          ? 'Retry refresh'
+          : 'Refresh';
 
   const helperText =
     feedbackState === 'refreshing'
       ? 'Updating data now…'
       : feedbackState === 'success'
         ? 'Updated just now'
-        : 'Tap to refresh';
+        : feedbackState === 'error'
+          ? 'Refresh failed — showing last known good snapshot'
+          : 'Tap to refresh';
 
   return (
     <header className="hero card">
@@ -84,6 +94,8 @@ export function Header({
           >
             {feedbackState === 'success' ? (
               <CheckCircle2 size={16} className="refresh-success-icon" />
+            ) : feedbackState === 'error' ? (
+              <AlertTriangle size={16} />
             ) : (
               <RefreshCw size={16} className={refreshing ? 'spin' : ''} />
             )}

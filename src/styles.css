@@ -226,6 +226,12 @@ p {
   color: #ffe4dc;
 }
 
+.ghost-btn.is-error {
+  border-color: rgba(255, 184, 107, 0.7);
+  background: rgba(255, 184, 107, 0.18);
+  color: #ffe5c0;
+}
+
 .refresh-success-icon {
   color: #ffd4c2;
 }
@@ -247,6 +253,10 @@ p {
 
 .refresh-helper.success {
   color: #ffd4c2;
+}
+
+.refresh-helper.error {
+  color: #ffe5c0;
 }
 
 .spin {

@@ -3,6 +3,7 @@ import { fetchStatus } from '../lib/statusApi';
 import type { StatusPayload } from '../types/status';
 
 type FreshnessLevel = 'fresh' | 'aging' | 'stale';
+type RefreshOutcome = 'idle' | 'success' | 'error';
 
 interface UseStatusResult {
   data: StatusPayload | null;
@@ -14,6 +15,7 @@ interface UseStatusResult {
   lastUpdatedLabel: string;
   freshnessLevel: FreshnessLevel;
   freshnessLabel: string;
+  refreshOutcome: RefreshOutcome;
 }
 
 export function useStatus(refreshMs = 60_000): UseStatusResult {
@@ -22,6 +24,8 @@ export function useStatus(refreshMs = 60_000): UseStatusResult {
   const [refreshing, setRefreshing] = useState(false);
   const [lastRefreshAtMs, setLastRefreshAtMs] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [refreshOutcome, setRefreshOutcome] = useState<RefreshOutcome>('idle');
+  const [nowMs, setNowMs] = useState<number>(() => Date.now());
 
   const refresh = async () => {
     try {
@@ -33,8 +37,10 @@ export function useStatus(refreshMs = 60_000): UseStatusResult {
       const next = await fetchStatus();
       setData(next);
       setLastRefreshAtMs(Date.now());
+      setRefreshOutcome('success');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Unknown status error');
+      setRefreshOutcome('error');
     } finally {
       setRefreshing(false);
       setLoading(false);
@@ -49,6 +55,13 @@ export function useStatus(refreshMs = 60_000): UseStatusResult {
     return () => window.clearInterval(timer);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [refreshMs]);
+
+  useEffect(() => {
+    const timer = window.setInterval(() => {
+      setNowMs(Date.now());
+    }, 30_000);
+    return () => window.clearInterval(timer);
+  }, []);
 
   const lastUpdatedLabel = useMemo(() => {
     if (!data?.generatedAtLocal) return 'n/a';
@@ -65,7 +78,7 @@ export function useStatus(refreshMs = 60_000): UseStatusResult {
       return { level: 'stale' as FreshnessLevel, label: 'Freshness unknown' };
     }
 
-    const ageMinutes = Math.max(0, Math.floor((Date.now() - generatedAtMs) / 60_000));
+    const ageMinutes = Math.max(0, Math.floor((nowMs - generatedAtMs) / 60_000));
     if (ageMinutes <= 5) {
       return { level: 'fresh' as FreshnessLevel, label: `Fresh (${ageMinutes}m old)` };
     }
@@ -73,7 +86,7 @@ export function useStatus(refreshMs = 60_000): UseStatusResult {
       return { level: 'aging' as FreshnessLevel, label: `Aging (${ageMinutes}m old)` };
     }
     return { level: 'stale' as FreshnessLevel, label: `Stale (${ageMinutes}m old)` };
-  }, [data?.generatedAt]);
+  }, [data?.generatedAt, nowMs]);
 
   return {
     data,
@@ -85,5 +98,6 @@ export function useStatus(refreshMs = 60_000): UseStatusResult {
     lastUpdatedLabel,
     freshnessLevel: freshness.level,
     freshnessLabel: freshness.label,
+    refreshOutcome,
   };
 }

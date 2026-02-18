@@ -48,6 +48,7 @@ export default function App() {
     lastUpdatedLabel,
     freshnessLevel,
     freshnessLabel,
+    refreshOutcome,
   } = useStatus();
   const [activeTab, setActiveTab] = useState<string>(resolveInitialTab());
 
@@ -155,6 +156,7 @@ export default function App() {
         freshnessLabel={freshnessLabel}
         refreshing={refreshing}
         lastRefreshAtMs={lastRefreshAtMs}
+        refreshOutcome={refreshOutcome}
         onRefresh={() => void refresh()}
       />
 
