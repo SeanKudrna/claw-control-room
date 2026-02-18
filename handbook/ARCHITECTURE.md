@@ -39,6 +39,7 @@ Claw Control Room provides a readable, near-real-time view of Claw's operations:
 ### 3) Status source strategy
 - Primary runtime source: Gist URL from `public/data/source.json`.
 - Fallback source: `public/data/status.json`.
+- Fallback payload is runtime-sanitized (`idle`, no active runs) so cached/static fallback cannot present stale `RUNNING` activity.
 - This preserves commitless status refreshes while keeping a safe local fallback snapshot.
 
 ### 4) Versioning + release architecture

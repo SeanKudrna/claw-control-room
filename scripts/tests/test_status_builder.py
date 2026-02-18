@@ -25,6 +25,7 @@ from scripts.lib.status_builder import (
     recent_activity,
     resolve_active_work,
     runtime_activity,
+    sanitize_payload_for_static_snapshot,
 )
 
 
@@ -793,6 +794,30 @@ class StatusBuilderTests(unittest.TestCase):
             self.assertIn("runtime", payload)
             self.assertIn("Live sample block", payload["currentFocus"])
             self.assertIn("Live sample block", payload["workstream"]["now"][0])
+
+    def test_sanitize_payload_for_static_snapshot_clears_runtime_runs(self) -> None:
+        payload = {
+            "runtime": {
+                "status": "running",
+                "isIdle": False,
+                "activeCount": 2,
+                "activeRuns": [
+                    {"jobId": "job-1", "jobName": "Some task"},
+                    {"jobId": "job-2", "jobName": "Other task"},
+                ],
+                "checkedAtMs": 123,
+                "source": "cron-run reconciliation + subagent registry + main-session tool activity",
+            },
+            "other": "value",
+        }
+
+        sanitized = sanitize_payload_for_static_snapshot(payload)
+        self.assertEqual(sanitized["runtime"]["status"], "idle")
+        self.assertTrue(sanitized["runtime"]["isIdle"])
+        self.assertEqual(sanitized["runtime"]["activeCount"], 0)
+        self.assertEqual(sanitized["runtime"]["activeRuns"], [])
+        self.assertIn("static fallback runtime sanitized", sanitized["runtime"]["source"])
+        self.assertEqual(sanitized["other"], "value")
 
 
 if __name__ == "__main__":

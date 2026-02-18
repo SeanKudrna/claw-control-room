@@ -27,6 +27,19 @@ npm run build
 
 Vite outputs static artifacts to `docs/`.
 
+## Status snapshot build helper
+
+```bash
+python3 scripts/build_status_json.py
+```
+
+Default output is static-fallback-safe (runtime sanitized to idle).
+Use live runtime rows only when explicitly needed:
+
+```bash
+python3 scripts/build_status_json.py --live-runtime
+```
+
 ## Full quality gate
 
 ```bash

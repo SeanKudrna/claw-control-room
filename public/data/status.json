@@ -1,7 +1,7 @@
 {
-  "generatedAt": "2026-02-18T02:59:24.863218+00:00",
-  "generatedAtLocal": "2026-02-17 20:59 ",
-  "controlRoomVersion": "1.4.11",
+  "generatedAt": "2026-02-18T03:13:46.927412+00:00",
+  "generatedAtLocal": "2026-02-17 21:13 ",
+  "controlRoomVersion": "1.4.12",
   "currentFocus": "reliability fallback + close-out hygiene after missing 7:00 usage-report history state",
   "activeWork": "post-19:00 reliability fallback block; re-checking stale 7am usage-report error state and maintaining low-friction recovery path after gateway timeout.",
   "reliability": {
@@ -39,18 +39,8 @@
   ],
   "nextJobs": [
     {
-      "name": "Downtime gap auto-fill guard (quiet unless triggered)",
-      "nextRun": "21:00",
-      "lastStatus": "ok"
-    },
-    {
       "name": "Control room status publish (gist backend)",
-      "nextRun": "21:00",
-      "lastStatus": "ok"
-    },
-    {
-      "name": "Critical update failover guard",
-      "nextRun": "21:07",
+      "nextRun": "21:14",
       "lastStatus": "ok"
     },
     {
@@ -59,8 +49,18 @@
       "lastStatus": "ok"
     },
     {
+      "name": "Critical update failover guard",
+      "nextRun": "21:22",
+      "lastStatus": "ok"
+    },
+    {
       "name": "Control room issue triage + QA intake",
       "nextRun": "21:35",
+      "lastStatus": "ok"
+    },
+    {
+      "name": "Downtime gap auto-fill guard (quiet unless triggered)",
+      "nextRun": "22:00",
       "lastStatus": "ok"
     },
     {
@@ -155,12 +155,6 @@
         "label": "20:00",
         "status": "ok",
         "score": 1.0,
-        "job": "Downtime gap auto-fill guard (quiet unless triggered)"
-      },
-      {
-        "label": "20:00",
-        "status": "ok",
-        "score": 1.0,
         "job": "Usage report - 7am"
       },
       {
@@ -176,13 +170,19 @@
         "job": "Reliability watchdog hourly (self-heal + conditional alert)"
       },
       {
-        "label": "20:52",
+        "label": "21:00",
+        "status": "ok",
+        "score": 1.0,
+        "job": "Downtime gap auto-fill guard (quiet unless triggered)"
+      },
+      {
+        "label": "21:07",
         "status": "ok",
         "score": 1.0,
         "job": "Critical update failover guard"
       },
       {
-        "label": "20:59",
+        "label": "21:13",
         "status": "ok",
         "score": 1.0,
         "job": "Control room status publish (gist backend)"
@@ -384,23 +384,11 @@
     }
   ],
   "runtime": {
-    "status": "running",
-    "isIdle": false,
-    "activeCount": 1,
-    "activeRuns": [
-      {
-        "jobId": "interactive:main-session",
-        "jobName": "It still shows this job running for some reason: Runtime status showing idle for some reason even though you\u2019re working. MAIN 00:04:00 since\u2026",
-        "sessionId": "agent:main:main",
-        "sessionKey": "agent:main:main",
-        "summary": "It still shows this job running for some reason: Runtime status showing idle for some reason even though you\u2019re working. MAIN 00:04:00 since\u2026 (tools: edit, exec, read)",
-        "startedAtMs": 1771383465975,
-        "startedAtLocal": "2026-02-17 20:57:45",
-        "runningForMs": 98919,
-        "activityType": "interactive"
-      }
-    ],
-    "checkedAtMs": 1771383564894,
-    "source": "cron-run reconciliation + subagent registry + main-session tool activity"
+    "status": "idle",
+    "isIdle": true,
+    "activeCount": 0,
+    "activeRuns": [],
+    "checkedAtMs": 1771384426961,
+    "source": "cron-run reconciliation + subagent registry + main-session tool activity [static fallback runtime sanitized]"
   }
 }

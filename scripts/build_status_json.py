@@ -13,7 +13,7 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from scripts.lib.status_builder import build_payload
+from scripts.lib.status_builder import build_payload, sanitize_payload_for_static_snapshot
 
 
 def main() -> int:
@@ -24,9 +24,16 @@ def main() -> int:
         "--out",
         default="/Users/seankudrna/.openclaw/workspace/claw-control-room/public/data/status.json",
     )
+    parser.add_argument(
+        "--live-runtime",
+        action="store_true",
+        help="Keep live runtime rows in output (default writes snapshot-safe idle runtime).",
+    )
     args = parser.parse_args()
 
     payload = build_payload(Path(args.workspace), Path(args.jobs_file))
+    if not args.live_runtime:
+        payload = sanitize_payload_for_static_snapshot(payload)
 
     out = Path(args.out)
     out.parent.mkdir(parents=True, exist_ok=True)

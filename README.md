@@ -8,6 +8,7 @@ A React + TypeScript dashboard (GitHub Pages) that gives a clear window into Cla
 - collapsible content sections for cleaner UX and faster scanning
 - compact panel-body mode to avoid duplicate heading stacks inside collapsible sections
 - real-time runtime panel (cron + subagent + main-session task execution with live elapsed timers; main-session signal uses tool activity + pending-call-aware lock logic, chat-only turns excluded)
+- static fallback snapshot is runtime-sanitized (idle-only) to avoid stale `RUNNING` ghost rows when gist/source fetch fails
 - per-run runtime details sheet (tap/click row details for source/session/start/elapsed/summary)
 - data freshness pill (fresh / aging / stale) based on payload generation time
 - tactile refresh interaction states (press, refreshing spinner, completion confirmation)

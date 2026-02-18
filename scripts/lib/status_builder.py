@@ -1203,3 +1203,29 @@ def build_payload(workspace_root: Path, jobs_file: Path) -> Dict[str, Any]:
         "activity": recent_activity(memory_text),
         "runtime": runtime_activity(jobs_file, subagent_registry_path=SUBAGENT_REGISTRY_PATH),
     }
+
+
+def sanitize_payload_for_static_snapshot(payload: Dict[str, Any]) -> Dict[str, Any]:
+    """Return a snapshot-safe payload for committed fallback JSON files.
+
+    Static fallback snapshots should never contain live `RUNNING` rows because they can
+    be cached and appear stale. Live runtime visibility is delivered via gist publish.
+    """
+    out = dict(payload)
+    runtime = payload.get("runtime")
+    if not isinstance(runtime, dict):
+        return out
+
+    sanitized_runtime = dict(runtime)
+    sanitized_runtime["status"] = "idle"
+    sanitized_runtime["isIdle"] = True
+    sanitized_runtime["activeCount"] = 0
+    sanitized_runtime["activeRuns"] = []
+    source = sanitized_runtime.get("source")
+    if isinstance(source, str) and source.strip():
+        sanitized_runtime["source"] = f"{source} [static fallback runtime sanitized]"
+    else:
+        sanitized_runtime["source"] = "static fallback runtime sanitized"
+
+    out["runtime"] = sanitized_runtime
+    return out

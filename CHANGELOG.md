@@ -1,5 +1,18 @@
 # Changelog
 
+## v1.4.12 - 2026-02-17
+
+### Fixed
+- Eliminated recurring stale `RUNNING` rows caused by static fallback snapshot files capturing live runtime activity during release/quality workflows.
+
+### Changed
+- `scripts/build_status_json.py` now writes runtime-sanitized fallback payloads by default (`idle`, no active runs).
+- Added `--live-runtime` flag for explicit live-runtime snapshot generation when needed.
+- Gist publish path remains live-runtime (unchanged).
+
+### Added
+- Regression test for static snapshot runtime sanitization.
+
 ## v1.4.11 - 2026-02-17
 
 ### Fixed
