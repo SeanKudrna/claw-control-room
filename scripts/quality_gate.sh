@@ -26,4 +26,13 @@ fi
 npm run typecheck
 npm run build
 
+# UI regression/readability guard
+npm run preview -- --host 127.0.0.1 --port 4173 > /tmp/claw-control-room-preview.log 2>&1 &
+PREVIEW_PID=$!
+trap 'kill ${PREVIEW_PID} >/dev/null 2>&1 || true' EXIT
+sleep 1
+node scripts/tests/test_ui_regressions.mjs
+kill ${PREVIEW_PID} >/dev/null 2>&1 || true
+trap - EXIT
+
 echo "Quality gate passed"

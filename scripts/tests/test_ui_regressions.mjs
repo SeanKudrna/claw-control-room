@@ -26,11 +26,56 @@ try {
   );
 
   await page.locator('text=Skills').first().click();
-  const skillNodeCount = await page.$$eval('.skills-tree .skill-node', (nodes) => nodes.length);
+  const skillNodeCount = await page.$$eval('.skills-card .skill-node', (nodes) => nodes.length);
   assert(skillNodeCount > 0, 'Skills tab should render at least one skill node.');
 
   const skillDetailTitle = await page.$eval('.skill-detail h3', (node) => node.textContent?.trim() ?? '');
   assert(skillDetailTitle.length > 0, 'Skills detail panel should render selected skill title.');
+
+  const skillReadability = await page.$$eval('.skills-card .skill-node', (nodes) => {
+    const overlaps = [];
+    const titleOverflows = [];
+
+    const rects = nodes.map((node, index) => {
+      const rect = node.getBoundingClientRect();
+      const title = node.querySelector('.skill-node-title');
+      if (title && title.scrollWidth - title.clientWidth > 1) {
+        titleOverflows.push(index);
+      }
+      return { index, left: rect.left, right: rect.right, top: rect.top, bottom: rect.bottom };
+    });
+
+    for (let i = 0; i < rects.length; i += 1) {
+      for (let j = i + 1; j < rects.length; j += 1) {
+        const a = rects[i];
+        const b = rects[j];
+        const intersects = !(a.right <= b.left || a.left >= b.right || a.bottom <= b.top || a.top >= b.bottom);
+        if (intersects) overlaps.push([a.index, b.index]);
+      }
+    }
+
+    const firstNode = nodes[0];
+    const title = firstNode?.querySelector('.skill-node-title');
+    const detailPanel = document.querySelector('.skill-detail');
+    const titleStyles = title ? window.getComputedStyle(title) : null;
+    const detailStyles = detailPanel ? window.getComputedStyle(detailPanel) : null;
+
+    return {
+      overlaps,
+      titleOverflows,
+      titleFontSizePx: titleStyles ? Number.parseFloat(titleStyles.fontSize) : 0,
+      titleFontWeight: titleStyles?.fontWeight ?? '0',
+      detailPaddingTop: detailStyles ? Number.parseFloat(detailStyles.paddingTop) : 0,
+      detailGap: detailStyles ? Number.parseFloat(detailStyles.gap) : 0,
+    };
+  });
+
+  assert.equal(skillReadability.overlaps.length, 0, `Skill nodes should not overlap. Got: ${JSON.stringify(skillReadability.overlaps)}`);
+  assert.equal(skillReadability.titleOverflows.length, 0, `Skill node titles should not overflow container. Offenders: ${skillReadability.titleOverflows.join(', ')}`);
+  assert(skillReadability.titleFontSizePx >= 15, `Skill title font size should be >= 15px; got ${skillReadability.titleFontSizePx}`);
+  assert(Number.parseInt(skillReadability.titleFontWeight, 10) >= 700, `Skill title font weight should be bold; got ${skillReadability.titleFontWeight}`);
+  assert(skillReadability.detailPaddingTop >= 14, `Skill detail panel should have readable padding; got ${skillReadability.detailPaddingTop}`);
+  assert(skillReadability.detailGap >= 10, `Skill detail panel should have readable spacing gap; got ${skillReadability.detailGap}`);
 
   await page.locator('text=Operations').first().click();
 

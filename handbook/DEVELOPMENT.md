@@ -39,6 +39,7 @@ UI nav notes:
 - Skills tree interactions should work on desktop hover/click and mobile tap (node selection drives side-panel detail rendering).
 - Desktop Skills view should preserve game-style semantics: visible dependency connectors, tiered branch hierarchy, and distinct visual states (`active`, `in-progress`, `planned`, `locked`).
 - Mobile Skills fallback should remain progression-readable (tier + state + level/progress) and preserve tap-to-inspect detail behavior.
+- Skills readability guard (`scripts/tests/test_ui_regressions.mjs`) should pass: no node overlap, no title overflow, bold >=15px node titles, and adequately spaced detail panel.
 - Skills evolution ingestion is deterministic and artifact-driven (workspace memory files only; no network/LLM mutation in builder path).
 
 ## Build output for GitHub Pages

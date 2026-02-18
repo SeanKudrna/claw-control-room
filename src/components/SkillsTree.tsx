@@ -29,6 +29,11 @@ export function SkillsTree({ skills }: SkillsTreeProps) {
     [skills.nodes, selectedId],
   );
 
+  const nodeNameById = useMemo(
+    () => new Map(skills.nodes.map((node) => [node.id, node.name])),
+    [skills.nodes],
+  );
+
   const tiers = useMemo(() => {
     const values = new Set(skills.nodes.map((node) => node.tier));
     return [...values].sort((a, b) => a - b);
@@ -154,8 +159,12 @@ export function SkillsTree({ skills }: SkillsTreeProps) {
                   title={`${node.name} (${stateLabel(visual)})`}
                   style={{ gridColumn: pos.col, gridRow: pos.row }}
                 >
+                  <div className="skill-node-header">
+                    <span className="skill-node-tier">Tier {node.tier}</span>
+                    <span className={`skill-node-state ${visual}`}>{stateLabel(visual)}</span>
+                  </div>
                   <div className="skill-node-title">{node.name}</div>
-                  <div className="skill-node-meta">Lv {node.level} · {Math.round(node.progress * 100)}%</div>
+                  <div className="skill-node-meta">Level {node.level} · {Math.round(node.progress * 100)}% complete</div>
                 </button>
               );
             })}
@@ -176,7 +185,7 @@ export function SkillsTree({ skills }: SkillsTreeProps) {
                   >
                     <span className="skill-mobile-tier">Tier {node.tier}</span>
                     <strong>{node.name}</strong>
-                    <span className="muted">{stateLabel(visual)} · Lv {node.level} · {Math.round(node.progress * 100)}%</span>
+                    <span className="muted">{stateLabel(visual)} · Level {node.level} · {Math.round(node.progress * 100)}% complete</span>
                   </button>
                 );
               })}
@@ -204,7 +213,11 @@ export function SkillsTree({ skills }: SkillsTreeProps) {
                 </div>
                 <div>
                   <span className="muted">Dependencies</span>
-                  <strong>{selected.dependencies.length ? selected.dependencies.join(', ') : 'None'}</strong>
+                  <strong>
+                    {selected.dependencies.length
+                      ? selected.dependencies.map((depId) => nodeNameById.get(depId) ?? depId).join(', ')
+                      : 'None'}
+                  </strong>
                 </div>
               </div>
             </>

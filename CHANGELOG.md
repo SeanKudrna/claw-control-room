@@ -1,5 +1,21 @@
 # Changelog
 
+## v1.4.31 - 2026-02-18
+
+### Fixed
+- Restored Skills tab readability for issue #44 by increasing node/text contrast, strengthening label hierarchy, and reducing visual clutter/ambiguity in the game-style tree.
+- Improved skill detail panel readability with larger spacing, clearer carded metadata blocks, and more legible dependency names (resolved from IDs to node names).
+
+### Added
+- Added stronger in-node hierarchy elements (tier badge + state badge) to preserve RPG skill-tree feel without sacrificing legibility.
+- Added UI readability guard assertions in `scripts/tests/test_ui_regressions.mjs` (no overlap/title overflow + minimum typography/spacing contracts).
+
+### Validation
+- Captured local before/after Skills screenshots (desktop + mobile) under `status/ui-validation/issue44-skills-*.png`.
+
+### Docs
+- Updated README and development handbook readability/guard expectations for Skills tab.
+
 ## v1.4.30 - 2026-02-18
 
 ### Added
