@@ -544,7 +544,7 @@ def is_future_timed_item(item: str, now_local: dt.datetime) -> bool:
 
 
 def timeline_events(timeline: List[Dict[str, str]], now_local: dt.datetime) -> List[Dict[str, Any]]:
-    """Return future timeline blocks as unified events."""
+    """Return timeline blocks that have not yet completed as unified events."""
     day_start = now_local.replace(hour=0, minute=0, second=0, microsecond=0)
     now_ms = int(now_local.timestamp() * 1000)
     events: List[Dict[str, Any]] = []
@@ -553,10 +553,12 @@ def timeline_events(timeline: List[Dict[str, str]], now_local: dt.datetime) -> L
         parsed = parse_time_range(block.get("time", ""))
         if parsed is None:
             continue
-        start_minutes, _ = parsed
+        start_minutes, end_minutes = parsed
         start_dt = day_start + dt.timedelta(minutes=start_minutes)
+        end_dt = day_start + dt.timedelta(minutes=end_minutes)
         start_ms = int(start_dt.timestamp() * 1000)
-        if start_ms < now_ms:
+        end_ms = int(end_dt.timestamp() * 1000)
+        if end_ms <= now_ms:
             continue
         task = (block.get("task") or "").strip()
         time_label = block.get("time", "n/a")
@@ -566,6 +568,7 @@ def timeline_events(timeline: List[Dict[str, str]], now_local: dt.datetime) -> L
                 "id": event_id,
                 "kind": "timeline",
                 "startMs": start_ms,
+                "endMs": end_ms,
                 "label": format_block(block),
             }
         )

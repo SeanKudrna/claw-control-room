@@ -1,5 +1,18 @@
 # Changelog
 
+## v1.4.27 - 2026-02-18
+
+### Fixed
+- Corrected timeline event lifecycle semantics so in-progress blocks remain active until their end time (no premature start-time transition to done).
+- Updated now-lane fallback selection to prefer the current not-yet-completed timeline block when no runtime activity is active.
+- Preserved no-past guarantees for now/next while gating done transitions on completion (`end <= now`).
+
+### Added
+- Regression coverage for timeline block lifecycle across pre-start, in-progress, and post-end states.
+
+### Docs
+- Updated README and handbook architecture/development guidance for end-time-based timeline transitions.
+
 ## v1.4.26 - 2026-02-18
 
 ### Added

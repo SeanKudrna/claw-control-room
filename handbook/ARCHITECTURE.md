@@ -16,9 +16,9 @@ Claw Control Room provides a readable, near-real-time view of Claw's operations:
 - Payload builder applies timeline-aware stale-guard logic so `currentFocus` and `workstream.now` stay accurate even when `TODAY_STATUS.md` lags behind clock time.
 - Workstream now/next/done is built from a unified chronological event model: timeline blocks (`DAILY_PLAN`), scheduled jobs (`nextRunAtMs`), and active runtime rows.
 - Deterministic lane-state rules define `now`, `next`, and `done` transitions (including day reset), removing ad-hoc stale carryover behavior.
-- `now` resolves to current runtime activity when present; otherwise the earliest upcoming scheduled event.
-- `next` is the ordered future remainder after `now`, with no past items.
-- `done` starts empty each day and only receives items that first appeared in `now` and later completed, rendered newest-first for scanability.
+- `now` resolves to current runtime activity when present; otherwise the earliest not-yet-completed scheduled event (including in-progress timeline blocks until end time).
+- `next` is the ordered remainder after `now`, with no past/completed items.
+- `done` starts empty each day and only receives items that first appeared in `now` and later completed (end-time reached), rendered newest-first for scanability.
 - Done items expose leading completion-time prefixes when time is derivable, improving recency scanning in Overview.
 - Runtime detection reconciles session-store cron run keys against cron finished logs and active subagent registry runs.
 - Runtime semantics intentionally exclude main/interactive rows (cron + background/subagent only).

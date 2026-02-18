@@ -153,6 +153,29 @@ class StatusBuilderTests(unittest.TestCase):
             lanes_third = build_workstream_lanes([], jobs_file, {"activeRuns": []}, third_now, state_path)
             self.assertEqual(lanes_third["done"], [])
 
+    def test_workstream_timeline_block_lifecycle_pre_start_in_progress_post_end(self) -> None:
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            jobs_file = root / "jobs.json"
+            jobs_file.write_text(json.dumps({"jobs": []}), encoding="utf-8")
+            state_path = root / "workstream-state.json"
+            timeline = [{"time": "08:05-08:20", "task": "Lifecycle block"}]
+
+            pre_start = dt.datetime(2026, 2, 18, 8, 0)
+            lanes_pre = build_workstream_lanes(timeline, jobs_file, {"activeRuns": []}, pre_start, state_path)
+            self.assertIn("08:05-08:20", lanes_pre["now"][0])
+            self.assertEqual(lanes_pre["done"], [])
+
+            in_progress = dt.datetime(2026, 2, 18, 8, 10)
+            lanes_in_progress = build_workstream_lanes(timeline, jobs_file, {"activeRuns": []}, in_progress, state_path)
+            self.assertIn("08:05-08:20", lanes_in_progress["now"][0])
+            self.assertEqual(lanes_in_progress["done"], [])
+
+            post_end = dt.datetime(2026, 2, 18, 8, 25)
+            lanes_post = build_workstream_lanes(timeline, jobs_file, {"activeRuns": []}, post_end, state_path)
+            self.assertEqual(lanes_post["now"], [])
+            self.assertIn("08:20 — Lifecycle block", lanes_post["done"][0])
+
     def test_workstream_done_order_is_newest_first(self) -> None:
         with tempfile.TemporaryDirectory() as td:
             root = Path(td)

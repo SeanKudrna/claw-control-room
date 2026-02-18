@@ -22,7 +22,7 @@ A React + TypeScript dashboard (GitHub Pages) that gives a clear window into Cla
 - custom lobster favicon + home-screen icons for mobile install branding
 - polished interaction states and focus-visible accessibility styling across controls
 - current focus and active work (with timeline-aware stale fallback)
-- now/next/done swimlanes driven by a unified chronological event model (timeline blocks + scheduled jobs + active runtime), deterministic lane-state transitions, no cross-lane duplicates, no past items in now/next, done ordering newest-first, and done timestamps shown per item when derivable
+- now/next/done swimlanes driven by a unified chronological event model (timeline blocks + scheduled jobs + active runtime), deterministic lane-state transitions, in-progress timeline blocks retained until end-time completion, no cross-lane duplicates, no past items in now/next, done ordering newest-first, and done timestamps shown per item when derivable
 - activity feed category noise is normalized (no `N/A` filter/tag clutter; unknown categories map to `OPS`)
 - timeline of planned tasks with automatic current-block highlighting (when the local time falls within a listed block range)
 - upcoming scheduled jobs

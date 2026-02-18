@@ -1,7 +1,7 @@
 {
-  "generatedAt": "2026-02-18T14:54:48.052258+00:00",
-  "generatedAtLocal": "2026-02-18 08:54 ",
-  "controlRoomVersion": "1.4.26",
+  "generatedAt": "2026-02-18T15:02:20.135223+00:00",
+  "generatedAtLocal": "2026-02-18 09:02 ",
+  "controlRoomVersion": "1.4.27",
   "currentFocus": "Control-room issue triage block (mandatory)",
   "activeWork": "downtime-guard monitoring/continuity mode.",
   "reliability": {
@@ -44,12 +44,7 @@
   "nextJobs": [
     {
       "name": "Control room status publish (gist backend)",
-      "nextRun": "08:55",
-      "lastStatus": "ok"
-    },
-    {
-      "name": "Downtime gap auto-fill guard (quiet unless triggered)",
-      "nextRun": "09:00",
+      "nextRun": "09:03",
       "lastStatus": "ok"
     },
     {
@@ -65,6 +60,11 @@
     {
       "name": "Control room issue triage + QA intake",
       "nextRun": "09:35",
+      "lastStatus": "ok"
+    },
+    {
+      "name": "Downtime gap auto-fill guard (quiet unless triggered)",
+      "nextRun": "10:00",
       "lastStatus": "ok"
     },
     {
@@ -93,21 +93,21 @@
   ],
   "workstream": {
     "now": [
-      "Apply the latest UI refinements in /Users/seankudrna/.openclaw/workspace/claw-control-room. User-requested changes: 1) Remove helper text under refresh button during click/refresh/\u2026"
+      "Fix issue #40 in /Users/seankudrna/.openclaw/workspace/claw-control-room. Issue: https://github.com/SeanKudrna/claw-control-room/issues/40 Bug: in-progress timeline blocks are tran\u2026"
     ],
     "next": [
-      "08:55 \u2014 Scheduled job: Control room status publish (gist backend)",
-      "09:00 \u2014 Scheduled job: Downtime gap auto-fill guard (quiet unless triggered)",
+      "08:40-09:10 \u2014 Control-room issue triage block (mandatory)",
+      "09:03 \u2014 Scheduled job: Control room status publish (gist backend)",
       "09:07 \u2014 Scheduled job: Critical update failover guard",
       "09:10-10:20 \u2014 Control-room product lane block (mandatory)",
       "09:20 \u2014 Scheduled job: Reliability watchdog hourly (self-heal + conditional alert)"
     ],
     "done": [
-      "09:10 \u2014 Control-room issue triage block (mandatory)",
-      "Implement issue #34 in isolated worktree, no push. Repo: /Users/seankudrna/.openclaw/workspace/claw-control-room Issue: https://github.com/SeanKudrna/claw-control-room/issues/34 Wo\u2026",
-      "Implement dashboard change in /Users/seankudrna/.openclaw/workspace/claw-control-room: User request: - In workstream `done` list/card, show most recently finished tasks at the TOP \u2026",
-      "Implement issue #37 in /Users/seankudrna/.openclaw/workspace/claw-control-room. Issue: https://github.com/SeanKudrna/claw-control-room/issues/37 Goal: Move refresh control into sti\u2026",
-      "Daily plan preflight validator"
+      "Autonomy daily planner (DAILY_PLAN source of truth)",
+      "Critical update failover guard",
+      "Resume and finish the in-progress worktree changes for claw-control-room issue set #30 #31 #32. Repo: /Users/seankudrna/.openclaw/workspace/claw-control-room Current state: local w\u2026",
+      "Apply the latest UI refinements in /Users/seankudrna/.openclaw/workspace/claw-control-room. User-requested changes: 1) Remove helper text under refresh button during click/refresh/\u2026",
+      "Implement issue #30 in /Users/seankudrna/.openclaw/workspace/claw-control-room. Issue: https://github.com/SeanKudrna/claw-control-room/issues/30 User-required semantics (must match\u2026"
     ]
   },
   "charts": {
@@ -155,12 +155,6 @@
         "job": "Usage report - 7am"
       },
       {
-        "label": "08:00",
-        "status": "ok",
-        "score": 1.0,
-        "job": "Downtime gap auto-fill guard (quiet unless triggered)"
-      },
-      {
         "label": "08:15",
         "status": "ok",
         "score": 1.0,
@@ -191,7 +185,13 @@
         "job": "Critical update failover guard"
       },
       {
-        "label": "08:54",
+        "label": "09:00",
+        "status": "ok",
+        "score": 1.0,
+        "job": "Downtime gap auto-fill guard (quiet unless triggered)"
+      },
+      {
+        "label": "09:02",
         "status": "ok",
         "score": 1.0,
         "job": "Control room status publish (gist backend)"
@@ -387,7 +387,7 @@
     "isIdle": true,
     "activeCount": 0,
     "activeRuns": [],
-    "checkedAtMs": 1771426488001,
+    "checkedAtMs": 1771426940078,
     "source": "cron-run reconciliation + subagent registry [static fallback runtime sanitized]"
   }
 }
