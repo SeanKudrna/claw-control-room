@@ -9,6 +9,7 @@ interface HeaderProps {
   refreshing: boolean;
   lastRefreshAtMs: number | null;
   refreshOutcome: 'idle' | 'success' | 'error';
+  errorCode: string | null;
   onRefresh: () => void;
 }
 
@@ -22,6 +23,7 @@ export function Header({
   refreshing,
   lastRefreshAtMs,
   refreshOutcome,
+  errorCode,
   onRefresh,
 }: HeaderProps) {
   const [isPressed, setIsPressed] = useState(false);
@@ -59,13 +61,24 @@ export function Header({
           ? 'Retry refresh'
           : 'Refresh';
 
+  const failureReason =
+    errorCode === 'status-network-error'
+      ? 'status source unreachable'
+      : errorCode === 'status-http-error'
+        ? 'status source returned an error'
+        : errorCode === 'status-payload-invalid'
+          ? 'status payload invalid'
+          : errorCode === 'status-url-unavailable'
+            ? 'no status source configured'
+            : 'unknown refresh error';
+
   const helperText =
     feedbackState === 'refreshing'
       ? 'Updating data now…'
       : feedbackState === 'success'
         ? 'Updated just now'
         : feedbackState === 'error'
-          ? 'Refresh failed — showing last known good snapshot'
+          ? `Refresh failed (${failureReason}) — showing last known good snapshot`
           : 'Tap to refresh';
 
   return (

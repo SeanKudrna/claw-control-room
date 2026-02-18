@@ -1,15 +1,22 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { fetchStatus } from '../lib/statusApi';
+import { fetchStatus, StatusFetchError } from '../lib/statusApi';
 import type { StatusPayload } from '../types/status';
 
 type FreshnessLevel = 'fresh' | 'aging' | 'stale';
 type RefreshOutcome = 'idle' | 'success' | 'error';
+type RefreshErrorCode =
+  | 'status-http-error'
+  | 'status-network-error'
+  | 'status-payload-invalid'
+  | 'status-url-unavailable'
+  | 'unknown-status-error';
 
 interface UseStatusResult {
   data: StatusPayload | null;
   loading: boolean;
   refreshing: boolean;
   error: string | null;
+  errorCode: RefreshErrorCode | null;
   refresh: () => Promise<void>;
   lastRefreshAtMs: number | null;
   lastUpdatedLabel: string;
@@ -24,6 +31,7 @@ export function useStatus(refreshMs = 60_000): UseStatusResult {
   const [refreshing, setRefreshing] = useState(false);
   const [lastRefreshAtMs, setLastRefreshAtMs] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [errorCode, setErrorCode] = useState<RefreshErrorCode | null>(null);
   const [refreshOutcome, setRefreshOutcome] = useState<RefreshOutcome>('idle');
   const [nowMs, setNowMs] = useState<number>(() => Date.now());
   const requestSeqRef = useRef(0);
@@ -43,6 +51,7 @@ export function useStatus(refreshMs = 60_000): UseStatusResult {
       }
       setRefreshing(true);
       setError(null);
+      setErrorCode(null);
       const next = await fetchStatus({ signal: controller.signal });
 
       if (requestSeq !== requestSeqRef.current) return;
@@ -52,7 +61,15 @@ export function useStatus(refreshMs = 60_000): UseStatusResult {
       setRefreshOutcome('success');
     } catch (err) {
       if (controller.signal.aborted || requestSeq !== requestSeqRef.current) return;
-      setError(err instanceof Error ? err.message : 'Unknown status error');
+
+      if (err instanceof StatusFetchError) {
+        setErrorCode(err.code);
+        setError(err.message);
+      } else {
+        setErrorCode('unknown-status-error');
+        setError(err instanceof Error ? err.message : 'Unknown status error');
+      }
+
       setRefreshOutcome('error');
     } finally {
       if (requestSeq === requestSeqRef.current) {
@@ -114,6 +131,7 @@ export function useStatus(refreshMs = 60_000): UseStatusResult {
     loading,
     refreshing,
     error,
+    errorCode,
     refresh,
     lastRefreshAtMs,
     lastUpdatedLabel,

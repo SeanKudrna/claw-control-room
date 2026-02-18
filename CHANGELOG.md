@@ -1,5 +1,15 @@
 # Changelog
 
+## v1.4.15 - 2026-02-18
+
+### Fixed
+- Refresh error banners now avoid opaque/raw-only failure wording by classifying failures into actionable categories.
+
+### Changed
+- Added typed status fetch error taxonomy in `statusApi` (`status-network-error`, `status-http-error`, `status-payload-invalid`, `status-url-unavailable`).
+- Header degraded-state helper text now explains failure class while preserving last-known-good snapshot messaging.
+- App-level error banner now prefixes human-readable incident summary and keeps technical detail for debugging.
+
 ## v1.4.14 - 2026-02-17
 
 ### Fixed

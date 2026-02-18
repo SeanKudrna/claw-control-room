@@ -43,6 +43,7 @@ export default function App() {
     loading,
     refreshing,
     error,
+    errorCode,
     refresh,
     lastRefreshAtMs,
     lastUpdatedLabel,
@@ -147,6 +148,17 @@ export default function App() {
     );
   }, [activeTab, data]);
 
+  const errorSummary =
+    errorCode === 'status-network-error'
+      ? 'Status source unreachable.'
+      : errorCode === 'status-http-error'
+        ? 'Status source returned an HTTP error.'
+        : errorCode === 'status-payload-invalid'
+          ? 'Status payload is malformed.'
+          : errorCode === 'status-url-unavailable'
+            ? 'No status source URL is available.'
+            : 'Status refresh failed.';
+
   return (
     <div className="app-shell">
       <Header
@@ -157,6 +169,7 @@ export default function App() {
         refreshing={refreshing}
         lastRefreshAtMs={lastRefreshAtMs}
         refreshOutcome={refreshOutcome}
+        errorCode={errorCode}
         onRefresh={() => void refresh()}
       />
 
@@ -165,7 +178,9 @@ export default function App() {
       {error && (
         <div className="error-banner">
           <AlertTriangle size={16} />
-          <span>{error}</span>
+          <span>
+            {errorSummary} {error}
+          </span>
         </div>
       )}
 

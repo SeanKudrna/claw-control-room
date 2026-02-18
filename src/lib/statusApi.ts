@@ -3,6 +3,24 @@ import type { StatusPayload } from '../types/status';
 const FALLBACK_PATH = 'data/status.json';
 const SOURCE_CONFIG_PATH = 'data/source.json';
 
+type StatusFetchErrorCode =
+  | 'status-http-error'
+  | 'status-network-error'
+  | 'status-payload-invalid'
+  | 'status-url-unavailable';
+
+export class StatusFetchError extends Error {
+  code: StatusFetchErrorCode;
+  status?: number;
+
+  constructor(code: StatusFetchErrorCode, message: string, options?: { status?: number }) {
+    super(message);
+    this.code = code;
+    this.status = options?.status;
+    this.name = 'StatusFetchError';
+  }
+}
+
 function withCacheBust(url: string): string {
   const separator = url.includes('?') ? '&' : '?';
   return `${url}${separator}ts=${Date.now()}`;
@@ -18,24 +36,42 @@ async function resolveStatusUrl(signal?: AbortSignal): Promise<string> {
   try {
     const configUrl = withCacheBust(resolveBasePath(SOURCE_CONFIG_PATH));
     const cfgRes = await fetch(configUrl, { signal });
-    if (!cfgRes.ok) throw new Error('source config unavailable');
-
-    const cfg = (await cfgRes.json()) as { url?: string };
-    if (cfg.url && cfg.url.trim()) {
-      return withCacheBust(cfg.url.trim());
+    if (cfgRes.ok) {
+      const cfg = (await cfgRes.json()) as { url?: string };
+      if (cfg.url && cfg.url.trim()) {
+        return withCacheBust(cfg.url.trim());
+      }
     }
   } catch {
     // Use fallback below.
   }
 
-  return withCacheBust(resolveBasePath(FALLBACK_PATH));
+  const fallbackUrl = withCacheBust(resolveBasePath(FALLBACK_PATH));
+  if (!fallbackUrl) {
+    throw new StatusFetchError('status-url-unavailable', 'No status source URL could be resolved');
+  }
+  return fallbackUrl;
 }
 
 export async function fetchStatus(options?: { signal?: AbortSignal }): Promise<StatusPayload> {
   const statusUrl = await resolveStatusUrl(options?.signal);
-  const response = await fetch(statusUrl, { signal: options?.signal });
-  if (!response.ok) {
-    throw new Error(`Status fetch failed: ${response.status}`);
+
+  let response: Response;
+  try {
+    response = await fetch(statusUrl, { signal: options?.signal });
+  } catch {
+    throw new StatusFetchError('status-network-error', 'Status endpoint could not be reached');
   }
-  return (await response.json()) as StatusPayload;
+
+  if (!response.ok) {
+    throw new StatusFetchError('status-http-error', `Status endpoint returned ${response.status}`, {
+      status: response.status,
+    });
+  }
+
+  try {
+    return (await response.json()) as StatusPayload;
+  } catch {
+    throw new StatusFetchError('status-payload-invalid', 'Status payload is not valid JSON');
+  }
 }

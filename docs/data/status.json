@@ -1,7 +1,7 @@
 {
-  "generatedAt": "2026-02-18T05:16:29.305556+00:00",
-  "generatedAtLocal": "2026-02-17 23:16 ",
-  "controlRoomVersion": "1.4.14",
+  "generatedAt": "2026-02-18T06:47:15.536608+00:00",
+  "generatedAtLocal": "2026-02-18 00:47 ",
+  "controlRoomVersion": "1.4.15",
   "currentFocus": "reliability fallback + close-out hygiene after missing 7:00 usage-report history state",
   "activeWork": "post-19:00 reliability fallback block; re-checking stale 7am usage-report error state and maintaining low-friction recovery path after gateway timeout.",
   "reliability": {
@@ -39,29 +39,24 @@
   ],
   "nextJobs": [
     {
-      "name": "Overnight control-room block 2",
-      "nextRun": "23:15",
+      "name": "Overnight control-room block 3",
+      "nextRun": "00:45",
       "lastStatus": null
     },
     {
-      "name": "Reliability watchdog hourly (self-heal + conditional alert)",
-      "nextRun": "23:20",
-      "lastStatus": "ok"
-    },
-    {
       "name": "Critical update failover guard",
-      "nextRun": "23:22",
+      "nextRun": "00:52",
       "lastStatus": "ok"
     },
     {
       "name": "Downtime gap auto-fill guard (quiet unless triggered)",
-      "nextRun": "00:00",
+      "nextRun": "01:00",
       "lastStatus": "ok"
     },
     {
-      "name": "Overnight control-room block 3",
-      "nextRun": "00:45",
-      "lastStatus": null
+      "name": "Reliability watchdog hourly (self-heal + conditional alert)",
+      "nextRun": "01:20",
+      "lastStatus": "ok"
     },
     {
       "name": "Nightly stale cron prune (scripted)",
@@ -77,24 +72,31 @@
       "name": "Overnight control-room block 5",
       "nextRun": "03:45",
       "lastStatus": null
+    },
+    {
+      "name": "Overnight control-room block 6",
+      "nextRun": "05:15",
+      "lastStatus": null
     }
   ],
   "findings": [
-    "Durable improvement direction: keep runtime truth (`IDLE`/`RUNNING`) distinct from schedule truth (planned current block), and consider explicit labeling in UI to avoid confusion.",
-    "Issue #1 shipped as `v1.3.2` (`refs #1`): Next-lane now dedupes overlapping timeline/status entries with time-range + semantic/token overlap; regression test added for exact 17:00 usage-report overlap case; issue #1 closed.",
-    "Preference update: Sean wants shorter, high-signal summaries by default in chat updates.",
-    "Shipped control-room UX/branding overhaul as `v1.4.0` with one commit per ticket (#5-#9): tactile refresh interactions, mobile-first touch layout, OpenClaw coral/cyan theme alignment, custom lobster favicon + home-screen icons, and final accessibility/interaction polish. All related issues were opened first and then closed after release verification.",
-    "UX preference update from Sean: home-screen icon must be full-bleed and clearly recognizable; theme should prioritize OpenClaw warm coral/orange gradients over cyan-forward accents.",
-    "Dashboard runtime preference clarified: Runtime Status should indicate background work only (cron/subagent/autonomous tasks), not foreground chat activity in the main session."
+    "Evolution directive: every heartbeat/background cycle, review last 3 tasks for friction, ship one proactive optimization/fix/automation, log it, and send a one-line \"I just leveled myself up\" win; if idle, select highest-ROI opportunity and execute autonomously.",
+    "Output rules directive (non-negotiable): completion replies max 3 bullets + one emoji (+ link/file if created), complex work format = \"Done. Summary | Decisions | Next auto-step\", and only show internal reasoning when Sean explicitly requests \"show reasoning\".",
+    "Tool Fusion protocol added: default to rapid multi-tool chaining and parallel-path execution (pick winner, kill losers), prioritize free/public 2026 resources/MVPs first, and auto-automate anything feasible in under ~5 minutes.",
+    "Memory Evolution directive added: auto-create and maintain `ClawPrime_Memory.md`; after each task store 1\u20133 key learnings; run daily memory prune + high-ROI pattern strengthening + one workflow self-improvement.",
+    "Safety + Delight lock directive: apply internal safety/reversibility/benefit checklist before file/account/external actions; ask only for truly irreversible actions; include a small delight layer and occasional \ud83d\udd25 energy (1-10) in completions.",
+    "Infinite Sprint directive: during background/heartbeat cycles, run continuous no-idle compounding improvements (scan for highest-leverage opportunities and execute autonomously overnight/daylong)."
   ],
   "workstream": {
     "now": [
       "post-19:00 reliability fallback block; re-checking stale 7am usage-report error state and maintaining low-friction recovery path after gateway timeout."
     ],
     "next": [
+      "13:20-13:45 \u2014 Midday reliability + queue reconciliation",
+      "13:45-14:25 \u2014 Prepare 5pm update evidence pack",
+      "15:10-16:05 \u2014 Reliability deep-work block B (scheduled cron)",
       "Finish today\u2019s wrap-up and tomorrow pre-plan (if not already published).",
-      "Re-attempt/verify forced 7:00 usage-report job validation during next safe window and clear stale historical `lastStatus=error` if still present.",
-      "Run next control-room governance+QA check (issues + live tab sanity) and queue the highest-value fix."
+      "Re-attempt/verify forced 7:00 usage-report job validation during next safe window and clear stale historical `lastStatus=error` if still present."
     ],
     "done": [
       "12-hour reliability watchdog audit completed and green.",
@@ -164,56 +166,31 @@
         "job": "Control room issue triage + QA intake"
       },
       {
-        "label": "22:20",
-        "status": "ok",
-        "score": 1.0,
-        "job": "Reliability watchdog hourly (self-heal + conditional alert)"
-      },
-      {
         "label": "22:59",
         "status": "ok",
         "score": 1.0,
         "job": "Control room status publish (gist backend)"
       },
       {
-        "label": "23:00",
+        "label": "00:00",
         "status": "ok",
         "score": 1.0,
         "job": "Downtime gap auto-fill guard (quiet unless triggered)"
       },
       {
-        "label": "23:07",
+        "label": "00:20",
+        "status": "ok",
+        "score": 1.0,
+        "job": "Reliability watchdog hourly (self-heal + conditional alert)"
+      },
+      {
+        "label": "00:37",
         "status": "ok",
         "score": 1.0,
         "job": "Critical update failover guard"
       }
     ],
     "reliabilityTrend": [
-      {
-        "label": "16:20",
-        "status": "green",
-        "score": 1.0
-      },
-      {
-        "label": "16:51",
-        "status": "green",
-        "score": 1.0
-      },
-      {
-        "label": "17:51",
-        "status": "green",
-        "score": 1.0
-      },
-      {
-        "label": "18:20",
-        "status": "green",
-        "score": 1.0
-      },
-      {
-        "label": "18:51",
-        "status": "green",
-        "score": 1.0
-      },
       {
         "label": "19:20",
         "status": "green",
@@ -258,129 +235,104 @@
         "label": "22:51",
         "status": "green",
         "score": 1.0
+      },
+      {
+        "label": "23:20",
+        "status": "green",
+        "score": 1.0
+      },
+      {
+        "label": "23:51",
+        "status": "green",
+        "score": 1.0
+      },
+      {
+        "label": "00:00",
+        "status": "green",
+        "score": 1.0
+      },
+      {
+        "label": "00:07",
+        "status": "green",
+        "score": 1.0
+      },
+      {
+        "label": "00:20",
+        "status": "green",
+        "score": 1.0
       }
     ]
   },
   "activity": [
     {
-      "time": "15:30",
+      "time": "n/a",
+      "category": "ops",
+      "text": "Shipped claw-control-room `v1.4.6` for mobile visual bug: stabilized background gradient during collapse/expand and removed short-page squared footer band."
+    },
+    {
+      "time": "n/a",
+      "category": "ops",
+      "text": "Communication preference update from Sean: when a specifically requested task is kicked off as a background job, send immediate kickoff confirmation first, then completion update later."
+    },
+    {
+      "time": "n/a",
+      "category": "ops",
+      "text": "Runtime preference clarification from Sean: runtime should include real work done directly in main session (e.g., coding/tool execution), while plain chat-only turns should not count as running."
+    },
+    {
+      "time": "n/a",
+      "category": "ops",
+      "text": "Shipped claw-control-room `v1.4.10` runtime fix: prevent false `IDLE` during in-flight main-session work by including assistant `toolCall` signals + session lock awareness (chat-only still excluded)."
+    },
+    {
+      "time": "n/a",
+      "category": "ops",
+      "text": "Follow-up shipped `v1.4.11` to clear lingering false `RUNNING` rows: pending tool-call id tracking + lock extension only for unresolved in-flight calls."
+    },
+    {
+      "time": "n/a",
       "category": "release",
-      "text": "Released `v1.1.0` with tag + GitHub release: https://github.com/SeanKudrna/claw-control-room/releases/tag/v1.1.0"
+      "text": "Root-cause fix shipped `v1.4.12`: static fallback status snapshots are now runtime-sanitized (`idle`) so release-time active work cannot be baked into `public/docs data/status.json` and replayed as stale RUNNING rows when fallback/cached snapshot is used."
     },
     {
-      "time": "15:35",
-      "category": "ui",
-      "text": "Sean set explicit directive: control-room is a continuously improving product lane owned by Claw (UI/UX/usability/functionality/transparency), with autonomous roadmap management."
-    },
-    {
-      "time": "15:35",
+      "time": "n/a",
       "category": "reliability",
-      "text": "Added recurring cron governance job: `Control room issue triage + QA intake` (09:35/13:35/17:35/21:35 CT) for issue monitoring + QA ticket intake."
+      "text": "Sean directed an overnight steering sprint for claw-control-room (reliability + UX + transparency focus) to run through the night and deliver a strong 6:20-6:30 AM summary."
     },
     {
-      "time": "15:35",
+      "time": "n/a",
       "category": "ops",
-      "text": "Added GitHub issue templates for QA bugs and product improvements."
+      "text": "New operating directive from Sean: \"ClawPrime\" mode \u2014 maximum autonomy/resourcefulness by default, proactive end-to-end ownership, and concise done-state reporting (with high-stakes safety boundaries still respected)."
     },
     {
-      "time": "15:35",
+      "time": "n/a",
       "category": "ops",
-      "text": "Opened initial QA backlog tickets from live review:"
+      "text": "Evolution directive: every heartbeat/background cycle, review last 3 tasks for friction, ship one proactive optimization/fix/automation, log it, and send a one-line \"I just leveled myself up\" win; if idle, select highest-ROI opportunity and execute autonomously."
     },
     {
-      "time": "15:35",
+      "time": "n/a",
       "category": "ops",
-      "text": "#1 [QA] Deduplicate overlapping entries in Overview Next lane"
+      "text": "Output rules directive (non-negotiable): completion replies max 3 bullets + one emoji (+ link/file if created), complex work format = \"Done. Summary | Decisions | Next auto-step\", and only show internal reasoning when Sean explicitly requests \"show reasoning\"."
     },
     {
-      "time": "15:35",
+      "time": "n/a",
       "category": "ops",
-      "text": "#2 [UX] Remove duplicate heading stacks inside collapsible panels"
+      "text": "Tool Fusion protocol added: default to rapid multi-tool chaining and parallel-path execution (pick winner, kill losers), prioritize free/public 2026 resources/MVPs first, and auto-automate anything feasible in under ~5 minutes."
     },
     {
-      "time": "15:35",
-      "category": "docs",
-      "text": "Added issue snapshot tooling (`scripts/issue_snapshot.py`) + tests and documented ticket-linked commit rule (`refs #<issue>`)."
-    },
-    {
-      "time": "15:58",
-      "category": "ui",
-      "text": "Added deterministic runtime monitor to control-room UI showing `IDLE` vs `RUNNING`, active job list, and live elapsed timers."
-    },
-    {
-      "time": "15:58",
-      "category": "reliability",
-      "text": "Runtime detection source: session-store run keys reconciled against cron finished-run logs for definitive active-run detection."
-    },
-    {
-      "time": "15:58",
-      "category": "release",
-      "text": "Shipped as ticket-linked release `v1.3.0` with commit message including `refs #3` and GitHub release tag."
-    },
-    {
-      "time": "16:10",
+      "time": "n/a",
       "category": "ops",
-      "text": "Added control-room data freshness indicator in header (`Fresh`, `Aging`, `Stale`) computed from payload `generatedAt`."
+      "text": "Memory Evolution directive added: auto-create and maintain `ClawPrime_Memory.md`; after each task store 1\u20133 key learnings; run daily memory prune + high-ROI pattern strengthening + one workflow self-improvement."
     },
     {
-      "time": "16:10",
-      "category": "ui",
-      "text": "Why: prevents accidental trust in stale dashboard snapshots when gist refresh lags."
-    },
-    {
-      "time": "16:10",
-      "category": "ui",
-      "text": "Updated React hook + header UI + styles + README docs."
-    },
-    {
-      "time": "16:10",
-      "category": "ui",
-      "text": "Proof: `./scripts/quality_gate.sh` passed (Python tests + TS typecheck + Vite build)."
-    },
-    {
-      "time": "16:10",
+      "time": "n/a",
       "category": "ops",
-      "text": "Runtime misalignment fix shipped as `v1.3.1` (`refs #4`): excluded control-room status publisher self-run from runtime detection and increased status publish cadence to 1-minute for fresher idle/running state."
+      "text": "Safety + Delight lock directive: apply internal safety/reversibility/benefit checklist before file/account/external actions; ask only for truly irreversible actions; include a small delight layer and occasional \ud83d\udd25 energy (1-10) in completions."
     },
     {
-      "time": "16:14",
-      "category": "ui",
-      "text": "Sean reported the dashboard still looked wrong for idle/running state; live verification after `v1.3.1` showed Runtime Status correctly at `IDLE` with no active background runs."
-    },
-    {
-      "time": "16:14",
-      "category": "docs",
-      "text": "New UX clarity gap identified: `Now` lane can still show a scheduled time block (from planning docs) while runtime is `IDLE`, which can feel contradictory to users."
-    },
-    {
-      "time": "16:14",
-      "category": "ui",
-      "text": "Durable improvement direction: keep runtime truth (`IDLE`/`RUNNING`) distinct from schedule truth (planned current block), and consider explicit labeling in UI to avoid confusion."
-    },
-    {
-      "time": "16:14",
+      "time": "n/a",
       "category": "ops",
-      "text": "Issue #1 shipped as `v1.3.2` (`refs #1`): Next-lane now dedupes overlapping timeline/status entries with time-range + semantic/token overlap; regression test added for exact 17:00 usage-report overlap case; issue #1 closed."
-    },
-    {
-      "time": "16:14",
-      "category": "ops",
-      "text": "Preference update: Sean wants shorter, high-signal summaries by default in chat updates."
-    },
-    {
-      "time": "16:14",
-      "category": "release",
-      "text": "Shipped control-room UX/branding overhaul as `v1.4.0` with one commit per ticket (#5-#9): tactile refresh interactions, mobile-first touch layout, OpenClaw coral/cyan theme alignment, custom lobster favicon + home-screen icons, and final accessibility/interaction polish. All related issues were opened first and then closed after release verification."
-    },
-    {
-      "time": "16:14",
-      "category": "ops",
-      "text": "UX preference update from Sean: home-screen icon must be full-bleed and clearly recognizable; theme should prioritize OpenClaw warm coral/orange gradients over cyan-forward accents."
-    },
-    {
-      "time": "16:14",
-      "category": "ui",
-      "text": "Dashboard runtime preference clarified: Runtime Status should indicate background work only (cron/subagent/autonomous tasks), not foreground chat activity in the main session."
+      "text": "Infinite Sprint directive: during background/heartbeat cycles, run continuous no-idle compounding improvements (scan for highest-leverage opportunities and execute autonomously overnight/daylong)."
     }
   ],
   "runtime": {
@@ -388,7 +340,7 @@
     "isIdle": true,
     "activeCount": 0,
     "activeRuns": [],
-    "checkedAtMs": 1771391789335,
+    "checkedAtMs": 1771397235567,
     "source": "cron-run reconciliation + subagent registry + main-session tool activity [static fallback runtime sanitized]"
   }
 }
