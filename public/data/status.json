@@ -1,9 +1,9 @@
 {
-  "generatedAt": "2026-02-18T02:12:20.296861+00:00",
-  "generatedAtLocal": "2026-02-17 20:12 ",
-  "controlRoomVersion": "1.4.5",
-  "currentFocus": "Post-release verification and next-ticket readiness",
-  "activeWork": "v1.4.0 shipped and verified live (UX/mobile/theme/favicon overhaul)",
+  "generatedAt": "2026-02-18T02:23:53.875054+00:00",
+  "generatedAtLocal": "2026-02-17 20:23 ",
+  "controlRoomVersion": "1.4.6",
+  "currentFocus": "reliability fallback + close-out hygiene after missing 7:00 usage-report history state",
+  "activeWork": "post-19:00 reliability fallback block; re-checking stale 7am usage-report error state and maintaining low-friction recovery path after gateway timeout.",
   "reliability": {
     "status": "green"
   },
@@ -40,27 +40,22 @@
   "nextJobs": [
     {
       "name": "Control room status publish (gist backend)",
-      "nextRun": "20:13",
-      "lastStatus": "ok"
-    },
-    {
-      "name": "Today dashboard refresh (every 3h)",
-      "nextRun": "20:15",
-      "lastStatus": "ok"
-    },
-    {
-      "name": "Reliability watchdog hourly (self-heal + conditional alert)",
-      "nextRun": "20:20",
+      "nextRun": "20:24",
       "lastStatus": "ok"
     },
     {
       "name": "Critical update failover guard",
-      "nextRun": "20:22",
+      "nextRun": "20:37",
       "lastStatus": "ok"
     },
     {
       "name": "Downtime gap auto-fill guard (quiet unless triggered)",
       "nextRun": "21:00",
+      "lastStatus": "ok"
+    },
+    {
+      "name": "Reliability watchdog hourly (self-heal + conditional alert)",
+      "nextRun": "21:20",
       "lastStatus": "ok"
     },
     {
@@ -77,6 +72,11 @@
       "name": "Usage report - 7am",
       "nextRun": "07:00",
       "lastStatus": "ok"
+    },
+    {
+      "name": "Today dashboard refresh (every 3h)",
+      "nextRun": "08:15",
+      "lastStatus": "ok"
     }
   ],
   "findings": [
@@ -89,16 +89,16 @@
   ],
   "workstream": {
     "now": [
-      "v1.4.0 shipped and verified live (UX/mobile/theme/favicon overhaul)"
+      "post-19:00 reliability fallback block; re-checking stale 7am usage-report error state and maintaining low-friction recovery path after gateway timeout."
     ],
     "next": [
-      "Monitor scheduled reliability guards and 7pm/overnight automation health",
-      "Triage remaining open control-room issue(s) and prep next fix candidate",
-      "Run next governance QA pass and keep issue backlog current"
+      "Finish today\u2019s wrap-up and tomorrow pre-plan (if not already published).",
+      "Re-attempt/verify forced 7:00 usage-report job validation during next safe window and clear stale historical `lastStatus=error` if still present.",
+      "Run next control-room governance+QA check (issues + live tab sanity) and queue the highest-value fix."
     ],
     "done": [
-      "Released `v1.4.0` with ticketed UX/branding work (#5-#9) and one commit per ticket before release bump.",
-      "Proof: https://github.com/SeanKudrna/claw-control-room/releases/tag/v1.4.0 + live page shows `v1.4.0`."
+      "12-hour reliability watchdog audit completed and green.",
+      "Proof: `python3 scripts/reliability_watchdog_report.py --window-hours 12` -> `Health: GREEN`, `required jobs: missing=0, disabled=0, model_mismatch=0, delivery_mismatch=0` (see `status/downtime-guard-deepwork-2026-02-17-2000.md`)."
     ]
   },
   "charts": {
@@ -128,12 +128,6 @@
         "job": "Daily reliability SLO snapshot"
       },
       {
-        "label": "17:15",
-        "status": "ok",
-        "score": 1.0,
-        "job": "Today dashboard refresh (every 3h)"
-      },
-      {
         "label": "17:35",
         "status": "ok",
         "score": 1.0,
@@ -150,12 +144,6 @@
         "status": "ok",
         "score": 1.0,
         "job": "Autonomy evening wrap + next-day prep"
-      },
-      {
-        "label": "19:20",
-        "status": "ok",
-        "score": 1.0,
-        "job": "Reliability watchdog hourly (self-heal + conditional alert)"
       },
       {
         "label": "19:30",
@@ -176,24 +164,31 @@
         "job": "Usage report - 7am"
       },
       {
-        "label": "20:07",
+        "label": "20:15",
+        "status": "ok",
+        "score": 1.0,
+        "job": "Today dashboard refresh (every 3h)"
+      },
+      {
+        "label": "20:20",
+        "status": "ok",
+        "score": 1.0,
+        "job": "Reliability watchdog hourly (self-heal + conditional alert)"
+      },
+      {
+        "label": "20:22",
         "status": "ok",
         "score": 1.0,
         "job": "Critical update failover guard"
       },
       {
-        "label": "20:12",
+        "label": "20:23",
         "status": "ok",
         "score": 1.0,
         "job": "Control room status publish (gist backend)"
       }
     ],
     "reliabilityTrend": [
-      {
-        "label": "13:20",
-        "status": "green",
-        "score": 1.0
-      },
       {
         "label": "13:51",
         "status": "green",
@@ -256,6 +251,11 @@
       },
       {
         "label": "19:51",
+        "status": "green",
+        "score": 1.0
+      },
+      {
+        "label": "20:20",
         "status": "green",
         "score": 1.0
       }
@@ -388,7 +388,7 @@
     "isIdle": true,
     "activeCount": 0,
     "activeRuns": [],
-    "checkedAtMs": 1771380740327,
+    "checkedAtMs": 1771381433905,
     "source": "cron-run reconciliation + subagent registry (background only)"
   }
 }

@@ -1,5 +1,11 @@
 # Changelog
 
+## v1.4.6 - 2026-02-17
+
+### Fixed
+- Stabilized the page background gradient so collapsing/expanding sections no longer reflows the full background based on document height.
+- Removed the mobile short-page "squared footer" band by pinning gradient rendering to a fixed viewport layer with full-viewport shell sizing.
+
 ## v1.4.5 - 2026-02-17
 
 ### Improved
