@@ -7,6 +7,7 @@
 - Made section navigation more mobile-friendly with a sticky tab shell and improved horizontal tab snap behavior.
 - Refined Activity Feed readability: clearer meta/text separation per row plus a default condensed window (latest 12) with optional expand/collapse.
 - Improved Operations jobs readability with stronger time/job/status emphasis in both table and small-screen card layouts.
+- Runtime UX pass (#15): active rows now use more descriptive background labels when metadata exists, and each row provides an accessible click/tap details sheet with source type, session id/key, started time, elapsed time, and task summary.
 
 ### Docs
 - Updated README feature list to reflect sticky mobile tab navigation and condensed Activity Feed behavior.

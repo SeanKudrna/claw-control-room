@@ -28,9 +28,11 @@ export interface RuntimeRun {
   jobId: string;
   jobName: string;
   sessionId: string;
+  sessionKey?: string;
   startedAtMs: number;
   startedAtLocal: string;
   runningForMs: number;
+  summary?: string;
   activityType?: 'cron' | 'subagent';
 }
 

@@ -670,6 +670,29 @@ def finished_run_session_ids(job_id: str, runs_dir: Path, cache: Dict[str, set[s
     return finished
 
 
+def resolve_subagent_label(entry: Dict[str, Any], run_id: str) -> str:
+    """Return the most descriptive label available for sub-agent runs."""
+    label = entry.get("label")
+    if isinstance(label, str) and label.strip() and label.strip().lower() != "background task":
+        return label.strip()
+
+    invoke_command = entry.get("invokeCommand")
+    if isinstance(invoke_command, str) and invoke_command.strip():
+        return invoke_command.strip()
+
+    command = entry.get("command")
+    if isinstance(command, list):
+        parts = [str(part).strip() for part in command if str(part).strip()]
+        if parts:
+            return " ".join(parts[:6])
+
+    child_session_key = entry.get("childSessionKey")
+    if isinstance(child_session_key, str) and child_session_key.strip():
+        return f"Subagent task ({child_session_key.split(':')[-1][:10]})"
+
+    return f"Subagent task ({run_id[:10]})"
+
+
 def active_subagent_runs(subagent_registry_path: Path, now_ms: int) -> List[Dict[str, Any]]:
     """Read active sub-agent/background runs from subagent registry."""
     if not subagent_registry_path.exists():
@@ -707,18 +730,19 @@ def active_subagent_runs(subagent_registry_path: Path, now_ms: int) -> List[Dict
             .strftime("%Y-%m-%d %H:%M:%S")
         )
 
-        label = entry.get("label")
-        if not isinstance(label, str) or not label.strip():
-            label = "Background task"
+        label = resolve_subagent_label(entry, run_id)
 
         child_session_key = entry.get("childSessionKey")
-        session_id = child_session_key if isinstance(child_session_key, str) and child_session_key else run_id
+        session_key = child_session_key if isinstance(child_session_key, str) and child_session_key else f"subagent:{run_id}"
+        session_id = session_key
 
         active.append(
             {
                 "jobId": f"subagent:{run_id}",
                 "jobName": label,
                 "sessionId": session_id,
+                "sessionKey": session_key,
+                "summary": label,
                 "startedAtMs": started_at_ms,
                 "startedAtLocal": started_local,
                 "runningForMs": max(0, now_ms - started_at_ms),
@@ -834,6 +858,8 @@ def runtime_activity(
                 "jobId": job_id,
                 "jobName": job_name,
                 "sessionId": session_id,
+                "sessionKey": key,
+                "summary": job_name,
                 "startedAtMs": started_at_ms,
                 "startedAtLocal": started_local,
                 "runningForMs": running_for_ms,
