@@ -56,7 +56,7 @@ Claw Control Room provides a readable, near-real-time view of Claw's operations:
 - Fallback behavior is fail-soft: configured source fetch attempts first, then local fallback snapshot is used when primary is unavailable/invalid.
 - Freshness age is recomputed on a timer between polls so stale data visibly ages even if payload timestamp is unchanged.
 - Refresh success copy distinguishes "updated" from "fetched but still stale" states to prevent false confidence when the newest available snapshot is still old.
-- Idle refresh helper text is intentionally blank to reduce redundant noise; helper copy appears only for meaningful states (refreshing/success/error).
+- Sticky tab-row refresh control is button-only (no helper text beneath it) to keep row rhythm tight and reduce duplicate messaging.
 - This preserves commitless status refreshes while keeping a safe local fallback snapshot and honest degraded-state UX.
 
 ### 4) Versioning + release architecture

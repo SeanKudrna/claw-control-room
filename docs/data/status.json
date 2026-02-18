@@ -1,7 +1,7 @@
 {
-  "generatedAt": "2026-02-18T14:48:57.559310+00:00",
-  "generatedAtLocal": "2026-02-18 08:48 ",
-  "controlRoomVersion": "1.4.24",
+  "generatedAt": "2026-02-18T14:54:01.432791+00:00",
+  "generatedAtLocal": "2026-02-18 08:54 ",
+  "controlRoomVersion": "1.4.25",
   "currentFocus": "Control-room issue triage block (mandatory)",
   "activeWork": "downtime-guard monitoring/continuity mode.",
   "reliability": {
@@ -44,17 +44,17 @@
   "nextJobs": [
     {
       "name": "Control room status publish (gist backend)",
-      "nextRun": "08:49",
-      "lastStatus": "ok"
-    },
-    {
-      "name": "Critical update failover guard",
-      "nextRun": "08:52",
+      "nextRun": "08:54",
       "lastStatus": "ok"
     },
     {
       "name": "Downtime gap auto-fill guard (quiet unless triggered)",
       "nextRun": "09:00",
+      "lastStatus": "ok"
+    },
+    {
+      "name": "Critical update failover guard",
+      "nextRun": "09:07",
       "lastStatus": "ok"
     },
     {
@@ -93,21 +93,21 @@
   ],
   "workstream": {
     "now": [
-      "Implement issue #37 in /Users/seankudrna/.openclaw/workspace/claw-control-room. Issue: https://github.com/SeanKudrna/claw-control-room/issues/37 Goal: Move refresh control into sti\u2026"
+      "Apply the latest UI refinements in /Users/seankudrna/.openclaw/workspace/claw-control-room. User-requested changes: 1) Remove helper text under refresh button during click/refresh/\u2026"
     ],
     "next": [
-      "08:49 \u2014 Scheduled job: Control room status publish (gist backend)",
-      "08:52 \u2014 Scheduled job: Critical update failover guard",
       "09:00 \u2014 Scheduled job: Downtime gap auto-fill guard (quiet unless triggered)",
+      "09:07 \u2014 Scheduled job: Critical update failover guard",
       "09:10-10:20 \u2014 Control-room product lane block (mandatory)",
-      "09:20 \u2014 Scheduled job: Reliability watchdog hourly (self-heal + conditional alert)"
+      "09:20 \u2014 Scheduled job: Reliability watchdog hourly (self-heal + conditional alert)",
+      "09:35 \u2014 Scheduled job: Control room issue triage + QA intake"
     ],
     "done": [
-      "Autonomy daily planner (DAILY_PLAN source of truth)",
-      "Critical update failover guard",
-      "Resume and finish the in-progress worktree changes for claw-control-room issue set #30 #31 #32. Repo: /Users/seankudrna/.openclaw/workspace/claw-control-room Current state: local w\u2026",
-      "Implement issue #30 in /Users/seankudrna/.openclaw/workspace/claw-control-room. Issue: https://github.com/SeanKudrna/claw-control-room/issues/30 User-required semantics (must match\u2026",
-      "22:33 \u2014 Scheduled job: Sample Job"
+      "09:10 \u2014 Control-room issue triage block (mandatory)",
+      "Implement issue #34 in isolated worktree, no push. Repo: /Users/seankudrna/.openclaw/workspace/claw-control-room Issue: https://github.com/SeanKudrna/claw-control-room/issues/34 Wo\u2026",
+      "Implement dashboard change in /Users/seankudrna/.openclaw/workspace/claw-control-room: User request: - In workstream `done` list/card, show most recently finished tasks at the TOP \u2026",
+      "Implement issue #37 in /Users/seankudrna/.openclaw/workspace/claw-control-room. Issue: https://github.com/SeanKudrna/claw-control-room/issues/37 Goal: Move refresh control into sti\u2026",
+      "Daily plan preflight validator"
     ]
   },
   "charts": {
@@ -185,24 +185,19 @@
         "job": "Daily plan preflight validator"
       },
       {
-        "label": "08:37",
+        "label": "08:52",
         "status": "ok",
         "score": 1.0,
         "job": "Critical update failover guard"
       },
       {
-        "label": "08:48",
+        "label": "08:52",
         "status": "ok",
         "score": 1.0,
         "job": "Control room status publish (gist backend)"
       }
     ],
     "reliabilityTrend": [
-      {
-        "label": "01:51",
-        "status": "green",
-        "score": 1.0
-      },
       {
         "label": "02:20",
         "status": "green",
@@ -265,6 +260,11 @@
       },
       {
         "label": "08:21",
+        "status": "green",
+        "score": 1.0
+      },
+      {
+        "label": "08:51",
         "status": "green",
         "score": 1.0
       }
@@ -387,7 +387,7 @@
     "isIdle": true,
     "activeCount": 0,
     "activeRuns": [],
-    "checkedAtMs": 1771426137502,
+    "checkedAtMs": 1771426441382,
     "source": "cron-run reconciliation + subagent registry [static fallback runtime sanitized]"
   }
 }

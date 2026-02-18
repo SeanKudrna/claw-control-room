@@ -182,9 +182,6 @@ export default function App() {
         lastRefreshAtMs={lastRefreshAtMs}
         refreshOutcome={refreshOutcome}
         freshnessLevel={freshnessLevel}
-        freshnessLabel={freshnessLabel}
-        sourceMode={sourceMode}
-        errorCode={errorCode}
         onRefresh={() => void refresh()}
       />
 

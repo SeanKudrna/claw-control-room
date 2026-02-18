@@ -1,5 +1,15 @@
 # Changelog
 
+## v1.4.25 - 2026-02-18
+
+### Fixed
+- Removed all helper/status text beneath the sticky tab-row Refresh button across refreshing/success/error states; button state labels remain as the sole inline signal.
+- Removed the desktop vertical divider line to the left of the sticky tab-row refresh segment for a cleaner merged row layout.
+- Tightened sticky tab-row spacing (including small-screen stacked layout) to eliminate extra gap under refresh controls and align vertical rhythm with the Overview/Operations/Insights row and tab description divider.
+
+### Docs
+- Updated README + architecture notes to reflect button-only refresh feedback and tighter sticky tab-row layout semantics.
+
 ## v1.4.24 - 2026-02-18
 
 ### Changed

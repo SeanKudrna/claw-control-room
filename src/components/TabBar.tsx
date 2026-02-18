@@ -15,9 +15,6 @@ interface TabBarProps {
   lastRefreshAtMs: number | null;
   refreshOutcome: 'idle' | 'success' | 'error';
   freshnessLevel: 'fresh' | 'aging' | 'stale';
-  freshnessLabel: string;
-  sourceMode: 'configured' | 'fallback';
-  errorCode: string | null;
   onRefresh: () => void;
 }
 
@@ -31,9 +28,6 @@ export function TabBar({
   lastRefreshAtMs,
   refreshOutcome,
   freshnessLevel,
-  freshnessLabel,
-  sourceMode,
-  errorCode,
   onRefresh,
 }: TabBarProps) {
   const selected = tabs.find((tab) => tab.id === activeTab) ?? tabs[0];
@@ -76,30 +70,6 @@ export function TabBar({
           ? 'Retry refresh'
           : 'Refresh';
 
-  const failureReason =
-    errorCode === 'status-network-error'
-      ? 'status source unreachable'
-      : errorCode === 'status-http-error'
-        ? 'status source returned an error'
-        : errorCode === 'status-payload-invalid'
-          ? 'status payload invalid'
-          : errorCode === 'status-url-unavailable'
-            ? 'no status source configured'
-            : 'unknown refresh error';
-
-  const helperText =
-    feedbackState === 'refreshing'
-      ? 'Updating data now…'
-      : feedbackState === 'success'
-        ? staleAfterRefresh
-          ? sourceMode === 'fallback'
-            ? `Fetched fallback snapshot — ${freshnessLabel.toLowerCase()}`
-            : `Fetched latest available data — ${freshnessLabel.toLowerCase()}`
-          : 'Updated just now'
-        : feedbackState === 'error'
-          ? `Refresh failed (${failureReason}) — showing last known good snapshot`
-          : '';
-
   return (
     <section className="tab-shell card">
       <div className="tab-main-row">
@@ -137,9 +107,6 @@ export function TabBar({
             )}
             {buttonLabel}
           </button>
-          <span className={`refresh-helper ${feedbackState}`} aria-live="polite">
-            {helperText}
-          </span>
         </div>
       </div>
 

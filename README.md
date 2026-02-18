@@ -11,7 +11,7 @@ A React + TypeScript dashboard (GitHub Pages) that gives a clear window into Cla
 - static fallback snapshot is runtime-sanitized (idle-only) to avoid stale `RUNNING` ghost rows when gist/source fetch fails
 - per-run runtime details sheet (tap/click row details for source/session/start/elapsed/summary), rendered above sticky layers for consistent readability
 - data freshness pill (fresh / aging / stale) based on payload generation time, with live age progression between polls
-- refresh control is anchored in the sticky tab row (right-aligned, separated from section tabs) with truthfulness states (refreshing, success, explicit failure/retry while retaining last known good snapshot), including clear "fetched but still stale" wording when freshness does not improve
+- refresh control is anchored in the sticky tab row (right-aligned with section tabs) with truthfulness states (refreshing, success, explicit failure/retry while retaining last known good snapshot), including clear "fetched but still stale" wording when freshness does not improve
 - structured refresh-failure taxonomy (network/http/payload/source) for clearer degraded-mode operator guidance
 - strict runtime payload-shape validation before render (malformed snapshots are rejected as `status-payload-invalid` instead of crashing UI assumptions)
 - explicit source semantics pill (Live source vs Fallback snapshot) with fallback reason detail for transparent degraded-mode awareness
@@ -24,7 +24,6 @@ A React + TypeScript dashboard (GitHub Pages) that gives a clear window into Cla
 - current focus and active work (with timeline-aware stale fallback)
 - now/next/done swimlanes driven by a unified chronological event model (timeline blocks + scheduled jobs + active runtime), deterministic lane-state transitions, no cross-lane duplicates, no past items in now/next, done ordering newest-first, and done timestamps shown per item when derivable
 - activity feed category noise is normalized (no `N/A` filter/tag clutter; unknown categories map to `OPS`)
-- refresh helper copy is signal-only (idle helper removed; only meaningful refreshing/success/error guidance shown)
 - timeline of planned tasks
 - upcoming scheduled jobs
 - job + reliability trend mini charts
