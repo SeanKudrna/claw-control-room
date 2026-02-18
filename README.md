@@ -34,7 +34,8 @@ A React + TypeScript dashboard (GitHub Pages) that gives a clear window into Cla
 - Skills map still renders one node per skill domain (no tier-per-card clutter) with connectors behind nodes and readability safeguards (no node overlap/title clipping/node clipping).
 - Each domain node shows concise progression (`Tier X/5`) while retaining clear unlocked / in-progress / planned / locked visual states.
 - Skills node inspection remains modal-based (click/tap to open details; escape/backdrop/close to dismiss) and includes the visual 5-tier ladder (definitions, differences, current highlight, complete tiers, and next unlock).
-- Overflow skill maps support drag-pan (mouse + touch via pointer events) with regression checks for desktop drag-pan + mobile touch-pan.
+- Skills map navigation now includes unobtrusive in-map controls for zoom in/out plus a fit/reset view toggle while preserving full-tab map real estate.
+- Overflow skill maps support bounded drag-pan (mouse + touch via pointer events) with smoother pointer handling and regression checks for desktop/mobile pan + zoom control behavior.
 
 ## Standards
 

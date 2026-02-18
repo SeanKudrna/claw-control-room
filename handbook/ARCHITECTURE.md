@@ -40,7 +40,7 @@ Claw Control Room provides a readable, near-real-time view of Claw's operations:
 - Main graph renders one node per domain and keeps connectors in an SVG layer beneath interactive cards to avoid line/text collisions; ring spacing + angle separation are tuned to prevent node overlap and clipping.
 - Node chrome is intentionally concise (`Tier X/5` + state) so progression signal stays visible without cluttering the graph.
 - Skill details are presented in a modal dialog (not a persistent side panel), preserving map real estate while exposing a visual tier ladder (tiers 1..5 definitions, current-tier highlight, complete tiers, and next unlock guidance).
-- Overflow map navigation supports pointer-driven drag-pan (mouse + touch), keeping the full structured map explorable at constrained viewport sizes.
+- Overflow map navigation now pairs pointer-driven bounded drag-pan (mouse + touch) with in-map zoom controls (`+`, `-`, fit/reset) so operators can quickly move between broad orientation and detail inspection without leaving the full-tab surface.
 - Components rendered inside collapsible bodies support compact heading mode, so section titles stay in the summary row while inner content keeps accessibility labels without duplicate heading stacks.
 - Active tab is URL-hash persisted (`#tab-*`) for direct navigation/state restore.
 - Theme tokens align to OpenClaw website palette conventions (deep dark surface + coral/orange accents) for product continuity.

@@ -73,6 +73,20 @@ async function dragMapWithTouch(page, selector) {
   });
 }
 
+async function readMapMetrics(page, selector = '.skills-tree-map') {
+  return page.$eval(selector, (node) => ({
+    zoom: Number.parseFloat(node.getAttribute('data-map-zoom') ?? '1'),
+    left: node.scrollLeft,
+    top: node.scrollTop,
+    clientWidth: node.clientWidth,
+    clientHeight: node.clientHeight,
+    scrollWidth: node.scrollWidth,
+    scrollHeight: node.scrollHeight,
+    maxLeft: Math.max(0, node.scrollWidth - node.clientWidth),
+    maxTop: Math.max(0, node.scrollHeight - node.clientHeight),
+  }));
+}
+
 const browser = await chromium.launch({ headless: true });
 const desktopPage = await browser.newPage({ viewport: { width: 1512, height: 982 } });
 
@@ -170,15 +184,96 @@ try {
     `Each skill node should show concise tier progression (e.g., Tier 3/5). Got: ${nodeDomainContract.progressLabels.join(', ')}`,
   );
 
+  const controlContract = await desktopPage.$$eval('.skills-map-controls [data-map-control]', (controls) =>
+    controls.map((control) => ({
+      id: control.getAttribute('data-map-control') ?? '',
+      text: (control.textContent ?? '').trim(),
+    })),
+  );
+  const controlIds = new Set(controlContract.map((control) => control.id));
+  for (const expected of ['zoom-out', 'zoom-in', 'fit-reset']) {
+    assert(controlIds.has(expected), `Missing expected skills map control: ${expected}`);
+  }
+
+  const mapMetricsBeforeZoom = await readMapMetrics(desktopPage);
+  assert.equal(mapMetricsBeforeZoom.zoom, 1, 'Skills map should default to 100% zoom.');
+
+  await desktopPage.locator('[data-map-control="zoom-in"]').click({ force: true });
+  await desktopPage.waitForFunction(
+    () => Number.parseFloat(document.querySelector('.skills-tree-map')?.getAttribute('data-map-zoom') ?? '1') > 1.05,
+  );
+
+  const mapMetricsAfterZoomIn = await readMapMetrics(desktopPage);
+  assert(
+    mapMetricsAfterZoomIn.zoom > mapMetricsBeforeZoom.zoom + 0.05,
+    `Zoom-in control should increase map zoom. Before=${mapMetricsBeforeZoom.zoom} after=${mapMetricsAfterZoomIn.zoom}`,
+  );
+  assert(
+    mapMetricsAfterZoomIn.scrollWidth > mapMetricsBeforeZoom.scrollWidth,
+    'Zoom-in should increase scrollable map width.',
+  );
+
+  await desktopPage.locator('[data-map-control="fit-reset"]').click({ force: true });
+  await desktopPage.waitForFunction(() => {
+    const map = document.querySelector('.skills-tree-map');
+    if (!map) return false;
+    const zoom = Number.parseFloat(map.getAttribute('data-map-zoom') ?? '1');
+    return zoom < 0.98;
+  });
+
+  const fitMetrics = await readMapMetrics(desktopPage);
+  assert(
+    fitMetrics.zoom <= 0.98,
+    `Fit control should reduce zoom to expose broader map context. zoom=${fitMetrics.zoom}`,
+  );
+
+  await desktopPage.locator('[data-map-control="fit-reset"]').click({ force: true });
+  await desktopPage.waitForFunction(() => {
+    const map = document.querySelector('.skills-tree-map');
+    if (!map) return false;
+    const zoom = Number.parseFloat(map.getAttribute('data-map-zoom') ?? '0');
+    return Math.abs(zoom - 1) <= 0.02;
+  });
+  await desktopPage.waitForFunction(() => {
+    const map = document.querySelector('.skills-tree-map');
+    if (!map) return false;
+    const expectedLeft = Math.max(0, (map.scrollWidth - map.clientWidth) / 2);
+    return Math.abs(map.scrollLeft - expectedLeft) <= Math.max(12, map.clientWidth * 0.06);
+  });
+
+  const mapMetricsAfterReset = await readMapMetrics(desktopPage);
+  assert(
+    Math.abs(mapMetricsAfterReset.zoom - 1) <= 0.02,
+    `Fit/reset control should return to 100% zoom. zoom=${mapMetricsAfterReset.zoom}`,
+  );
+  const expectedCenterLeft = Math.max(0, (mapMetricsAfterReset.scrollWidth - mapMetricsAfterReset.clientWidth) / 2);
+  const expectedCenterTop = Math.max(0, (mapMetricsAfterReset.scrollHeight - mapMetricsAfterReset.clientHeight) / 2);
+  assert(
+    Math.abs(mapMetricsAfterReset.left - expectedCenterLeft) <= Math.max(12, mapMetricsAfterReset.clientWidth * 0.04),
+    `Reset view should recenter horizontally. left=${mapMetricsAfterReset.left} expected≈${expectedCenterLeft}`,
+  );
+  assert(
+    Math.abs(mapMetricsAfterReset.top - expectedCenterTop) <= Math.max(12, mapMetricsAfterReset.clientHeight * 0.04),
+    `Reset view should recenter vertically. top=${mapMetricsAfterReset.top} expected≈${expectedCenterTop}`,
+  );
+
   const initialLayoutSignature = await getLayoutSignature(desktopPage);
   assert(initialLayoutSignature.length > 0, 'Skills layout signature should not be empty.');
 
-  const initialScroll = await desktopPage.$eval('.skills-tree-map', (node) => ({ left: node.scrollLeft, top: node.scrollTop }));
+  const initialScroll = await readMapMetrics(desktopPage);
   await dragMapWithMouse(desktopPage, '.skills-tree-map');
-  const pannedScroll = await desktopPage.$eval('.skills-tree-map', (node) => ({ left: node.scrollLeft, top: node.scrollTop }));
+  const pannedScroll = await readMapMetrics(desktopPage);
   assert(
     pannedScroll.left !== initialScroll.left || pannedScroll.top !== initialScroll.top,
     `Skill map should pan on drag. Initial=${JSON.stringify(initialScroll)} next=${JSON.stringify(pannedScroll)}`,
+  );
+  assert(
+    pannedScroll.left >= 0 && pannedScroll.left <= pannedScroll.maxLeft + 0.5,
+    `Panned horizontal position should stay within map bounds. left=${pannedScroll.left} max=${pannedScroll.maxLeft}`,
+  );
+  assert(
+    pannedScroll.top >= 0 && pannedScroll.top <= pannedScroll.maxTop + 0.5,
+    `Panned vertical position should stay within map bounds. top=${pannedScroll.top} max=${pannedScroll.maxTop}`,
   );
 
   const firstNode = desktopPage.locator('.skills-card .skill-node').first();
@@ -368,12 +463,61 @@ try {
   await mobilePage.goto(APP_URL, { waitUntil: 'networkidle' });
   await mobilePage.getByRole('tab', { name: 'Skills' }).click({ force: true });
 
-  const mobileInitialScroll = await mobilePage.$eval('.skills-tree-map', (node) => ({ left: node.scrollLeft, top: node.scrollTop }));
+  const mobileControlContract = await mobilePage.$eval('.skills-tree-map-shell', (shell) => {
+    const shellRect = shell.getBoundingClientRect();
+    const controls = shell.querySelector('.skills-map-controls');
+    if (!controls) return { ok: false, reason: 'missing controls' };
+    const controlRect = controls.getBoundingClientRect();
+    return {
+      ok: true,
+      insideShell:
+        controlRect.top >= shellRect.top - 1 &&
+        controlRect.right <= shellRect.right + 1 &&
+        controlRect.bottom <= shellRect.bottom + 1,
+    };
+  });
+  assert.equal(mobileControlContract.ok, true, mobileControlContract.reason ?? 'Missing controls on mobile skills map.');
+  assert(mobileControlContract.insideShell, 'Mobile map controls should remain visually inside map shell bounds.');
+
+  const mobileMetricsBeforeZoom = await readMapMetrics(mobilePage);
+  await mobilePage.locator('[data-map-control="zoom-in"]').click({ force: true });
+  await mobilePage.waitForFunction(
+    () => Number.parseFloat(document.querySelector('.skills-tree-map')?.getAttribute('data-map-zoom') ?? '1') > 1.05,
+  );
+  const mobileMetricsAfterZoom = await readMapMetrics(mobilePage);
+  assert(
+    mobileMetricsAfterZoom.zoom > mobileMetricsBeforeZoom.zoom + 0.05,
+    `Mobile zoom-in should increase map zoom. before=${mobileMetricsBeforeZoom.zoom} after=${mobileMetricsAfterZoom.zoom}`,
+  );
+
+  await mobilePage.locator('[data-map-control="fit-reset"]').click({ force: true });
+  await mobilePage.waitForFunction(() => {
+    const map = document.querySelector('.skills-tree-map');
+    if (!map) return false;
+    return Number.parseFloat(map.getAttribute('data-map-zoom') ?? '1') < 0.98;
+  });
+
+  await mobilePage.locator('[data-map-control="fit-reset"]').click({ force: true });
+  await mobilePage.waitForFunction(() => {
+    const map = document.querySelector('.skills-tree-map');
+    if (!map) return false;
+    return Math.abs(Number.parseFloat(map.getAttribute('data-map-zoom') ?? '1') - 1) <= 0.02;
+  });
+
+  const mobileInitialScroll = await readMapMetrics(mobilePage);
   await dragMapWithTouch(mobilePage, '.skills-tree-map');
-  const mobilePannedScroll = await mobilePage.$eval('.skills-tree-map', (node) => ({ left: node.scrollLeft, top: node.scrollTop }));
+  const mobilePannedScroll = await readMapMetrics(mobilePage);
   assert(
     mobilePannedScroll.left !== mobileInitialScroll.left || mobilePannedScroll.top !== mobileInitialScroll.top,
     `Skill map should pan on touch drag (mobile). Initial=${JSON.stringify(mobileInitialScroll)} next=${JSON.stringify(mobilePannedScroll)}`,
+  );
+  assert(
+    mobilePannedScroll.left >= 0 && mobilePannedScroll.left <= mobilePannedScroll.maxLeft + 0.5,
+    `Mobile pan should stay within horizontal bounds. left=${mobilePannedScroll.left} max=${mobilePannedScroll.maxLeft}`,
+  );
+  assert(
+    mobilePannedScroll.top >= 0 && mobilePannedScroll.top <= mobilePannedScroll.maxTop + 0.5,
+    `Mobile pan should stay within vertical bounds. top=${mobilePannedScroll.top} max=${mobilePannedScroll.maxTop}`,
   );
 
   await mobilePage.locator('.skills-card .skill-node').first().click({ force: true });

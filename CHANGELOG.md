@@ -1,5 +1,22 @@
 # Changelog
 
+## v1.4.36 - 2026-02-18
+
+### Added
+- Added in-map Skills navigation controls for `zoom in`, `zoom out`, and `fit/reset` view toggling with live zoom readout.
+- Added issue #49 visual QA capture script (`scripts/tests/capture_issue49_screenshots.mjs`) and proof artifacts under `status/ui-validation/issue49-*.png`.
+
+### Changed
+- Improved Skills map pan feel by moving drag updates to a frame-coalesced pointer path with small activation threshold and explicit bounded scroll clamping.
+- Introduced zoom-aware map canvas scaling while preserving deterministic node placement, full-tab map surface, and modal skill details workflow.
+- Kept desktop/mobile interaction coherence by retaining pointer pan semantics and adding compact, unobtrusive map controls in a fixed overlay shell.
+
+### Tests
+- Expanded `scripts/tests/test_ui_regressions.mjs` with navigation-control assertions (control presence, zoom in/out effects, fit/reset recenter behavior) and additional desktop/mobile bounded-pan checks.
+
+### Docs
+- Updated README + handbook architecture/development notes for Skills map zoom controls and bounded pan behavior.
+
 ## v1.4.35 - 2026-02-18
 
 ### Added

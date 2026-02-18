@@ -36,12 +36,12 @@ UI nav notes:
 - Refresh idle helper text should stay empty (show helper copy only for meaningful non-idle states).
 - Activity Feed category normalization should prevent `N/A` category chips/options from appearing; unknown values map to `ops`, and `N/A` timestamp pills should not render in item metadata.
 - Runtime details modal should render via body portal with z-index above sticky tab/header layers.
-- Skills tree interactions should work on desktop click/drag and mobile tap/drag (tap opens modal details; drag pans overflow map).
+- Skills tree interactions should work on desktop click/drag and mobile tap/drag (tap opens modal details; drag pans overflow map) and include map controls for zoom-in/zoom-out plus fit/reset view.
 - Skills tab contract is full-tab map-first UX: the pannable map should consume the dominant tab area (not a small nested viewport).
 - Main graph contract remains one node per skill domain (no tier-per-card graph clutter) with concise in-node progression text (`Tier X/5`).
 - Skills layout engine (`src/lib/skillTreeLayout.ts`) should remain deterministic and dependency-aware, using explicit hub/branch sectors + fixed depth rings and stable ordering (`tier` → `name` → `id`).
 - Skills detail modal must include key fields (name, state, learned date, signal/dependencies, description) and a visual tier ladder (Tier 1..5 definitions/differences, current highlight, complete tiers, and next unlock) with escape/backdrop/close-button dismissal.
-- Skills readability/regression guard (`scripts/tests/test_ui_regressions.mjs`) should pass: full-tab surface ratios, deterministic post-refresh position signature, no node overlap/title overflow/canvas clipping, outward depth-ring trend, connectors behind nodes, modal open/close contract, tier-ladder presence, desktop drag-pan, and mobile touch-pan behavior.
+- Skills readability/regression guard (`scripts/tests/test_ui_regressions.mjs`) should pass: full-tab surface ratios, deterministic post-refresh position signature, no node overlap/title overflow/canvas clipping, outward depth-ring trend, connectors behind nodes, modal open/close contract, tier-ladder presence, zoom controls (+/- + fit/reset), and bounded desktop/mobile pan behavior.
 - Skills evolution ingestion is deterministic and artifact-driven (workspace memory files only; no network/LLM mutation in builder path).
 
 ## Build output for GitHub Pages

@@ -431,6 +431,7 @@ summary {
 
 .dashboard-grid.dashboard-grid-skills {
   min-height: clamp(560px, calc(100dvh - 250px), 980px);
+  min-width: 0;
 }
 
 .section-header {
@@ -1025,6 +1026,8 @@ th {
   grid-template-rows: auto minmax(0, 1fr) auto;
   gap: 10px;
   min-height: clamp(560px, calc(100dvh - 250px), 980px);
+  height: clamp(560px, calc(100dvh - 250px), 980px);
+  min-width: 0;
 }
 
 .skills-surface-header {
@@ -1078,8 +1081,18 @@ th {
   color: #b5bfdc;
 }
 
+.skills-tree-map-shell {
+  position: relative;
+  min-height: 0;
+  min-width: 0;
+  height: 100%;
+  width: 100%;
+}
+
 .skills-tree-map {
   position: relative;
+  width: 100%;
+  min-width: 0;
   border: 1px solid rgba(255, 255, 255, 0.14);
   border-radius: 18px;
   background:
@@ -1092,6 +1105,7 @@ th {
   overflow: auto;
   min-height: 0;
   height: 100%;
+  box-sizing: border-box;
   touch-action: none;
   cursor: default;
 }
@@ -1102,12 +1116,89 @@ th {
 
 .skills-tree-map.is-dragging {
   cursor: grabbing;
+  user-select: none;
+}
+
+.skills-tree-canvas-scale {
+  position: relative;
+  min-width: 100%;
+  min-height: 100%;
 }
 
 .skills-tree-canvas {
   position: relative;
   min-width: 100%;
   min-height: 100%;
+  transform-origin: top left;
+  will-change: transform;
+}
+
+.skills-map-controls {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  z-index: 4;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  pointer-events: auto;
+}
+
+.skills-map-zoom-control {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  border: 1px solid rgba(166, 176, 210, 0.48);
+  border-radius: 12px;
+  padding: 4px;
+  background: rgba(10, 15, 29, 0.76);
+  backdrop-filter: blur(6px);
+}
+
+.skills-map-control-btn {
+  border: 1px solid rgba(166, 176, 210, 0.42);
+  background: rgba(17, 24, 39, 0.9);
+  color: #eff4ff;
+  border-radius: 9px;
+  min-width: 30px;
+  height: 30px;
+  padding: 0 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  font-size: 0.74rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+}
+
+.skills-map-control-btn:hover:not(:disabled) {
+  border-color: rgba(255, 125, 135, 0.72);
+  background: rgba(44, 16, 26, 0.92);
+}
+
+.skills-map-control-btn:focus-visible {
+  outline: 2px solid rgba(255, 125, 135, 0.8);
+  outline-offset: 2px;
+}
+
+.skills-map-control-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.skills-map-fit-btn {
+  min-width: 52px;
+}
+
+.skills-map-zoom-readout {
+  min-width: 44px;
+  text-align: center;
+  color: #e8eefe;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
 }
 
 .skills-tree-lines {
@@ -1643,6 +1734,26 @@ th {
 
   .skills-tree-map {
     padding: 10px;
+  }
+
+  .skills-map-controls {
+    top: 10px;
+    right: 10px;
+    gap: 6px;
+  }
+
+  .skills-map-zoom-control {
+    padding: 3px;
+    border-radius: 10px;
+  }
+
+  .skills-map-control-btn {
+    min-width: 34px;
+    height: 34px;
+  }
+
+  .skills-map-fit-btn {
+    min-width: 56px;
   }
 
   .skill-tier-step {
