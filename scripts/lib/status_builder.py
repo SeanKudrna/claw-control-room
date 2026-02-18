@@ -13,6 +13,7 @@ import datetime as dt
 import json
 import re
 import subprocess
+from collections import deque
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
@@ -53,6 +54,8 @@ SESSIONS_STORE_PATH = Path("/Users/seankudrna/.openclaw/agents/main/sessions/ses
 CRON_RUNS_DIR = Path("/Users/seankudrna/.openclaw/cron/runs")
 SUBAGENT_REGISTRY_PATH = Path("/Users/seankudrna/.openclaw/subagents/runs.json")
 CRON_RUN_SESSION_KEY_RE = re.compile(r"^agent:main:cron:([^:]+):run:([^:]+)$")
+MAIN_SESSION_KEY = "agent:main:main"
+MAIN_SESSION_RUNTIME_MAX_AGE_MS = 2 * 60 * 1000
 EXCLUDED_RUNTIME_JOB_NAME_SUBSTRINGS = (
     "control room status publish",
 )
@@ -670,6 +673,158 @@ def finished_run_session_ids(job_id: str, runs_dir: Path, cache: Dict[str, set[s
     return finished
 
 
+def parse_timestamp_ms(value: Any) -> Optional[int]:
+    if isinstance(value, int):
+        return value
+    if not isinstance(value, str) or not value.strip():
+        return None
+
+    normalized = value.strip()
+    if normalized.endswith("Z"):
+        normalized = normalized[:-1] + "+00:00"
+
+    try:
+        parsed = dt.datetime.fromisoformat(normalized)
+    except ValueError:
+        return None
+
+    if parsed.tzinfo is None:
+        parsed = parsed.replace(tzinfo=dt.timezone.utc)
+    return int(parsed.timestamp() * 1000)
+
+
+def read_jsonl_tail(path: Path, max_lines: int = 600) -> List[Dict[str, Any]]:
+    """Read the tail of a jsonl file and parse valid JSON objects."""
+    if not path.exists():
+        return []
+
+    parsed: List[Dict[str, Any]] = []
+    with path.open("r", encoding="utf-8") as handle:
+        for raw in deque(handle, maxlen=max_lines):
+            line = raw.strip()
+            if not line:
+                continue
+            try:
+                doc = json.loads(line)
+            except json.JSONDecodeError:
+                continue
+            if isinstance(doc, dict):
+                parsed.append(doc)
+    return parsed
+
+
+def extract_user_text(content: Any) -> str:
+    if isinstance(content, str):
+        return content.strip()
+    if not isinstance(content, list):
+        return ""
+
+    parts: List[str] = []
+    for item in content:
+        if not isinstance(item, dict):
+            continue
+        if item.get("type") != "text":
+            continue
+        text = item.get("text")
+        if isinstance(text, str) and text.strip():
+            parts.append(text.strip())
+    return " ".join(parts).strip()
+
+
+def summarize_main_task(text: str) -> str:
+    compact = " ".join(part for part in text.split() if part)
+    if not compact:
+        return "Main session task"
+    return compact[:140] + "…" if len(compact) > 140 else compact
+
+
+def active_main_session_run(
+    main_session_meta: Dict[str, Any],
+    now_ms: int,
+    max_age_ms: int = MAIN_SESSION_RUNTIME_MAX_AGE_MS,
+) -> Optional[Dict[str, Any]]:
+    """Detect active main-session execution work from recent tool activity.
+
+    Plain user/assistant chat with no tool activity is intentionally excluded.
+    """
+    session_file_raw = main_session_meta.get("sessionFile")
+    if isinstance(session_file_raw, str) and session_file_raw.strip():
+        session_file = Path(session_file_raw)
+    else:
+        session_id = main_session_meta.get("sessionId")
+        if not isinstance(session_id, str) or not session_id.strip():
+            return None
+        session_file = SESSIONS_STORE_PATH.parent / f"{session_id}.jsonl"
+
+    events = read_jsonl_tail(session_file)
+    if not events:
+        return None
+
+    latest_user_ms: Optional[int] = None
+    latest_user_text = ""
+    for event in reversed(events):
+        message = event.get("message")
+        if not isinstance(message, dict) or message.get("role") != "user":
+            continue
+
+        latest_user_ms = parse_timestamp_ms(message.get("timestamp"))
+        if latest_user_ms is None:
+            latest_user_ms = parse_timestamp_ms(event.get("timestamp"))
+
+        latest_user_text = extract_user_text(message.get("content"))
+        break
+
+    if latest_user_ms is None:
+        return None
+
+    tool_events: List[Tuple[int, str]] = []
+    for event in events:
+        message = event.get("message")
+        if not isinstance(message, dict) or message.get("role") != "toolResult":
+            continue
+
+        event_ms = parse_timestamp_ms(event.get("timestamp"))
+        if event_ms is None or event_ms < latest_user_ms:
+            continue
+
+        tool_name = message.get("toolName")
+        if not isinstance(tool_name, str) or not tool_name.strip():
+            tool_name = "tool"
+        tool_events.append((event_ms, tool_name.strip()))
+
+    if not tool_events:
+        return None
+
+    last_tool_ms = max(item[0] for item in tool_events)
+    if now_ms - last_tool_ms > max_age_ms:
+        return None
+
+    started_at_ms = min(item[0] for item in tool_events)
+    started_local = (
+        dt.datetime.fromtimestamp(started_at_ms / 1000, dt.timezone.utc)
+        .astimezone()
+        .strftime("%Y-%m-%d %H:%M:%S")
+    )
+
+    unique_tools = sorted({item[1] for item in tool_events})
+    tool_summary = ", ".join(unique_tools[:3])
+    if len(unique_tools) > 3:
+        tool_summary = f"{tool_summary}, +{len(unique_tools) - 3} more"
+
+    task_summary = summarize_main_task(latest_user_text)
+    return {
+        "jobId": "interactive:main-session",
+        "jobName": task_summary,
+        "sessionId": MAIN_SESSION_KEY,
+        "sessionKey": MAIN_SESSION_KEY,
+        "summary": f"{task_summary} (tools: {tool_summary})" if tool_summary else task_summary,
+        "startedAtMs": started_at_ms,
+        "startedAtLocal": started_local,
+        "runningForMs": max(0, now_ms - started_at_ms),
+        "activityType": "interactive",
+    }
+
+
 def summarize_subagent_task(entry: Dict[str, Any]) -> Optional[str]:
     task = entry.get("task")
     if not isinstance(task, str):
@@ -776,15 +931,17 @@ def runtime_activity(
     runs_dir: Path = CRON_RUNS_DIR,
     subagent_registry_path: Optional[Path] = None,
     max_age_ms: int = 6 * 60 * 60 * 1000,
+    main_session_max_age_ms: int = MAIN_SESSION_RUNTIME_MAX_AGE_MS,
 ) -> Dict[str, Any]:
-    """Return real-time runtime/idle state from background work only.
+    """Return real-time runtime/idle state from active execution work.
 
     Detection model:
     - read cron run-session records from sessions store (`agent:main:cron:<jobId>:run:<sessionId>`)
     - reconcile against cron run logs (`runs/<jobId>.jsonl`) finished entries
     - include active sub-agent/background runs from subagent registry
+    - include active main-session execution work derived from recent tool activity
 
-    Foreground chat activity in `agent:main:main` is intentionally excluded.
+    Plain chat-only turns in `agent:main:main` are intentionally excluded.
     """
     now_ms = int(dt.datetime.now(dt.timezone.utc).timestamp() * 1000)
 
@@ -886,6 +1043,17 @@ def runtime_activity(
 
     if subagent_registry_path is not None:
         active_runs.extend(active_subagent_runs(subagent_registry_path, now_ms))
+
+    main_session_meta = sessions_doc.get(MAIN_SESSION_KEY)
+    if isinstance(main_session_meta, dict):
+        main_run = active_main_session_run(
+            main_session_meta,
+            now_ms,
+            max_age_ms=main_session_max_age_ms,
+        )
+        if main_run is not None:
+            active_runs.append(main_run)
+
     active_runs.sort(key=lambda item: item.get("startedAtMs", 0))
 
     return {
@@ -894,7 +1062,7 @@ def runtime_activity(
         "activeCount": len(active_runs),
         "activeRuns": active_runs,
         "checkedAtMs": now_ms,
-        "source": "cron-run reconciliation + subagent registry (background only)",
+        "source": "cron-run reconciliation + subagent registry + main-session tool activity",
     }
 
 

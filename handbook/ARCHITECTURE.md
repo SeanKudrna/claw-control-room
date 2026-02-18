@@ -15,7 +15,8 @@ Claw Control Room provides a readable, near-real-time view of Claw's operations:
 - Core payload assembly lives in `scripts/lib/status_builder.py`.
 - Payload builder applies timeline-aware stale-guard logic so `currentFocus` and `workstream.now` stay accurate even when `TODAY_STATUS.md` lags behind clock time.
 - Workstream `next` lane uses time-range overlap plus semantic/token overlap to dedupe overlapping timeline/status items, keeping timeline blocks canonical.
-- Runtime detection reconciles session-store cron run keys against cron finished logs and active subagent registry runs; runtime rows include source type (cron vs background subagent).
+- Runtime detection reconciles session-store cron run keys against cron finished logs, active subagent registry runs, and main-session tool activity. Runtime rows include source type (cron, background subagent, or main-session task).
+- Main-session runtime detection is tool-activity driven, so plain chat back-and-forth does not trigger `RUNNING` by itself.
 - Control-room status publisher runs are intentionally excluded from runtime activity to avoid self-referential false-running states.
 - `scripts/publish_status_gist.py` pushes fresh payloads to a GitHub Gist.
 - `scripts/publish_status.sh` is the operational wrapper used by cron.

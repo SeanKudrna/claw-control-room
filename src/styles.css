@@ -470,11 +470,16 @@ summary {
   border-color: rgba(255, 77, 77, 0.4);
 }
 
-.runtime-source-subagent,
-.runtime-source-interactive {
+.runtime-source-subagent {
   color: #ffe9b3;
   background: rgba(251, 191, 36, 0.16);
   border-color: rgba(251, 191, 36, 0.4);
+}
+
+.runtime-source-interactive {
+  color: #ffd6f8;
+  background: rgba(217, 70, 239, 0.16);
+  border-color: rgba(217, 70, 239, 0.4);
 }
 
 .runtime-meta {

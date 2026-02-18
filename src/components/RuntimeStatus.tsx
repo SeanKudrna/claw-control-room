@@ -14,7 +14,7 @@ function formatDuration(ms: number): string {
 }
 
 type RuntimeRow = RuntimeRun & {
-  activityType: 'cron' | 'subagent';
+  activityType: 'cron' | 'subagent' | 'interactive';
   elapsedLabel: string;
   sourceLabel: string;
   timePrefix: string;
@@ -56,13 +56,15 @@ export function RuntimeStatus({ runtime }: { runtime: StatusPayload['runtime'] }
       const activityType = run.activityType ?? 'cron';
       const sessionKey = run.sessionKey || run.sessionId;
       const summary = run.summary || run.jobName;
+      const sourceLabel =
+        activityType === 'subagent' ? 'Background' : activityType === 'interactive' ? 'Main' : 'Cron';
       return {
         ...run,
         sessionKey,
         summary,
         activityType,
         elapsedLabel: formatDuration(nowMs - run.startedAtMs),
-        sourceLabel: activityType === 'subagent' ? 'Background' : 'Cron',
+        sourceLabel,
         timePrefix: 'since',
       };
     });

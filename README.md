@@ -6,7 +6,7 @@ A React + TypeScript dashboard (GitHub Pages) that gives a clear window into Cla
 - mobile-first responsive layout tuned for touch usage and phone readability
 - collapsible content sections for cleaner UX and faster scanning
 - compact panel-body mode to avoid duplicate heading stacks inside collapsible sections
-- real-time runtime panel (background-only: cron + subagent activity, live elapsed timers)
+- real-time runtime panel (cron + subagent + main-session task execution with live elapsed timers; chat-only turns excluded)
 - per-run runtime details sheet (tap/click row details for source/session/start/elapsed/summary)
 - data freshness pill (fresh / aging / stale) based on payload generation time
 - tactile refresh interaction states (press, refreshing spinner, completion confirmation)
@@ -95,6 +95,8 @@ Runtime status builder reads from:
 - `~/.openclaw/workspace/TODAY_STATUS.md`
 - `~/.openclaw/workspace/memory/YYYY-MM-DD.md`
 - `~/.openclaw/agents/main/sessions/sessions.json`
+- `~/.openclaw/agents/main/sessions/<main-session-id>.jsonl` (main-session tool-activity signal)
+- `~/.openclaw/subagents/runs.json`
 - `~/.openclaw/cron/jobs.json`
 - `~/.openclaw/cron/runs/*.jsonl`
 - `~/.openclaw/workspace/scripts/reliability_watchdog_report.py`

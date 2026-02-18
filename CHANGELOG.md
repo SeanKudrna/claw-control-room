@@ -1,5 +1,15 @@
 # Changelog
 
+## v1.4.8 - 2026-02-17
+
+### Changed
+- Runtime monitor now includes active main-session task execution (tool-driven) alongside cron + subagent work.
+- Main-session runtime detection explicitly ignores chat-only turns, preventing `RUNNING` just from conversation.
+- Runtime source labels now include `Main` for direct session work.
+
+### Added
+- Test coverage for main-session runtime detection (task/tool-positive + chat-only-negative paths).
+
 ## v1.4.7 - 2026-02-17
 
 ### Changed

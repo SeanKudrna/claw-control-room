@@ -33,7 +33,7 @@ export interface RuntimeRun {
   startedAtLocal: string;
   runningForMs: number;
   summary?: string;
-  activityType?: 'cron' | 'subagent';
+  activityType?: 'cron' | 'subagent' | 'interactive';
 }
 
 export interface StatusPayload {

@@ -328,6 +328,138 @@ class StatusBuilderTests(unittest.TestCase):
             self.assertIn("Audit dashboard readability", runtime["activeRuns"][0]["jobName"])
             self.assertEqual(runtime["activeRuns"][0]["sessionKey"], "agent:main:subagent:abc123")
 
+    def test_runtime_activity_detects_main_session_tool_work(self) -> None:
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            jobs_file = root / "jobs.json"
+            sessions_file = root / "sessions.json"
+            runs_dir = root / "runs"
+            session_file = root / "main-session.jsonl"
+            runs_dir.mkdir(parents=True, exist_ok=True)
+
+            jobs_file.write_text(json.dumps({"jobs": []}), encoding="utf-8")
+
+            now = dt.datetime.now(dt.timezone.utc)
+            user_ts = now - dt.timedelta(seconds=45)
+            tool_ts = now - dt.timedelta(seconds=20)
+
+            session_file.write_text(
+                "\n".join(
+                    [
+                        json.dumps(
+                            {
+                                "type": "message",
+                                "timestamp": user_ts.isoformat().replace("+00:00", "Z"),
+                                "message": {
+                                    "role": "user",
+                                    "content": [
+                                        {
+                                            "type": "text",
+                                            "text": "Please make a code change and ship a patch release",
+                                        }
+                                    ],
+                                    "timestamp": int(user_ts.timestamp() * 1000),
+                                },
+                            }
+                        ),
+                        json.dumps(
+                            {
+                                "type": "message",
+                                "timestamp": tool_ts.isoformat().replace("+00:00", "Z"),
+                                "message": {
+                                    "role": "toolResult",
+                                    "toolName": "exec",
+                                    "content": [{"type": "text", "text": "ok"}],
+                                },
+                            }
+                        ),
+                    ]
+                )
+                + "\n",
+                encoding="utf-8",
+            )
+
+            sessions_file.write_text(
+                json.dumps(
+                    {
+                        "agent:main:main": {
+                            "sessionId": "main-session-id",
+                            "sessionFile": str(session_file),
+                            "updatedAt": int(now.timestamp() * 1000),
+                        }
+                    }
+                ),
+                encoding="utf-8",
+            )
+
+            runtime = runtime_activity(jobs_file, sessions_file, runs_dir)
+            self.assertEqual(runtime["status"], "running")
+            self.assertEqual(runtime["activeCount"], 1)
+            self.assertEqual(runtime["activeRuns"][0]["activityType"], "interactive")
+            self.assertIn("code change", runtime["activeRuns"][0]["jobName"].lower())
+
+    def test_runtime_activity_ignores_main_session_chat_only(self) -> None:
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            jobs_file = root / "jobs.json"
+            sessions_file = root / "sessions.json"
+            runs_dir = root / "runs"
+            session_file = root / "main-session.jsonl"
+            runs_dir.mkdir(parents=True, exist_ok=True)
+
+            jobs_file.write_text(json.dumps({"jobs": []}), encoding="utf-8")
+
+            now = dt.datetime.now(dt.timezone.utc)
+            user_ts = now - dt.timedelta(seconds=40)
+            assistant_ts = now - dt.timedelta(seconds=15)
+
+            session_file.write_text(
+                "\n".join(
+                    [
+                        json.dumps(
+                            {
+                                "type": "message",
+                                "timestamp": user_ts.isoformat().replace("+00:00", "Z"),
+                                "message": {
+                                    "role": "user",
+                                    "content": [{"type": "text", "text": "How's your day going?"}],
+                                    "timestamp": int(user_ts.timestamp() * 1000),
+                                },
+                            }
+                        ),
+                        json.dumps(
+                            {
+                                "type": "message",
+                                "timestamp": assistant_ts.isoformat().replace("+00:00", "Z"),
+                                "message": {
+                                    "role": "assistant",
+                                    "content": [{"type": "output_text", "text": "Pretty good."}],
+                                },
+                            }
+                        ),
+                    ]
+                )
+                + "\n",
+                encoding="utf-8",
+            )
+
+            sessions_file.write_text(
+                json.dumps(
+                    {
+                        "agent:main:main": {
+                            "sessionId": "main-session-id",
+                            "sessionFile": str(session_file),
+                            "updatedAt": int(now.timestamp() * 1000),
+                        }
+                    }
+                ),
+                encoding="utf-8",
+            )
+
+            runtime = runtime_activity(jobs_file, sessions_file, runs_dir)
+            self.assertEqual(runtime["status"], "idle")
+            self.assertEqual(runtime["activeCount"], 0)
+
     def test_runtime_activity_excludes_status_publish_job(self) -> None:
         with tempfile.TemporaryDirectory() as td:
             root = Path(td)
