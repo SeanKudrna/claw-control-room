@@ -18,7 +18,7 @@ Claw Control Room provides a readable, near-real-time view of Claw's operations:
 - Deterministic lane-state rules define `now`, `next`, and `done` transitions (including day reset), removing ad-hoc stale carryover behavior.
 - `now` resolves to current runtime activity when present; otherwise the earliest upcoming scheduled event.
 - `next` is the ordered future remainder after `now`, with no past items.
-- `done` starts empty each day and only receives items that first appeared in `now` and later completed.
+- `done` starts empty each day and only receives items that first appeared in `now` and later completed, rendered newest-first for scanability.
 - Runtime detection reconciles session-store cron run keys against cron finished logs and active subagent registry runs.
 - Runtime semantics intentionally exclude main/interactive rows (cron + background/subagent only).
 - Control-room status publisher runs are intentionally excluded from runtime activity to avoid self-referential false-running states.

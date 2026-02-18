@@ -153,6 +153,28 @@ class StatusBuilderTests(unittest.TestCase):
             lanes_third = build_workstream_lanes([], jobs_file, {"activeRuns": []}, third_now, state_path)
             self.assertEqual(lanes_third["done"], [])
 
+    def test_workstream_done_order_is_newest_first(self) -> None:
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            jobs_file = root / "jobs.json"
+            jobs_file.write_text(json.dumps({"jobs": []}), encoding="utf-8")
+            state_path = root / "workstream-state.json"
+
+            first_timeline = [{"time": "08:00-08:05", "task": "First completed"}]
+            first_now = dt.datetime(2026, 2, 18, 7, 59)
+            build_workstream_lanes(first_timeline, jobs_file, {"activeRuns": []}, first_now, state_path)
+
+            second_timeline = [{"time": "08:10-08:15", "task": "Second completed"}]
+            second_now = dt.datetime(2026, 2, 18, 8, 9)
+            build_workstream_lanes(second_timeline, jobs_file, {"activeRuns": []}, second_now, state_path)
+
+            after_second = dt.datetime(2026, 2, 18, 8, 20)
+            lanes = build_workstream_lanes([], jobs_file, {"activeRuns": []}, after_second, state_path)
+
+            self.assertEqual(len(lanes["done"]), 2)
+            self.assertIn("08:10-08:15", lanes["done"][0])
+            self.assertIn("08:00-08:05", lanes["done"][1])
+
     def test_workstream_now_next_never_include_past(self) -> None:
         with tempfile.TemporaryDirectory() as td:
             root = Path(td)

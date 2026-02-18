@@ -675,6 +675,7 @@ def build_workstream_lanes(
             done_ids.append(event_id)
 
     done_lane = [labels[event_id] for event_id in done_ids if event_id in labels]
+    done_lane = list(reversed(done_lane))
     now_lane = [event["label"] for event in now_events]
     next_lane = [event["label"] for event in next_events]
 

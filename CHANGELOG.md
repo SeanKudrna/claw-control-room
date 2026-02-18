@@ -1,5 +1,16 @@
 # Changelog
 
+## v1.4.22 - 2026-02-18
+
+### Fixed
+- Done lane now displays the most recently completed items first (newest-first) instead of oldest-first.
+
+### Changed
+- Preserved existing done semantics (day reset and now→done transition gating) while inverting done render order for scanability.
+
+### Added
+- Regression test coverage to lock newest-first ordering for multiple completed transitions in one day.
+
 ## v1.4.21 - 2026-02-18
 
 ### Fixed

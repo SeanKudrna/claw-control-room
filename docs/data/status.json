@@ -1,7 +1,7 @@
 {
-  "generatedAt": "2026-02-18T14:29:14.627417+00:00",
-  "generatedAtLocal": "2026-02-18 08:29 ",
-  "controlRoomVersion": "1.4.21",
+  "generatedAt": "2026-02-18T14:34:02.373963+00:00",
+  "generatedAtLocal": "2026-02-18 08:34 ",
+  "controlRoomVersion": "1.4.22",
   "currentFocus": "Start-of-day planning + validator",
   "activeWork": "downtime-guard monitoring/continuity mode.",
   "reliability": {
@@ -44,7 +44,7 @@
   "nextJobs": [
     {
       "name": "Control room status publish (gist backend)",
-      "nextRun": "08:30",
+      "nextRun": "08:34",
       "lastStatus": "ok"
     },
     {
@@ -93,19 +93,20 @@
   ],
   "workstream": {
     "now": [
-      "Resume and finish the in-progress worktree changes for claw-control-room issue set #30 #31 #32. Repo: /Users/seankudrna/.openclaw/workspace/claw-control-room Current state: local w\u2026"
+      "Implement dashboard change in /Users/seankudrna/.openclaw/workspace/claw-control-room: User request: - In workstream `done` list/card, show most recently finished tasks at the TOP \u2026"
     ],
     "next": [
-      "08:30 \u2014 Scheduled job: Control room status publish (gist backend)",
       "08:37 \u2014 Scheduled job: Critical update failover guard",
       "08:40-09:10 \u2014 Control-room issue triage block (mandatory)",
       "09:00 \u2014 Scheduled job: Downtime gap auto-fill guard (quiet unless triggered)",
-      "09:10-10:20 \u2014 Control-room product lane block (mandatory)"
+      "09:10-10:20 \u2014 Control-room product lane block (mandatory)",
+      "09:20 \u2014 Scheduled job: Reliability watchdog hourly (self-heal + conditional alert)"
     ],
     "done": [
-      "Autonomy daily planner (DAILY_PLAN source of truth)",
+      "Resume and finish the in-progress worktree changes for claw-control-room issue set #30 #31 #32. Repo: /Users/seankudrna/.openclaw/workspace/claw-control-room Current state: local w\u2026",
+      "Daily plan preflight validator",
       "Implement issue #30 in /Users/seankudrna/.openclaw/workspace/claw-control-room. Issue: https://github.com/SeanKudrna/claw-control-room/issues/30 User-required semantics (must match\u2026",
-      "Daily plan preflight validator"
+      "Autonomy daily planner (DAILY_PLAN source of truth)"
     ]
   },
   "charts": {
@@ -189,7 +190,7 @@
         "job": "Daily plan preflight validator"
       },
       {
-        "label": "08:29",
+        "label": "08:33",
         "status": "ok",
         "score": 1.0,
         "job": "Control room status publish (gist backend)"
@@ -380,7 +381,7 @@
     "isIdle": true,
     "activeCount": 0,
     "activeRuns": [],
-    "checkedAtMs": 1771424954581,
+    "checkedAtMs": 1771425242325,
     "source": "cron-run reconciliation + subagent registry [static fallback runtime sanitized]"
   }
 }
