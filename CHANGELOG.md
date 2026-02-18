@@ -5,6 +5,7 @@
 ### Added
 - Refresh button now has tactile interaction states: press feedback, active spinner state while fetching, and short post-refresh confirmation.
 - Added reduced-motion-safe handling for refresh/collapse animations.
+- Added custom lobster favicon set (SVG + PNG + `.ico`) and mobile home-screen icon metadata/manifest wiring.
 
 ### Changed
 - Reworked responsive behavior with a mobile-first pass: touch-friendly control sizing, horizontal tab scroller, stacked runtime/cards, safe-area padding, and mobile-optimized jobs table layout.

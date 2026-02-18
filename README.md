@@ -9,6 +9,7 @@ A React + TypeScript dashboard (GitHub Pages) that gives a clear window into Cla
 - data freshness pill (fresh / aging / stale) based on payload generation time
 - tactile refresh interaction states (press, refreshing spinner, completion confirmation)
 - OpenClaw brand-aligned coral/cyan/dark theme palette for visual continuity
+- custom lobster favicon + home-screen icons for mobile install branding
 - current focus and active work (with timeline-aware stale fallback)
 - now/next/done swimlanes (next lane dedupes overlapping timeline/status blocks using time overlap + token overlap)
 - timeline of planned tasks
