@@ -1,0 +1,21 @@
+{
+  "name": "Claw Control Room",
+  "short_name": "Claw",
+  "description": "Live window into Claw's day: tasks, progress, findings, and system health.",
+  "start_url": "/claw-control-room/",
+  "display": "standalone",
+  "background_color": "#050810",
+  "theme_color": "#050810",
+  "icons": [
+    {
+      "src": "/claw-control-room/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/claw-control-room/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

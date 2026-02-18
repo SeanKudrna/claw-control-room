@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## v1.4.0 - 2026-02-17
 
 ### Added
 - Refresh button now has tactile interaction states: press feedback, active spinner state while fetching, and short post-refresh confirmation.

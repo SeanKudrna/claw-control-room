@@ -1,9 +1,9 @@
 {
-  "generatedAt": "2026-02-17T23:20:18.180912+00:00",
-  "generatedAtLocal": "2026-02-17 17:20 ",
-  "controlRoomVersion": "1.3.3",
+  "generatedAt": "2026-02-18T01:24:42.101172+00:00",
+  "generatedAtLocal": "2026-02-17 19:24 ",
+  "controlRoomVersion": "1.4.0",
   "currentFocus": "post-5:00 PM run sanity + next-step prep",
-  "activeWork": "17:12-18:30 \u2014 Post-run stabilization + next-action prep",
+  "activeWork": "",
   "reliability": {
     "status": "green"
   },
@@ -40,42 +40,42 @@
   "nextJobs": [
     {
       "name": "Control room status publish (gist backend)",
-      "nextRun": "17:18",
+      "nextRun": "19:25",
       "lastStatus": "ok"
     },
     {
-      "name": "Control-room issue #2 patch execution",
-      "nextRun": "17:18",
+      "name": "Evolution profile refresh (helper, non-planner)",
+      "nextRun": "19:30",
       "lastStatus": null
     },
     {
-      "name": "Reliability watchdog hourly (self-heal + conditional alert)",
-      "nextRun": "17:20",
+      "name": "Critical update failover guard",
+      "nextRun": "19:37",
       "lastStatus": "ok"
     },
     {
-      "name": "Critical update failover guard",
-      "nextRun": "17:22",
+      "name": "Downtime gap auto-fill guard (quiet unless triggered)",
+      "nextRun": "20:00",
+      "lastStatus": "ok"
+    },
+    {
+      "name": "Today dashboard refresh (every 3h)",
+      "nextRun": "20:15",
+      "lastStatus": "ok"
+    },
+    {
+      "name": "Reliability watchdog hourly (self-heal + conditional alert)",
+      "nextRun": "20:20",
       "lastStatus": "ok"
     },
     {
       "name": "Control room issue triage + QA intake",
-      "nextRun": "17:35",
-      "lastStatus": null
-    },
-    {
-      "name": "Proof schema lint sweep",
-      "nextRun": "17:40",
-      "lastStatus": null
-    },
-    {
-      "name": "Downtime gap auto-fill guard (quiet unless triggered)",
-      "nextRun": "18:00",
+      "nextRun": "21:35",
       "lastStatus": "ok"
     },
     {
-      "name": "Autonomy evening wrap + next-day prep",
-      "nextRun": "19:00",
+      "name": "Nightly stale cron prune (scripted)",
+      "nextRun": "01:35",
       "lastStatus": null
     }
   ],
@@ -88,13 +88,8 @@
     "Preference update: Sean wants shorter, high-signal summaries by default in chat updates."
   ],
   "workstream": {
-    "now": [
-      "17:12-18:30 \u2014 Post-run stabilization + next-action prep"
-    ],
-    "next": [
-      "19:00-19:20 \u2014 Evening wrap + tomorrow pre-plan (scheduled cron)",
-      "17:18-18:00 \u2014 Issue #2 patch execution window (scheduled one-shot)"
-    ],
+    "now": [],
+    "next": [],
     "done": [
       "17:00 usage-report run completed successfully; runtime check posted 5h/weekly usage health and confirms current limits.",
       "Proof: cron run log `874fb538-26fc-454e-aa3a-85c2652d5abd.jsonl` (status `ok`, message: 75% remaining in 5h window, weekly 79% remaining).",
@@ -104,24 +99,6 @@
   },
   "charts": {
     "jobSuccessTrend": [
-      {
-        "label": "07:00",
-        "status": "error",
-        "score": 0.0,
-        "job": "Usage report - 7am"
-      },
-      {
-        "label": "09:09",
-        "status": "ok",
-        "score": 1.0,
-        "job": "Autonomy daily planner (DAILY_PLAN source of truth)"
-      },
-      {
-        "label": "12:00",
-        "status": "ok",
-        "score": 1.0,
-        "job": "Usage report - noon"
-      },
       {
         "label": "13:10",
         "status": "ok",
@@ -141,12 +118,6 @@
         "job": "Surprise value lane (daily)"
       },
       {
-        "label": "16:20",
-        "status": "ok",
-        "score": 1.0,
-        "job": "Reliability watchdog hourly (self-heal + conditional alert)"
-      },
-      {
         "label": "16:50",
         "status": "ok",
         "score": 1.0,
@@ -159,22 +130,10 @@
         "job": "Usage report - 5pm"
       },
       {
-        "label": "17:00",
-        "status": "ok",
-        "score": 1.0,
-        "job": "Downtime gap auto-fill guard (quiet unless triggered)"
-      },
-      {
         "label": "17:05",
         "status": "ok",
         "score": 1.0,
         "job": "Daily reliability SLO snapshot"
-      },
-      {
-        "label": "17:07",
-        "status": "ok",
-        "score": 1.0,
-        "job": "Critical update failover guard"
       },
       {
         "label": "17:15",
@@ -183,33 +142,49 @@
         "job": "Today dashboard refresh (every 3h)"
       },
       {
-        "label": "17:17",
+        "label": "17:35",
+        "status": "ok",
+        "score": 1.0,
+        "job": "Control room issue triage + QA intake"
+      },
+      {
+        "label": "17:40",
+        "status": "ok",
+        "score": 1.0,
+        "job": "Proof schema lint sweep"
+      },
+      {
+        "label": "19:00",
+        "status": "ok",
+        "score": 1.0,
+        "job": "Autonomy evening wrap + next-day prep"
+      },
+      {
+        "label": "19:00",
+        "status": "ok",
+        "score": 1.0,
+        "job": "Downtime gap auto-fill guard (quiet unless triggered)"
+      },
+      {
+        "label": "19:20",
+        "status": "ok",
+        "score": 1.0,
+        "job": "Reliability watchdog hourly (self-heal + conditional alert)"
+      },
+      {
+        "label": "19:22",
+        "status": "ok",
+        "score": 1.0,
+        "job": "Critical update failover guard"
+      },
+      {
+        "label": "19:24",
         "status": "ok",
         "score": 1.0,
         "job": "Control room status publish (gist backend)"
       }
     ],
     "reliabilityTrend": [
-      {
-        "label": "11:20",
-        "status": "green",
-        "score": 1.0
-      },
-      {
-        "label": "11:30",
-        "status": "green",
-        "score": 1.0
-      },
-      {
-        "label": "11:51",
-        "status": "green",
-        "score": 1.0
-      },
-      {
-        "label": "12:20",
-        "status": "green",
-        "score": 1.0
-      },
       {
         "label": "12:51",
         "status": "green",
@@ -257,6 +232,26 @@
       },
       {
         "label": "16:51",
+        "status": "green",
+        "score": 1.0
+      },
+      {
+        "label": "17:51",
+        "status": "green",
+        "score": 1.0
+      },
+      {
+        "label": "18:20",
+        "status": "green",
+        "score": 1.0
+      },
+      {
+        "label": "18:51",
+        "status": "green",
+        "score": 1.0
+      },
+      {
+        "label": "19:20",
         "status": "green",
         "score": 1.0
       }
@@ -385,20 +380,11 @@
     }
   ],
   "runtime": {
-    "status": "running",
-    "isIdle": false,
-    "activeCount": 1,
-    "activeRuns": [
-      {
-        "jobId": "be77502d-43b8-4b38-bdbb-8cb5c56b1dfa",
-        "jobName": "Control-room issue #2 patch execution",
-        "sessionId": "ecce5779-3a44-4614-87cc-d6bd5b08afbe",
-        "startedAtMs": 1771370284968,
-        "startedAtLocal": "2026-02-17 17:18:04",
-        "runningForMs": 133243
-      }
-    ],
-    "checkedAtMs": 1771370418211,
+    "status": "idle",
+    "isIdle": true,
+    "activeCount": 0,
+    "activeRuns": [],
+    "checkedAtMs": 1771377882131,
     "source": "session-store + cron-run-log reconciliation"
   }
 }
