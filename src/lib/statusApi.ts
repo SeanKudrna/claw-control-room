@@ -86,6 +86,66 @@ async function resolveStatusUrls(signal?: AbortSignal): Promise<{
   }
 }
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null;
+}
+
+function isStringArray(value: unknown): value is string[] {
+  return Array.isArray(value) && value.every((item) => typeof item === 'string');
+}
+
+function hasStringField(record: Record<string, unknown>, key: string): boolean {
+  return typeof record[key] === 'string';
+}
+
+function validateStatusPayload(payload: unknown): payload is StatusPayload {
+  if (!isRecord(payload)) return false;
+
+  if (
+    !hasStringField(payload, 'generatedAt') ||
+    !hasStringField(payload, 'generatedAtLocal') ||
+    !hasStringField(payload, 'controlRoomVersion') ||
+    !hasStringField(payload, 'currentFocus') ||
+    !hasStringField(payload, 'activeWork')
+  ) {
+    return false;
+  }
+
+  if (!Array.isArray(payload.timeline) || !Array.isArray(payload.nextJobs) || !isStringArray(payload.findings)) {
+    return false;
+  }
+
+  if (!isRecord(payload.workstream)) return false;
+  if (
+    !isStringArray(payload.workstream.now) ||
+    !isStringArray(payload.workstream.next) ||
+    !isStringArray(payload.workstream.done)
+  ) {
+    return false;
+  }
+
+  if (!isRecord(payload.charts)) return false;
+  if (!Array.isArray(payload.charts.jobSuccessTrend) || !Array.isArray(payload.charts.reliabilityTrend)) {
+    return false;
+  }
+
+  if (!Array.isArray(payload.activity)) return false;
+
+  if (!isRecord(payload.runtime)) return false;
+  if (
+    (payload.runtime.status !== 'idle' && payload.runtime.status !== 'running') ||
+    typeof payload.runtime.isIdle !== 'boolean' ||
+    typeof payload.runtime.activeCount !== 'number' ||
+    !Array.isArray(payload.runtime.activeRuns) ||
+    typeof payload.runtime.checkedAtMs !== 'number' ||
+    !hasStringField(payload.runtime, 'source')
+  ) {
+    return false;
+  }
+
+  return true;
+}
+
 async function fetchStatusPayload(url: string, signal?: AbortSignal): Promise<StatusPayload> {
   let response: Response;
   try {
@@ -100,11 +160,18 @@ async function fetchStatusPayload(url: string, signal?: AbortSignal): Promise<St
     });
   }
 
+  let parsed: unknown;
   try {
-    return (await response.json()) as StatusPayload;
+    parsed = await response.json();
   } catch {
     throw new StatusFetchError('status-payload-invalid', 'Status payload is not valid JSON');
   }
+
+  if (!validateStatusPayload(parsed)) {
+    throw new StatusFetchError('status-payload-invalid', 'Status payload does not match expected schema');
+  }
+
+  return parsed;
 }
 
 export async function fetchStatus(options?: { signal?: AbortSignal }): Promise<StatusFetchResult> {

@@ -1,5 +1,14 @@
 # Changelog
 
+## v1.4.17 - 2026-02-18
+
+### Fixed
+- Prevented malformed-but-parseable status payloads from entering UI state and causing downstream render/runtime assumption failures.
+
+### Changed
+- Added runtime status payload shape validation in `statusApi` for required top-level fields and container structures (`timeline`, `workstream`, `charts`, `activity`, `runtime`).
+- `fetchStatus` now raises `status-payload-invalid` when payload JSON exists but fails contract checks, preserving degraded-mode semantics instead of committing invalid state.
+
 ## v1.4.16 - 2026-02-18
 
 ### Fixed
