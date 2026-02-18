@@ -37,6 +37,8 @@ UI nav notes:
 - Activity Feed category normalization should prevent `N/A` category chips/options from appearing; unknown values map to `ops`, and `N/A` timestamp pills should not render in item metadata.
 - Runtime details modal should render via body portal with z-index above sticky tab/header layers.
 - Skills tree interactions should work on desktop hover/click and mobile tap (node selection drives side-panel detail rendering).
+- Desktop Skills view should preserve game-style semantics: visible dependency connectors, tiered branch hierarchy, and distinct visual states (`active`, `in-progress`, `planned`, `locked`).
+- Mobile Skills fallback should remain progression-readable (tier + state + level/progress) and preserve tap-to-inspect detail behavior.
 - Skills evolution ingestion is deterministic and artifact-driven (workspace memory files only; no network/LLM mutation in builder path).
 
 ## Build output for GitHub Pages

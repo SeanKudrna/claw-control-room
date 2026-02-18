@@ -7,7 +7,7 @@ Claw Control Room provides a readable, near-real-time view of Claw's operations:
 - planned timeline + upcoming jobs
 - reliability posture and trend
 - activity feed and findings
-- skills progression map with deterministic evolution inputs
+- game-style skills progression map (connected branches + tier hierarchy) with deterministic evolution inputs
 
 ## High-level design
 
@@ -35,6 +35,8 @@ Claw Control Room provides a readable, near-real-time view of Claw's operations:
   - `src/lib/statusApi.ts` source resolution/fetch logic
   - `src/types/status.ts` shared payload contracts
 - Information architecture uses tabbed views (`Overview`, `Operations`, `Insights`, `Skills`) plus collapsible sections to reduce visual overload.
+- Skills tab renders a deterministic tier-column layout with SVG connector paths derived from dependency edges, preserving a game-like progression-map visual without external graph runtime dependencies.
+- On narrow screens, Skills switches to a mobile fallback progression list (tap-to-select) while retaining the same detail side-panel data contract.
 - Components rendered inside collapsible bodies support compact heading mode, so section titles stay in the summary row while inner content keeps accessibility labels without duplicate heading stacks.
 - Active tab is URL-hash persisted (`#tab-*`) for direct navigation/state restore.
 - Theme tokens align to OpenClaw website palette conventions (deep dark surface + coral/orange accents) for product continuity.

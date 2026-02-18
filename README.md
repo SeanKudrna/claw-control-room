@@ -29,7 +29,8 @@ A React + TypeScript dashboard (GitHub Pages) that gives a clear window into Cla
 - job + reliability trend mini charts
 - filterable activity feed with default condensed view (latest 12) + expand/collapse
 - recent findings/wins
-- Skills tab with game-style skill tree (active/planned/locked nodes), click-to-inspect details, and deterministic evolution metadata
+- Skills tab redesigned as a true game-style progression tree: connected dependency branches, tiered node hierarchy, and strong state styling (active / in-progress / planned / locked) with click-to-inspect details and deterministic evolution metadata
+- mobile-friendly Skills fallback list that preserves progression/state visibility and tap-to-inspect behavior when dense tree rendering is hidden
 
 ## Standards
 

@@ -1,5 +1,23 @@
 # Changelog
 
+## v1.4.30 - 2026-02-18
+
+### Added
+- Added issue #43 research notes in `status/skilltree-research-issue43.md` covering game-style visual references and React library evaluation (`@xyflow/react`, `react-d3-tree`, `@projectstorm/react-diagrams`) with implementation decision rationale.
+- Added true skill-graph connector rendering for Skills tab via deterministic SVG dependency paths over tiered node layout.
+- Added explicit visual state model in Skills UI (`active`, `in-progress`, `planned`, `locked`) while preserving existing payload compatibility.
+- Added mobile fallback progression list for Skills tab with tap-to-inspect parity.
+
+### Changed
+- Replaced prior card-grid skills rendering with a game-style progression map that emphasizes branch hierarchy and dependency flow.
+- Preserved/extended skill inspection detail panel semantics (description, effect, learned date, tier, level, progress, dependencies).
+
+### Validation
+- Captured local UI verification screenshots for issue #43 under `status/ui-validation/` (desktop + mobile Skills tab proof).
+
+### Docs
+- Updated README, architecture handbook, and development handbook for the new game-style Skills rendering model and mobile fallback behavior.
+
 ## v1.4.29 - 2026-02-18
 
 ### Added
