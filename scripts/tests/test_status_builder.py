@@ -147,7 +147,7 @@ class StatusBuilderTests(unittest.TestCase):
 
             second_now = dt.datetime(2026, 2, 18, 8, 20)
             lanes_second = build_workstream_lanes([], jobs_file, {"activeRuns": []}, second_now, state_path)
-            self.assertIn("08:05-08:10", lanes_second["done"][0])
+            self.assertEqual(lanes_second["done"][0], "08:10 — Transition block")
 
             third_now = dt.datetime(2026, 2, 19, 8, 0)
             lanes_third = build_workstream_lanes([], jobs_file, {"activeRuns": []}, third_now, state_path)
@@ -172,8 +172,30 @@ class StatusBuilderTests(unittest.TestCase):
             lanes = build_workstream_lanes([], jobs_file, {"activeRuns": []}, after_second, state_path)
 
             self.assertEqual(len(lanes["done"]), 2)
-            self.assertIn("08:10-08:15", lanes["done"][0])
-            self.assertIn("08:00-08:05", lanes["done"][1])
+            self.assertEqual(lanes["done"][0], "08:15 — Second completed")
+            self.assertEqual(lanes["done"][1], "08:05 — First completed")
+
+    def test_workstream_done_format_keeps_items_without_derivable_time(self) -> None:
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            jobs_file = root / "jobs.json"
+            jobs_file.write_text(json.dumps({"jobs": []}), encoding="utf-8")
+            state_path = root / "workstream-state.json"
+            now_local = dt.datetime(2026, 2, 18, 8, 20)
+            state_path.write_text(
+                json.dumps(
+                    {
+                        "day": now_local.strftime("%Y-%m-%d"),
+                        "seenNow": [],
+                        "done": ["manual:1"],
+                        "labels": {"manual:1": "Unscheduled follow-up complete"},
+                    }
+                ),
+                encoding="utf-8",
+            )
+
+            lanes = build_workstream_lanes([], jobs_file, {"activeRuns": []}, now_local, state_path)
+            self.assertEqual(lanes["done"], ["Unscheduled follow-up complete"])
 
     def test_workstream_now_next_never_include_past(self) -> None:
         with tempfile.TemporaryDirectory() as td:

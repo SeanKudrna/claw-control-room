@@ -82,6 +82,8 @@ WORKSTREAM_STATE_FILE = Path("/Users/seankudrna/.openclaw/workspace/status/contr
 WORKSTREAM_RUNTIME_NOW_LIMIT = 1
 WORKSTREAM_NEXT_LIMIT = 5
 WORKSTREAM_DONE_LIMIT = 5
+DONE_LANE_TIME_RANGE_PREFIX_RE = re.compile(r"^\s*(\d{1,2}:\d{2})-(\d{1,2}:\d{2})\s*[—\-:]\s*(.+)$")
+DONE_LANE_TIME_PREFIX_RE = re.compile(r"^\s*(\d{1,2}:\d{2})\s*[—\-:]\s*(.+)$")
 
 
 def read_text(path: Path) -> str:
@@ -173,6 +175,40 @@ def parse_leading_time_minutes(value: str) -> Optional[int]:
     if not match:
         return None
     return parse_hhmm_to_minutes(match.group(1))
+
+
+def format_minutes_hhmm(minutes: int) -> str:
+    normalized = minutes % (24 * 60)
+    return f"{normalized // 60:02d}:{normalized % 60:02d}"
+
+
+def format_done_lane_item(item: str) -> str:
+    """Prefix done-lane entries with completion time when derivable.
+
+    Priority:
+    - time ranges (`HH:MM-HH:MM`) use end-time as completion indicator
+    - single leading time (`HH:MM`) uses that time
+    - otherwise, keep item unchanged
+    """
+    text = item.strip()
+    if not text:
+        return text
+
+    range_match = DONE_LANE_TIME_RANGE_PREFIX_RE.match(text)
+    if range_match:
+        end_minutes = parse_hhmm_to_minutes(range_match.group(2))
+        if end_minutes is None:
+            return text
+        return f"{format_minutes_hhmm(end_minutes)} — {range_match.group(3).strip()}"
+
+    time_match = DONE_LANE_TIME_PREFIX_RE.match(text)
+    if time_match:
+        leading_minutes = parse_hhmm_to_minutes(time_match.group(1))
+        if leading_minutes is None:
+            return text
+        return f"{format_minutes_hhmm(leading_minutes)} — {time_match.group(2).strip()}"
+
+    return text
 
 
 def infer_time_anchor(item: str, now_local: dt.datetime) -> Optional[dt.datetime]:
@@ -692,6 +728,7 @@ def build_workstream_lanes(
     output["done"] = done_unique
 
     persisted_done_ids = [event_id for event_id in done_ids if labels.get(event_id) in output["done"]]
+    output["done"] = [format_done_lane_item(item) for item in output["done"]]
     new_state = {
         "day": now_local.strftime("%Y-%m-%d"),
         "seenNow": sorted(seen_now),
