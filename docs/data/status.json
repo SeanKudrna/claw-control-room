@@ -1,72 +1,56 @@
 {
-  "generatedAt": "2026-02-18T14:09:08.892756+00:00",
-  "generatedAtLocal": "2026-02-18 08:09 ",
-  "controlRoomVersion": "1.4.20",
-  "currentFocus": "reliability monitoring + overnight control-room continuity.",
-  "activeWork": "Next up: 13:20-13:45 \u2014 Midday reliability + queue reconciliation",
+  "generatedAt": "2026-02-18T14:29:14.627417+00:00",
+  "generatedAtLocal": "2026-02-18 08:29 ",
+  "controlRoomVersion": "1.4.21",
+  "currentFocus": "Start-of-day planning + validator",
+  "activeWork": "downtime-guard monitoring/continuity mode.",
   "reliability": {
     "status": "green"
   },
   "timeline": [
     {
-      "time": "13:20-13:45",
-      "task": "Midday reliability + queue reconciliation"
+      "time": "08:25-08:40",
+      "task": "Start-of-day planning + validator"
     },
     {
-      "time": "13:45-14:25",
-      "task": "Prepare 5pm update evidence pack"
+      "time": "08:40-09:10",
+      "task": "Control-room issue triage block (mandatory)"
     },
     {
-      "time": "15:10-16:05",
-      "task": "Reliability deep-work block B (scheduled cron)"
+      "time": "09:10-10:20",
+      "task": "Control-room product lane block (mandatory)"
     },
     {
-      "time": "16:50-16:58",
-      "task": "Pre-5pm reliability checkpoint (scheduled cron)"
+      "time": "10:20-10:45",
+      "task": "Publish proof + status sync"
     },
     {
-      "time": "17:00-17:12",
-      "task": "Usage report + MVP user update window"
+      "time": "12:00-12:15",
+      "task": "Usage checkpoint window"
     },
     {
-      "time": "17:12-18:30",
-      "task": "Post-run stabilization + next-action prep"
+      "time": "13:30-14:30",
+      "task": "Reliability + quality hardening block"
+    },
+    {
+      "time": "17:00-17:15",
+      "task": "Usage checkpoint window (5pm)"
     },
     {
       "time": "19:00-19:20",
-      "task": "Evening wrap + tomorrow pre-plan (scheduled cron)"
+      "task": "Evening wrap + tomorrow pre-plan"
     }
   ],
   "nextJobs": [
     {
       "name": "Control room status publish (gist backend)",
-      "nextRun": "08:10",
-      "lastStatus": "ok"
-    },
-    {
-      "name": "Today dashboard refresh (every 3h)",
-      "nextRun": "08:15",
-      "lastStatus": "ok"
-    },
-    {
-      "name": "Autonomy daily planner (DAILY_PLAN source of truth)",
-      "nextRun": "08:20",
-      "lastStatus": "ok"
-    },
-    {
-      "name": "Reliability watchdog hourly (self-heal + conditional alert)",
-      "nextRun": "08:20",
+      "nextRun": "08:30",
       "lastStatus": "ok"
     },
     {
       "name": "Critical update failover guard",
-      "nextRun": "08:22",
+      "nextRun": "08:37",
       "lastStatus": "ok"
-    },
-    {
-      "name": "Daily plan preflight validator",
-      "nextRun": "08:24",
-      "lastStatus": null
     },
     {
       "name": "Downtime gap auto-fill guard (quiet unless triggered)",
@@ -74,8 +58,28 @@
       "lastStatus": "ok"
     },
     {
+      "name": "Reliability watchdog hourly (self-heal + conditional alert)",
+      "nextRun": "09:20",
+      "lastStatus": "ok"
+    },
+    {
       "name": "Control room issue triage + QA intake",
       "nextRun": "09:35",
+      "lastStatus": "ok"
+    },
+    {
+      "name": "Reliability deep-work block A (DAILY_PLAN-driven)",
+      "nextRun": "11:10",
+      "lastStatus": null
+    },
+    {
+      "name": "Today dashboard refresh (every 3h)",
+      "nextRun": "11:15",
+      "lastStatus": "ok"
+    },
+    {
+      "name": "Usage report - noon",
+      "nextRun": "12:00",
       "lastStatus": "ok"
     }
   ],
@@ -89,33 +93,23 @@
   ],
   "workstream": {
     "now": [
-      "Next up: 13:20-13:45 \u2014 Midday reliability + queue reconciliation"
+      "Resume and finish the in-progress worktree changes for claw-control-room issue set #30 #31 #32. Repo: /Users/seankudrna/.openclaw/workspace/claw-control-room Current state: local w\u2026"
     ],
     "next": [
-      "08:10 \u2014 Scheduled job: Control room status publish (gist backend)",
-      "08:15 \u2014 Scheduled job: Today dashboard refresh (every 3h)",
-      "08:20 \u2014 Scheduled job: Autonomy daily planner (DAILY_PLAN source of truth)",
-      "13:20-13:45 \u2014 Midday reliability + queue reconciliation",
-      "13:45-14:25 \u2014 Prepare 5pm update evidence pack"
+      "08:30 \u2014 Scheduled job: Control room status publish (gist backend)",
+      "08:37 \u2014 Scheduled job: Critical update failover guard",
+      "08:40-09:10 \u2014 Control-room issue triage block (mandatory)",
+      "09:00 \u2014 Scheduled job: Downtime gap auto-fill guard (quiet unless triggered)",
+      "09:10-10:20 \u2014 Control-room product lane block (mandatory)"
     ],
     "done": [
-      "04:00 CST downtime-guard reliability fallback completed."
+      "Autonomy daily planner (DAILY_PLAN source of truth)",
+      "Implement issue #30 in /Users/seankudrna/.openclaw/workspace/claw-control-room. Issue: https://github.com/SeanKudrna/claw-control-room/issues/30 User-required semantics (must match\u2026",
+      "Daily plan preflight validator"
     ]
   },
   "charts": {
     "jobSuccessTrend": [
-      {
-        "label": "17:00",
-        "status": "ok",
-        "score": 1.0,
-        "job": "Usage report - 5pm"
-      },
-      {
-        "label": "17:05",
-        "status": "ok",
-        "score": 1.0,
-        "job": "Daily reliability SLO snapshot"
-      },
       {
         "label": "17:40",
         "status": "ok",
@@ -133,12 +127,6 @@
         "status": "ok",
         "score": 1.0,
         "job": "Evolution profile refresh (helper, non-planner)"
-      },
-      {
-        "label": "20:15",
-        "status": "ok",
-        "score": 1.0,
-        "job": "Today dashboard refresh (every 3h)"
       },
       {
         "label": "21:35",
@@ -165,36 +153,49 @@
         "job": "Usage report - 7am"
       },
       {
-        "label": "07:20",
-        "status": "ok",
-        "score": 1.0,
-        "job": "Reliability watchdog hourly (self-heal + conditional alert)"
-      },
-      {
         "label": "08:00",
         "status": "ok",
         "score": 1.0,
         "job": "Downtime gap auto-fill guard (quiet unless triggered)"
       },
       {
-        "label": "08:07",
+        "label": "08:15",
+        "status": "ok",
+        "score": 1.0,
+        "job": "Today dashboard refresh (every 3h)"
+      },
+      {
+        "label": "08:20",
+        "status": "ok",
+        "score": 1.0,
+        "job": "Autonomy daily planner (DAILY_PLAN source of truth)"
+      },
+      {
+        "label": "08:20",
+        "status": "ok",
+        "score": 1.0,
+        "job": "Reliability watchdog hourly (self-heal + conditional alert)"
+      },
+      {
+        "label": "08:22",
         "status": "ok",
         "score": 1.0,
         "job": "Critical update failover guard"
       },
       {
-        "label": "08:09",
+        "label": "08:24",
+        "status": "ok",
+        "score": 1.0,
+        "job": "Daily plan preflight validator"
+      },
+      {
+        "label": "08:29",
         "status": "ok",
         "score": 1.0,
         "job": "Control room status publish (gist backend)"
       }
     ],
     "reliabilityTrend": [
-      {
-        "label": "01:20",
-        "status": "green",
-        "score": 1.0
-      },
       {
         "label": "01:51",
         "status": "green",
@@ -259,6 +260,11 @@
         "label": "07:51",
         "status": "green",
         "score": 1.0
+      },
+      {
+        "label": "08:21",
+        "status": "green",
+        "score": 1.0
       }
     ]
   },
@@ -305,8 +311,18 @@
     },
     {
       "time": "n/a",
+      "category": "ops",
+      "text": "New execution preference from Sean: when he asks to do something now, default to running it as a background task (main chat used as interface/steering layer)."
+    },
+    {
+      "time": "n/a",
       "category": "reliability",
-      "text": "New execution preference from Sean: when he asks to do something now, default to running it as a background task (main chat used as interface/steering layer).- Sean directed an overnight steering sprint for claw-control-room (reliability + UX + transparency focus) to run through the night and deliver a strong 6:20-6:30 AM summary."
+      "text": "Runtime preference update: remove `Main`/interactive runtime rows entirely; runtime should show only cron + background/subagent activity."
+    },
+    {
+      "time": "n/a",
+      "category": "reliability",
+      "text": "Sean directed an overnight steering sprint for claw-control-room (reliability + UX + transparency focus) to run through the night and deliver a strong 6:20-6:30 AM summary."
     },
     {
       "time": "n/a",
@@ -364,7 +380,7 @@
     "isIdle": true,
     "activeCount": 0,
     "activeRuns": [],
-    "checkedAtMs": 1771423748923,
-    "source": "cron-run reconciliation + subagent registry + main-session tool activity [static fallback runtime sanitized]"
+    "checkedAtMs": 1771424954581,
+    "source": "cron-run reconciliation + subagent registry [static fallback runtime sanitized]"
   }
 }

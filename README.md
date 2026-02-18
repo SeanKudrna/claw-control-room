@@ -7,7 +7,7 @@ A React + TypeScript dashboard (GitHub Pages) that gives a clear window into Cla
 - mobile-first responsive layout tuned for touch usage and phone readability
 - collapsible content sections for cleaner UX and faster scanning
 - compact panel-body mode to avoid duplicate heading stacks inside collapsible sections
-- real-time runtime panel (cron + subagent + main-session task execution with live elapsed timers; main-session signal uses tool activity + pending-call-aware lock logic, chat-only turns excluded)
+- real-time runtime panel (cron + background/subagent execution only, with live elapsed timers)
 - static fallback snapshot is runtime-sanitized (idle-only) to avoid stale `RUNNING` ghost rows when gist/source fetch fails
 - per-run runtime details sheet (tap/click row details for source/session/start/elapsed/summary), rendered above sticky layers for consistent readability
 - data freshness pill (fresh / aging / stale) based on payload generation time, with live age progression between polls
@@ -22,7 +22,7 @@ A React + TypeScript dashboard (GitHub Pages) that gives a clear window into Cla
 - custom lobster favicon + home-screen icons for mobile install branding
 - polished interaction states and focus-visible accessibility styling across controls
 - current focus and active work (with timeline-aware stale fallback)
-- now/next/done swimlanes (next lane dedupes overlapping timeline/status blocks using time overlap + token overlap, prioritizes near-term scheduled jobs when plan blocks are distant, and filters stale/proof-scaffolding carryover from done)
+- now/next/done swimlanes driven by a unified chronological event model (timeline blocks + scheduled jobs + active runtime), deterministic lane-state transitions, no cross-lane duplicates, and no past items in now/next
 - timeline of planned tasks
 - upcoming scheduled jobs
 - job + reliability trend mini charts
@@ -103,7 +103,7 @@ Runtime status builder reads from:
 - `~/.openclaw/workspace/TODAY_STATUS.md`
 - `~/.openclaw/workspace/memory/YYYY-MM-DD.md`
 - `~/.openclaw/agents/main/sessions/sessions.json`
-- `~/.openclaw/agents/main/sessions/<main-session-id>.jsonl` (main-session tool-activity signal)
+- `~/.openclaw/subagents/runs.json` (background/subagent runtime registry)
 - `~/.openclaw/subagents/runs.json`
 - `~/.openclaw/cron/jobs.json`
 - `~/.openclaw/cron/runs/*.jsonl`

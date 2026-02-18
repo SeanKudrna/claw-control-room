@@ -1,5 +1,21 @@
 # Changelog
 
+## v1.4.21 - 2026-02-18
+
+### Fixed
+- Implemented deterministic now/next/done semantics from issue #30 using a unified chronological event model and explicit lane-state transitions.
+- Removed cross-lane duplication and ensured now/next never contain past items.
+- Done lane now resets daily and only contains items that previously appeared in now and later completed.
+
+### Changed
+- Workstream lane builder now combines timeline blocks (`DAILY_PLAN`), scheduled jobs (`nextRunAtMs`), and active runtime activity in one ordered event stream.
+- Runtime semantics narrowed per issue #31: runtime rows now include cron + background/subagent activity only (main/interactive rows removed).
+- Runtime source metadata updated to `cron-run reconciliation + subagent registry`.
+- Runtime details modal now opens centered in the viewport while remaining layered above sticky header surfaces (#32).
+
+### Added
+- Regression coverage for running-precedence, earliest-upcoming fallback, next ordering after now, done transition/day-reset behavior, and past-item exclusion in now/next.
+
 ## v1.4.20 - 2026-02-18
 
 ### Fixed

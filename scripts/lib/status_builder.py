@@ -78,6 +78,10 @@ WORKSTREAM_DONE_PROOF_PREFIXES = (
 EXCLUDED_RUNTIME_JOB_NAME_SUBSTRINGS = (
     "control room status publish",
 )
+WORKSTREAM_STATE_FILE = Path("/Users/seankudrna/.openclaw/workspace/status/control-room-workstream-state.json")
+WORKSTREAM_RUNTIME_NOW_LIMIT = 1
+WORKSTREAM_NEXT_LIMIT = 5
+WORKSTREAM_DONE_LIMIT = 5
 
 
 def read_text(path: Path) -> str:
@@ -503,6 +507,200 @@ def is_future_timed_item(item: str, now_local: dt.datetime) -> bool:
     return single_time > now_minutes
 
 
+def timeline_events(timeline: List[Dict[str, str]], now_local: dt.datetime) -> List[Dict[str, Any]]:
+    """Return future timeline blocks as unified events."""
+    day_start = now_local.replace(hour=0, minute=0, second=0, microsecond=0)
+    now_ms = int(now_local.timestamp() * 1000)
+    events: List[Dict[str, Any]] = []
+
+    for block in timeline:
+        parsed = parse_time_range(block.get("time", ""))
+        if parsed is None:
+            continue
+        start_minutes, _ = parsed
+        start_dt = day_start + dt.timedelta(minutes=start_minutes)
+        start_ms = int(start_dt.timestamp() * 1000)
+        if start_ms < now_ms:
+            continue
+        task = (block.get("task") or "").strip()
+        time_label = block.get("time", "n/a")
+        event_id = f"timeline:{start_dt.strftime('%Y-%m-%d')}:{time_label}:{task.lower()}"
+        events.append(
+            {
+                "id": event_id,
+                "kind": "timeline",
+                "startMs": start_ms,
+                "label": format_block(block),
+            }
+        )
+
+    events.sort(key=lambda item: (item.get("startMs", 0), item.get("id", "")))
+    return events
+
+
+def scheduled_job_events(jobs_file: Path, now_local: dt.datetime) -> List[Dict[str, Any]]:
+    """Return future scheduled cron runs as unified events."""
+    content = read_text(jobs_file)
+    if not content:
+        return []
+
+    try:
+        doc = json.loads(content)
+    except json.JSONDecodeError:
+        return []
+
+    now_ms = int(now_local.astimezone(dt.timezone.utc).timestamp() * 1000)
+    events: List[Dict[str, Any]] = []
+
+    for job in doc.get("jobs", []):
+        if not isinstance(job, dict) or not job.get("enabled"):
+            continue
+        job_id = str(job.get("id") or "")
+        name = str(job.get("name") or "Unnamed job").strip()
+        next_run_ms = job.get("state", {}).get("nextRunAtMs")
+        if not isinstance(next_run_ms, int) or next_run_ms < now_ms:
+            continue
+        local_label = dt.datetime.fromtimestamp(next_run_ms / 1000, dt.timezone.utc).astimezone(now_local.tzinfo).strftime("%H:%M")
+        events.append(
+            {
+                "id": f"job:{job_id}:{next_run_ms}",
+                "kind": "job",
+                "startMs": next_run_ms,
+                "label": f"{local_label} — Scheduled job: {name}",
+            }
+        )
+
+    events.sort(key=lambda item: (item.get("startMs", 0), item.get("id", "")))
+    return events
+
+
+def runtime_events(runtime: Dict[str, Any]) -> List[Dict[str, Any]]:
+    """Return active runtime rows as unified running events."""
+    active_runs = runtime.get("activeRuns", []) if isinstance(runtime, dict) else []
+    if not isinstance(active_runs, list):
+        return []
+
+    events: List[Dict[str, Any]] = []
+    for row in active_runs:
+        if not isinstance(row, dict):
+            continue
+        started_at_ms = row.get("startedAtMs")
+        if not isinstance(started_at_ms, int):
+            continue
+        session_id = str(row.get("sessionId") or row.get("jobId") or row.get("runId") or "runtime")
+        summary = str(row.get("summary") or row.get("jobName") or "Running activity").strip()
+        events.append(
+            {
+                "id": f"runtime:{session_id}",
+                "kind": "runtime",
+                "startMs": started_at_ms,
+                "label": summary,
+            }
+        )
+
+    events.sort(key=lambda item: (item.get("startMs", 0), item.get("id", "")))
+    return events
+
+
+def load_workstream_state(state_path: Path, now_local: dt.datetime) -> Dict[str, Any]:
+    today = now_local.strftime("%Y-%m-%d")
+    default = {"day": today, "seenNow": [], "done": [], "labels": {}}
+    if not state_path.exists():
+        return default
+
+    try:
+        doc = json.loads(state_path.read_text(encoding="utf-8"))
+    except Exception:
+        return default
+
+    if not isinstance(doc, dict) or doc.get("day") != today:
+        return default
+
+    seen_now = [value for value in doc.get("seenNow", []) if isinstance(value, str)]
+    done = [value for value in doc.get("done", []) if isinstance(value, str)]
+    labels_doc = doc.get("labels", {})
+    labels = {
+        key: value
+        for key, value in labels_doc.items()
+        if isinstance(labels_doc, dict) and isinstance(key, str) and isinstance(value, str)
+    }
+    return {"day": today, "seenNow": seen_now, "done": done, "labels": labels}
+
+
+def save_workstream_state(state_path: Path, state: Dict[str, Any]) -> None:
+    state_path.parent.mkdir(parents=True, exist_ok=True)
+    state_path.write_text(json.dumps(state, indent=2) + "\n", encoding="utf-8")
+
+
+def build_workstream_lanes(
+    timeline: List[Dict[str, str]],
+    jobs_file: Path,
+    runtime: Dict[str, Any],
+    now_local: dt.datetime,
+    state_path: Path,
+) -> Dict[str, List[str]]:
+    """Build deterministic now/next/done lanes from unified event model."""
+    future_events = timeline_events(timeline, now_local) + scheduled_job_events(jobs_file, now_local)
+    future_events.sort(key=lambda item: (item.get("startMs", 0), item.get("id", "")))
+    active_events = runtime_events(runtime)
+
+    state = load_workstream_state(state_path, now_local)
+    labels = dict(state.get("labels", {}))
+    seen_now = set(state.get("seenNow", []))
+    done_ids = [item for item in state.get("done", []) if isinstance(item, str)]
+
+    now_events: List[Dict[str, Any]] = []
+    next_events: List[Dict[str, Any]] = list(future_events)
+    if active_events:
+        now_events = active_events[:WORKSTREAM_RUNTIME_NOW_LIMIT]
+    elif future_events:
+        now_events = [future_events[0]]
+        next_events = future_events[1:]
+
+    now_ids = {event["id"] for event in now_events}
+    future_ids = {event["id"] for event in future_events}
+
+    for event in now_events + next_events + active_events:
+        labels[event["id"]] = event["label"]
+
+    seen_now.update(now_ids)
+
+    transitioned_done = [
+        event_id
+        for event_id in state.get("seenNow", [])
+        if event_id not in now_ids and event_id not in future_ids
+    ]
+    for event_id in transitioned_done:
+        if event_id not in done_ids:
+            done_ids.append(event_id)
+
+    done_lane = [labels[event_id] for event_id in done_ids if event_id in labels]
+    now_lane = [event["label"] for event in now_events]
+    next_lane = [event["label"] for event in next_events]
+
+    output = {
+        "now": normalize_items(now_lane, limit=WORKSTREAM_RUNTIME_NOW_LIMIT),
+        "next": normalize_items(next_lane, limit=WORKSTREAM_NEXT_LIMIT),
+        "done": normalize_items(done_lane, limit=WORKSTREAM_DONE_LIMIT),
+    }
+
+    active_labels = set(output["now"])
+    next_unique = [item for item in output["next"] if item not in active_labels]
+    done_unique = [item for item in output["done"] if item not in active_labels and item not in set(next_unique)]
+    output["next"] = next_unique
+    output["done"] = done_unique
+
+    persisted_done_ids = [event_id for event_id in done_ids if labels.get(event_id) in output["done"]]
+    new_state = {
+        "day": now_local.strftime("%Y-%m-%d"),
+        "seenNow": sorted(seen_now),
+        "done": persisted_done_ids,
+        "labels": labels,
+    }
+    save_workstream_state(state_path, new_state)
+    return output
+
+
 def parse_workstream(
     today_status_markdown: str,
     timeline: List[Dict[str, str]],
@@ -510,56 +708,20 @@ def parse_workstream(
     now_local: dt.datetime,
     near_term_jobs: Optional[List[str]] = None,
 ) -> Dict[str, List[str]]:
-    """Assemble now/next/done swimlanes from TODAY_STATUS with timeline-aware fallbacks."""
-    context = timeline_context(timeline, now_local)
-    current = context.get("current")
-    next_blocks = context.get("next") or []
-    completed = context.get("completed") or []
+    """Backward-compatible wrapper retained for tests/older callers.
 
-    now_lane: List[str] = []
-    if current:
-        now_lane.append(format_block(current))
-    elif active_work:
-        now_lane.append(active_work)
-    else:
-        now_lane.extend(parse_section_bullets(today_status_markdown, "Now"))
-
-    timeline_next = [format_block(block) for block in next_blocks[:3]]
-    raw_status_next = parse_section_bullets(today_status_markdown, "Next 3 meaningful blocks")
-    status_next = [item for item in raw_status_next if is_future_timed_item(item, now_local)]
-
-    if not timeline_next and not status_next:
-        # Only allow untimed carryover when there is no better timed source.
-        status_next = [item for item in raw_status_next if not has_time_hint(item)]
-
-    next_lane = dedupe_next_lane(timeline_next, status_next)
-
-    near_term_jobs = near_term_jobs or []
-    next_timeline_start = next_blocks[0]["start"] if next_blocks else None
-    now_minutes = now_local.hour * 60 + now_local.minute
-    timeline_is_far = (
-        next_timeline_start is None
-        or (next_timeline_start - now_minutes) > WORKSTREAM_NEXT_JOB_PRIORITY_WINDOW_MINUTES
+    Semantics are now derived from unified events and runtime activity.
+    """
+    _ = today_status_markdown
+    _ = active_work
+    _ = near_term_jobs
+    return build_workstream_lanes(
+        timeline,
+        Path("/nonexistent/jobs.json"),
+        runtime={"activeRuns": []},
+        now_local=now_local,
+        state_path=Path("/tmp/control-room-workstream-state.compat.json"),
     )
-    if near_term_jobs and timeline_is_far:
-        next_lane = dedupe_next_lane(near_term_jobs, next_lane)
-    elif near_term_jobs:
-        next_lane = dedupe_next_lane(next_lane, near_term_jobs)
-
-    raw_done = parse_section_bullets(today_status_markdown, "Last completed with proof")
-    done_lane = [
-        item
-        for item in raw_done
-        if not is_proof_scaffolding_line(item) and is_done_item_fresh(item, now_local)
-    ]
-    if not done_lane:
-        done_lane.extend([f"Completed: {format_block(block)}" for block in completed[-3:]])
-
-    return {
-        "now": normalize_items(now_lane, limit=3),
-        "next": normalize_items(next_lane, limit=5),
-        "done": normalize_items(done_lane, limit=5),
-    }
 
 
 def reliability_status(workspace_root: Path, window_hours: float = 8.0) -> Dict[str, str]:
@@ -1196,7 +1358,6 @@ def runtime_activity(
     runs_dir: Path = CRON_RUNS_DIR,
     subagent_registry_path: Optional[Path] = None,
     max_age_ms: int = 6 * 60 * 60 * 1000,
-    main_session_max_age_ms: int = MAIN_SESSION_RUNTIME_MAX_AGE_MS,
 ) -> Dict[str, Any]:
     """Return real-time runtime/idle state from active execution work.
 
@@ -1204,9 +1365,6 @@ def runtime_activity(
     - read cron run-session records from sessions store (`agent:main:cron:<jobId>:run:<sessionId>`)
     - reconcile against cron run logs (`runs/<jobId>.jsonl`) finished entries
     - include active sub-agent/background runs from subagent registry
-    - include active main-session execution work derived from recent tool activity
-
-    Plain chat-only turns in `agent:main:main` are intentionally excluded.
     """
     now_ms = int(dt.datetime.now(dt.timezone.utc).timestamp() * 1000)
 
@@ -1309,16 +1467,6 @@ def runtime_activity(
     if subagent_registry_path is not None:
         active_runs.extend(active_subagent_runs(subagent_registry_path, now_ms))
 
-    main_session_meta = sessions_doc.get(MAIN_SESSION_KEY)
-    if isinstance(main_session_meta, dict):
-        main_run = active_main_session_run(
-            main_session_meta,
-            now_ms,
-            max_age_ms=main_session_max_age_ms,
-        )
-        if main_run is not None:
-            active_runs.append(main_run)
-
     active_runs.sort(key=lambda item: item.get("startedAtMs", 0))
 
     return {
@@ -1327,7 +1475,7 @@ def runtime_activity(
         "activeCount": len(active_runs),
         "activeRuns": active_runs,
         "checkedAtMs": now_ms,
-        "source": "cron-run reconciliation + subagent registry + main-session tool activity",
+        "source": "cron-run reconciliation + subagent registry",
     }
 
 
@@ -1360,7 +1508,14 @@ def build_payload(workspace_root: Path, jobs_file: Path) -> Dict[str, Any]:
     current_focus = resolve_current_focus(status_parts.get("currentFocus", ""), active_work, timeline, now_local)
 
     next_jobs_rows = next_jobs(jobs_file)
-    next_lane_jobs = near_term_job_markers(jobs_file, now_local)
+    runtime = runtime_activity(jobs_file, subagent_registry_path=SUBAGENT_REGISTRY_PATH)
+    workstream = build_workstream_lanes(
+        timeline,
+        jobs_file,
+        runtime,
+        now_local,
+        WORKSTREAM_STATE_FILE,
+    )
 
     return {
         "generatedAt": dt.datetime.now(dt.timezone.utc).isoformat(),
@@ -1372,19 +1527,13 @@ def build_payload(workspace_root: Path, jobs_file: Path) -> Dict[str, Any]:
         "timeline": timeline,
         "nextJobs": next_jobs_rows,
         "findings": recent_findings(memory_text),
-        "workstream": parse_workstream(
-            status_text,
-            timeline,
-            active_work,
-            now_local,
-            near_term_jobs=next_lane_jobs,
-        ),
+        "workstream": workstream,
         "charts": {
             "jobSuccessTrend": job_success_trend(jobs_file),
             "reliabilityTrend": reliability_trend(Path("/Users/seankudrna/.openclaw/logs/reliability-watchdog.jsonl")),
         },
         "activity": recent_activity(memory_text),
-        "runtime": runtime_activity(jobs_file, subagent_registry_path=SUBAGENT_REGISTRY_PATH),
+        "runtime": runtime,
     }
 
 

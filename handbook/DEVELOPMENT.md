@@ -63,7 +63,7 @@ python3 scripts/build_status_json.py --live-runtime
 This runs:
 - Python compile checks
 - Python tests (`scripts/tests/test_status_builder.py`, `scripts/tests/test_extract_release_notes.py`, `scripts/tests/test_issue_snapshot.py`, `scripts/tests/test_collapsible_heading_compact.py`)
-- status payload build sanity check (includes timeline-aware stale fallback, next-lane dedupe/prioritization with near-term job blending, done-lane freshness filtering, and runtime detection wiring for cron/subagent/main-session tool activity + pending-call-aware in-flight signal)
+- status payload build sanity check (includes unified event-model lane builder for now/next/done with deterministic transitions/day reset and runtime detection wiring for cron + subagent only)
 - TypeScript typecheck
 - Vite production build
 

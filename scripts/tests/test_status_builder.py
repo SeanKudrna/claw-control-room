@@ -19,9 +19,9 @@ if str(ROOT) not in sys.path:
 
 from scripts.lib.status_builder import (
     build_payload,
+    build_workstream_lanes,
     parse_daily_plan_blocks,
     parse_today_status,
-    parse_workstream,
     recent_activity,
     resolve_active_work,
     runtime_activity,
@@ -50,83 +50,136 @@ class StatusBuilderTests(unittest.TestCase):
         self.assertEqual(parsed["currentFocus"], "reliability first")
         self.assertIn("queue cleanup", parsed["activeWork"])
 
-    def test_parse_workstream(self) -> None:
-        md = """
-## Next 3 meaningful blocks
-- Block A
-- Block B
+    def test_workstream_running_activity_precedence(self) -> None:
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            jobs_file = root / "jobs.json"
+            jobs_file.write_text(json.dumps({"jobs": []}), encoding="utf-8")
+            state_path = root / "workstream-state.json"
 
-## Last completed with proof
-- Completed one
-- Proof: command passed
-"""
-        now_local = dt.datetime.now().replace(hour=15, minute=30)
-        timeline = [{"time": "15:10-16:05", "task": "Reliability deep-work block B"}]
-
-        stream = parse_workstream(md, timeline=timeline, active_work="", now_local=now_local)
-        self.assertIn("15:10-16:05", stream["now"][0])
-        self.assertIn("Block A", stream["next"][0])
-        self.assertIn("Completed one", stream["done"][0])
-
-    def test_parse_workstream_filters_past_next_items(self) -> None:
-        md = """
-## Next 3 meaningful blocks
-- 14:30-15:15 — stale next block
-- 17:00-17:10 — valid future block
-"""
-        now_local = dt.datetime.now().replace(hour=15, minute=30)
-        timeline = [{"time": "15:10-16:05", "task": "Reliability deep-work block B"}]
-
-        stream = parse_workstream(md, timeline=timeline, active_work="", now_local=now_local)
-        joined = "\n".join(stream["next"])
-        self.assertNotIn("14:30-15:15", joined)
-        self.assertIn("17:00-17:10", joined)
-
-    def test_parse_workstream_dedupes_overlapping_next_items(self) -> None:
-        md = """
-## Next 3 meaningful blocks
-- 10:05-10:35 — Reliability deep-work block
-"""
-        now_local = dt.datetime.now().replace(hour=9, minute=0)
-        timeline = [{"time": "10:00-10:30", "task": "Reliability deep work block"}]
-
-        stream = parse_workstream(md, timeline=timeline, active_work="", now_local=now_local)
-        joined = "\n".join(stream["next"])
-        self.assertIn("10:00-10:30", joined)
-        self.assertNotIn("10:05-10:35", joined)
-        self.assertEqual(len(stream["next"]), 1)
-
-    def test_parse_workstream_dedupes_issue_one_example(self) -> None:
-        md = """
-## Next 3 meaningful blocks
-- 17:00-17:10 — Usage report cron run + delivery confirmation
-"""
-        now_local = dt.datetime.now().replace(hour=16, minute=0)
-        timeline = [
-            {
-                "time": "17:00-17:12",
-                "task": "Usage report + MVP user update window",
+            now_local = dt.datetime(2026, 2, 18, 8, 0)
+            timeline = [{"time": "08:05-08:30", "task": "Morning timeline block"}]
+            runtime = {
+                "activeRuns": [
+                    {
+                        "sessionId": "run-1",
+                        "summary": "Active subagent task",
+                        "startedAtMs": int(dt.datetime(2026, 2, 18, 7, 58, tzinfo=dt.timezone.utc).timestamp() * 1000),
+                    }
+                ]
             }
-        ]
 
-        stream = parse_workstream(md, timeline=timeline, active_work="", now_local=now_local)
-        joined = "\n".join(stream["next"])
-        self.assertIn("17:00-17:12", joined)
-        self.assertNotIn("17:00-17:10", joined)
-        self.assertEqual(len(stream["next"]), 1)
+            lanes = build_workstream_lanes(timeline, jobs_file, runtime, now_local, state_path)
+            self.assertEqual(lanes["now"], ["Active subagent task"])
 
-    def test_parse_workstream_preserves_non_overlapping_next_items(self) -> None:
-        md = """
-## Next 3 meaningful blocks
-- 11:00-11:30 — Deploy patch set
-"""
-        now_local = dt.datetime.now().replace(hour=9, minute=0)
-        timeline = [{"time": "10:00-10:30", "task": "Reliability deep work block"}]
+    def test_workstream_no_running_falls_back_to_earliest_upcoming(self) -> None:
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            jobs_file = root / "jobs.json"
+            local_tz = dt.datetime.now().astimezone().tzinfo
+            next_run_ms = int(dt.datetime(2026, 2, 18, 8, 15, tzinfo=local_tz).astimezone(dt.timezone.utc).timestamp() * 1000)
+            jobs_file.write_text(
+                json.dumps(
+                    {
+                        "jobs": [
+                            {
+                                "id": "job-1",
+                                "name": "Soon job",
+                                "enabled": True,
+                                "state": {"nextRunAtMs": next_run_ms},
+                            }
+                        ]
+                    }
+                ),
+                encoding="utf-8",
+            )
+            state_path = root / "workstream-state.json"
+            now_local = dt.datetime(2026, 2, 18, 7, 30)
+            timeline = [{"time": "09:00-09:30", "task": "Later timeline block"}]
 
-        stream = parse_workstream(md, timeline=timeline, active_work="", now_local=now_local)
-        joined = "\n".join(stream["next"])
-        self.assertIn("10:00-10:30", joined)
-        self.assertIn("11:00-11:30", joined)
+            lanes = build_workstream_lanes(timeline, jobs_file, {"activeRuns": []}, now_local, state_path)
+            self.assertIn("Scheduled job: Soon job", lanes["now"][0])
+
+    def test_workstream_next_ordering_after_now(self) -> None:
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            jobs_file = root / "jobs.json"
+            jobs_file.write_text(
+                json.dumps(
+                    {
+                        "jobs": [
+                            {
+                                "id": "job-1",
+                                "name": "Second event",
+                                "enabled": True,
+                                "state": {
+                                    "nextRunAtMs": int(dt.datetime(2026, 2, 18, 8, 20, tzinfo=dt.datetime.now().astimezone().tzinfo).astimezone(dt.timezone.utc).timestamp() * 1000)
+                                },
+                            }
+                        ]
+                    }
+                ),
+                encoding="utf-8",
+            )
+            state_path = root / "workstream-state.json"
+            now_local = dt.datetime(2026, 2, 18, 8, 0)
+            timeline = [
+                {"time": "08:05-08:10", "task": "First event"},
+                {"time": "08:30-08:45", "task": "Third event"},
+            ]
+
+            lanes = build_workstream_lanes(timeline, jobs_file, {"activeRuns": []}, now_local, state_path)
+            self.assertIn("08:05-08:10", lanes["now"][0])
+            self.assertIn("Scheduled job: Second event", lanes["next"][0])
+            self.assertIn("08:30-08:45", lanes["next"][1])
+
+    def test_workstream_done_day_reset_and_transition(self) -> None:
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            jobs_file = root / "jobs.json"
+            jobs_file.write_text(json.dumps({"jobs": []}), encoding="utf-8")
+            state_path = root / "workstream-state.json"
+            timeline = [{"time": "08:05-08:10", "task": "Transition block"}]
+
+            first_now = dt.datetime(2026, 2, 18, 8, 0)
+            lanes_first = build_workstream_lanes(timeline, jobs_file, {"activeRuns": []}, first_now, state_path)
+            self.assertEqual(lanes_first["done"], [])
+
+            second_now = dt.datetime(2026, 2, 18, 8, 20)
+            lanes_second = build_workstream_lanes([], jobs_file, {"activeRuns": []}, second_now, state_path)
+            self.assertIn("08:05-08:10", lanes_second["done"][0])
+
+            third_now = dt.datetime(2026, 2, 19, 8, 0)
+            lanes_third = build_workstream_lanes([], jobs_file, {"activeRuns": []}, third_now, state_path)
+            self.assertEqual(lanes_third["done"], [])
+
+    def test_workstream_now_next_never_include_past(self) -> None:
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            jobs_file = root / "jobs.json"
+            past_job_ms = int(dt.datetime(2026, 2, 18, 7, 0, tzinfo=dt.datetime.now().astimezone().tzinfo).astimezone(dt.timezone.utc).timestamp() * 1000)
+            jobs_file.write_text(
+                json.dumps(
+                    {
+                        "jobs": [
+                            {
+                                "id": "job-past",
+                                "name": "Past job",
+                                "enabled": True,
+                                "state": {"nextRunAtMs": past_job_ms},
+                            }
+                        ]
+                    }
+                ),
+                encoding="utf-8",
+            )
+            state_path = root / "workstream-state.json"
+            now_local = dt.datetime(2026, 2, 18, 8, 0)
+            timeline = [{"time": "07:30-07:45", "task": "Past timeline"}]
+
+            lanes = build_workstream_lanes(timeline, jobs_file, {"activeRuns": []}, now_local, state_path)
+            self.assertEqual(lanes["now"], [])
+            self.assertEqual(lanes["next"], [])
 
     def test_resolve_active_work_stale_fallback(self) -> None:
         now_local = dt.datetime.now().replace(hour=15, minute=30)
@@ -150,54 +203,6 @@ class StatusBuilderTests(unittest.TestCase):
         )
         self.assertIn("Next up:", resolved)
         self.assertIn("13:20-13:45", resolved)
-
-    def test_parse_workstream_ignores_untimed_status_next_when_timeline_exists(self) -> None:
-        md = """
-## Next 3 meaningful blocks
-- Morning control-room overnight summary prep and handoff quality check.
-"""
-        now_local = dt.datetime.now().replace(hour=7, minute=45)
-        timeline = [{"time": "13:20-13:45", "task": "Midday reliability + queue reconciliation"}]
-
-        stream = parse_workstream(md, timeline=timeline, active_work="", now_local=now_local)
-        joined = "\n".join(stream["next"])
-        self.assertIn("13:20-13:45", joined)
-        self.assertNotIn("Morning control-room overnight summary prep", joined)
-
-    def test_parse_workstream_prioritizes_near_term_jobs_when_timeline_far(self) -> None:
-        md = """
-## Next 3 meaningful blocks
-- 13:20-13:45 — Midday reliability + queue reconciliation
-"""
-        now_local = dt.datetime.now().replace(hour=8, minute=0)
-        timeline = [{"time": "13:20-13:45", "task": "Midday reliability + queue reconciliation"}]
-
-        stream = parse_workstream(
-            md,
-            timeline=timeline,
-            active_work="",
-            now_local=now_local,
-            near_term_jobs=["08:15 — Scheduled job: Today dashboard refresh (every 3h)"],
-        )
-        self.assertEqual(stream["next"][0], "08:15 — Scheduled job: Today dashboard refresh (every 3h)")
-
-    def test_parse_workstream_done_filters_proof_lines_and_stale_items(self) -> None:
-        md = """
-## Last completed with proof
-- 2026-02-17 01:00 old fallback completed
-- 08:10 fresh completion captured
-- Proof:
-- `python3 scripts/reliability_watchdog_report.py --window-hours 12`
-"""
-        now_local = dt.datetime(2026, 2, 18, 8, 30)
-        timeline: list[dict[str, str]] = []
-
-        stream = parse_workstream(md, timeline=timeline, active_work="", now_local=now_local)
-        self.assertIn("08:10 fresh completion captured", stream["done"])
-        done_joined = "\n".join(stream["done"])
-        self.assertNotIn("old fallback", done_joined)
-        self.assertNotIn("Proof:", done_joined)
-        self.assertNotIn("reliability_watchdog_report", done_joined)
 
     def test_recent_activity(self) -> None:
         md = """
@@ -390,7 +395,7 @@ class StatusBuilderTests(unittest.TestCase):
             self.assertIn("Audit dashboard readability", runtime["activeRuns"][0]["jobName"])
             self.assertEqual(runtime["activeRuns"][0]["sessionKey"], "agent:main:subagent:abc123")
 
-    def test_runtime_activity_detects_main_session_tool_work(self) -> None:
+    def test_runtime_activity_ignores_main_session_rows(self) -> None:
         with tempfile.TemporaryDirectory() as td:
             root = Path(td)
             jobs_file = root / "jobs.json"
@@ -402,334 +407,22 @@ class StatusBuilderTests(unittest.TestCase):
             jobs_file.write_text(json.dumps({"jobs": []}), encoding="utf-8")
 
             now = dt.datetime.now(dt.timezone.utc)
-            user_ts = now - dt.timedelta(seconds=45)
-            tool_ts = now - dt.timedelta(seconds=20)
-
             session_file.write_text(
-                "\n".join(
-                    [
-                        json.dumps(
-                            {
-                                "type": "message",
-                                "timestamp": user_ts.isoformat().replace("+00:00", "Z"),
-                                "message": {
-                                    "role": "user",
-                                    "content": [
-                                        {
-                                            "type": "text",
-                                            "text": "Please make a code change and ship a patch release",
-                                        }
-                                    ],
-                                    "timestamp": int(user_ts.timestamp() * 1000),
-                                },
-                            }
-                        ),
-                        json.dumps(
-                            {
-                                "type": "message",
-                                "timestamp": tool_ts.isoformat().replace("+00:00", "Z"),
-                                "message": {
-                                    "role": "toolResult",
-                                    "toolName": "exec",
-                                    "content": [{"type": "text", "text": "ok"}],
-                                },
-                            }
-                        ),
-                    ]
-                )
-                + "\n",
-                encoding="utf-8",
-            )
-
-            sessions_file.write_text(
                 json.dumps(
                     {
-                        "agent:main:main": {
-                            "sessionId": "main-session-id",
-                            "sessionFile": str(session_file),
-                            "updatedAt": int(now.timestamp() * 1000),
-                        }
+                        "type": "message",
+                        "timestamp": now.isoformat().replace("+00:00", "Z"),
+                        "message": {
+                            "role": "assistant",
+                            "content": [
+                                {
+                                    "type": "toolCall",
+                                    "name": "exec",
+                                    "arguments": {"command": "echo hi"},
+                                }
+                            ],
+                        },
                     }
-                ),
-                encoding="utf-8",
-            )
-
-            runtime = runtime_activity(jobs_file, sessions_file, runs_dir)
-            self.assertEqual(runtime["status"], "running")
-            self.assertEqual(runtime["activeCount"], 1)
-            self.assertEqual(runtime["activeRuns"][0]["activityType"], "interactive")
-            self.assertIn("code change", runtime["activeRuns"][0]["jobName"].lower())
-
-    def test_runtime_activity_detects_inflight_main_session_tool_call(self) -> None:
-        with tempfile.TemporaryDirectory() as td:
-            root = Path(td)
-            jobs_file = root / "jobs.json"
-            sessions_file = root / "sessions.json"
-            runs_dir = root / "runs"
-            session_file = root / "main-session.jsonl"
-            runs_dir.mkdir(parents=True, exist_ok=True)
-
-            jobs_file.write_text(json.dumps({"jobs": []}), encoding="utf-8")
-
-            now = dt.datetime.now(dt.timezone.utc)
-            user_ts = now - dt.timedelta(seconds=50)
-            tool_call_ts = now - dt.timedelta(seconds=5)
-
-            session_file.write_text(
-                "\n".join(
-                    [
-                        json.dumps(
-                            {
-                                "type": "message",
-                                "timestamp": user_ts.isoformat().replace("+00:00", "Z"),
-                                "message": {
-                                    "role": "user",
-                                    "content": [{"type": "text", "text": "Patch the runtime parser"}],
-                                    "timestamp": int(user_ts.timestamp() * 1000),
-                                },
-                            }
-                        ),
-                        json.dumps(
-                            {
-                                "type": "message",
-                                "timestamp": tool_call_ts.isoformat().replace("+00:00", "Z"),
-                                "message": {
-                                    "role": "assistant",
-                                    "content": [
-                                        {
-                                            "type": "toolCall",
-                                            "name": "exec",
-                                            "arguments": {"command": "echo hi"},
-                                        }
-                                    ],
-                                },
-                            }
-                        ),
-                    ]
-                )
-                + "\n",
-                encoding="utf-8",
-            )
-
-            sessions_file.write_text(
-                json.dumps(
-                    {
-                        "agent:main:main": {
-                            "sessionId": "main-session-id",
-                            "sessionFile": str(session_file),
-                            "updatedAt": int(now.timestamp() * 1000),
-                        }
-                    }
-                ),
-                encoding="utf-8",
-            )
-
-            runtime = runtime_activity(jobs_file, sessions_file, runs_dir)
-            self.assertEqual(runtime["status"], "running")
-            self.assertEqual(runtime["activeCount"], 1)
-            self.assertEqual(runtime["activeRuns"][0]["activityType"], "interactive")
-
-    def test_runtime_activity_ignores_stale_main_session_tool_signal_without_lock(self) -> None:
-        with tempfile.TemporaryDirectory() as td:
-            root = Path(td)
-            jobs_file = root / "jobs.json"
-            sessions_file = root / "sessions.json"
-            runs_dir = root / "runs"
-            session_file = root / "main-session.jsonl"
-            runs_dir.mkdir(parents=True, exist_ok=True)
-
-            jobs_file.write_text(json.dumps({"jobs": []}), encoding="utf-8")
-
-            now = dt.datetime.now(dt.timezone.utc)
-            user_ts = now - dt.timedelta(minutes=14)
-            tool_call_ts = now - dt.timedelta(minutes=13)
-
-            session_file.write_text(
-                "\n".join(
-                    [
-                        json.dumps(
-                            {
-                                "type": "message",
-                                "timestamp": user_ts.isoformat().replace("+00:00", "Z"),
-                                "message": {
-                                    "role": "user",
-                                    "content": [{"type": "text", "text": "Do the thing"}],
-                                    "timestamp": int(user_ts.timestamp() * 1000),
-                                },
-                            }
-                        ),
-                        json.dumps(
-                            {
-                                "type": "message",
-                                "timestamp": tool_call_ts.isoformat().replace("+00:00", "Z"),
-                                "message": {
-                                    "role": "assistant",
-                                    "content": [
-                                        {
-                                            "type": "toolCall",
-                                            "name": "exec",
-                                            "arguments": {"command": "echo hi"},
-                                        }
-                                    ],
-                                },
-                            }
-                        ),
-                    ]
-                )
-                + "\n",
-                encoding="utf-8",
-            )
-
-            sessions_file.write_text(
-                json.dumps(
-                    {
-                        "agent:main:main": {
-                            "sessionId": "main-session-id",
-                            "sessionFile": str(session_file),
-                            "updatedAt": int(now.timestamp() * 1000),
-                        }
-                    }
-                ),
-                encoding="utf-8",
-            )
-
-            runtime = runtime_activity(jobs_file, sessions_file, runs_dir)
-            self.assertEqual(runtime["status"], "idle")
-            self.assertEqual(runtime["activeCount"], 0)
-
-    def test_runtime_activity_ignores_completed_main_session_call_even_with_lock(self) -> None:
-        with tempfile.TemporaryDirectory() as td:
-            root = Path(td)
-            jobs_file = root / "jobs.json"
-            sessions_file = root / "sessions.json"
-            runs_dir = root / "runs"
-            session_file = root / "main-session.jsonl"
-            runs_dir.mkdir(parents=True, exist_ok=True)
-
-            jobs_file.write_text(json.dumps({"jobs": []}), encoding="utf-8")
-
-            now = dt.datetime.now(dt.timezone.utc)
-            user_ts = now - dt.timedelta(minutes=5)
-            call_ts = now - dt.timedelta(minutes=5)
-            result_ts = now - dt.timedelta(minutes=4, seconds=50)
-
-            session_file.write_text(
-                "\n".join(
-                    [
-                        json.dumps(
-                            {
-                                "type": "message",
-                                "timestamp": user_ts.isoformat().replace("+00:00", "Z"),
-                                "message": {
-                                    "role": "user",
-                                    "content": [{"type": "text", "text": "Run the release check"}],
-                                    "timestamp": int(user_ts.timestamp() * 1000),
-                                },
-                            }
-                        ),
-                        json.dumps(
-                            {
-                                "type": "message",
-                                "timestamp": call_ts.isoformat().replace("+00:00", "Z"),
-                                "message": {
-                                    "role": "assistant",
-                                    "content": [
-                                        {
-                                            "type": "toolCall",
-                                            "id": "call_abc",
-                                            "name": "exec",
-                                            "arguments": {"command": "echo hi"},
-                                        }
-                                    ],
-                                },
-                            }
-                        ),
-                        json.dumps(
-                            {
-                                "type": "message",
-                                "timestamp": result_ts.isoformat().replace("+00:00", "Z"),
-                                "message": {
-                                    "role": "toolResult",
-                                    "toolName": "exec",
-                                    "toolCallId": "call_abc|fc_1",
-                                    "content": [{"type": "text", "text": "done"}],
-                                },
-                            }
-                        ),
-                    ]
-                )
-                + "\n",
-                encoding="utf-8",
-            )
-
-            lock_file = session_file.with_suffix(f"{session_file.suffix}.lock")
-            lock_file.write_text(
-                json.dumps(
-                    {
-                        "pid": os.getpid(),
-                        "createdAt": now.isoformat().replace("+00:00", "Z"),
-                    }
-                ),
-                encoding="utf-8",
-            )
-
-            sessions_file.write_text(
-                json.dumps(
-                    {
-                        "agent:main:main": {
-                            "sessionId": "main-session-id",
-                            "sessionFile": str(session_file),
-                            "updatedAt": int(now.timestamp() * 1000),
-                        }
-                    }
-                ),
-                encoding="utf-8",
-            )
-
-            runtime = runtime_activity(jobs_file, sessions_file, runs_dir)
-            self.assertEqual(runtime["status"], "idle")
-            self.assertEqual(runtime["activeCount"], 0)
-
-    def test_runtime_activity_ignores_main_session_chat_only(self) -> None:
-        with tempfile.TemporaryDirectory() as td:
-            root = Path(td)
-            jobs_file = root / "jobs.json"
-            sessions_file = root / "sessions.json"
-            runs_dir = root / "runs"
-            session_file = root / "main-session.jsonl"
-            runs_dir.mkdir(parents=True, exist_ok=True)
-
-            jobs_file.write_text(json.dumps({"jobs": []}), encoding="utf-8")
-
-            now = dt.datetime.now(dt.timezone.utc)
-            user_ts = now - dt.timedelta(seconds=40)
-            assistant_ts = now - dt.timedelta(seconds=15)
-
-            session_file.write_text(
-                "\n".join(
-                    [
-                        json.dumps(
-                            {
-                                "type": "message",
-                                "timestamp": user_ts.isoformat().replace("+00:00", "Z"),
-                                "message": {
-                                    "role": "user",
-                                    "content": [{"type": "text", "text": "How's your day going?"}],
-                                    "timestamp": int(user_ts.timestamp() * 1000),
-                                },
-                            }
-                        ),
-                        json.dumps(
-                            {
-                                "type": "message",
-                                "timestamp": assistant_ts.isoformat().replace("+00:00", "Z"),
-                                "message": {
-                                    "role": "assistant",
-                                    "content": [{"type": "output_text", "text": "Pretty good."}],
-                                },
-                            }
-                        ),
-                    ]
                 )
                 + "\n",
                 encoding="utf-8",
@@ -853,7 +546,7 @@ class StatusBuilderTests(unittest.TestCase):
             self.assertIn("activity", payload)
             self.assertIn("runtime", payload)
             self.assertIn("Live sample block", payload["currentFocus"])
-            self.assertIn("Live sample block", payload["workstream"]["now"][0])
+            self.assertGreaterEqual(len(payload["workstream"]["now"]), 1)
 
     def test_sanitize_payload_for_static_snapshot_clears_runtime_runs(self) -> None:
         payload = {
@@ -866,7 +559,7 @@ class StatusBuilderTests(unittest.TestCase):
                     {"jobId": "job-2", "jobName": "Other task"},
                 ],
                 "checkedAtMs": 123,
-                "source": "cron-run reconciliation + subagent registry + main-session tool activity",
+                "source": "cron-run reconciliation + subagent registry",
             },
             "other": "value",
         }
