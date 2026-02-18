@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import datetime as dt
 import json
+import os
 import re
 import subprocess
 from collections import deque
@@ -56,6 +57,7 @@ SUBAGENT_REGISTRY_PATH = Path("/Users/seankudrna/.openclaw/subagents/runs.json")
 CRON_RUN_SESSION_KEY_RE = re.compile(r"^agent:main:cron:([^:]+):run:([^:]+)$")
 MAIN_SESSION_KEY = "agent:main:main"
 MAIN_SESSION_RUNTIME_MAX_AGE_MS = 2 * 60 * 1000
+MAIN_SESSION_LOCK_STALE_MS = 30 * 60 * 1000
 EXCLUDED_RUNTIME_JOB_NAME_SUBSTRINGS = (
     "control room status publish",
 )
@@ -738,6 +740,78 @@ def summarize_main_task(text: str) -> str:
     return compact[:140] + "…" if len(compact) > 140 else compact
 
 
+def is_live_pid(pid: int) -> bool:
+    if pid <= 0:
+        return False
+    try:
+        os.kill(pid, 0)
+    except OSError:
+        return False
+    return True
+
+
+def main_session_lock_active(session_file: Path, now_ms: int) -> bool:
+    lock_file = session_file.with_suffix(f"{session_file.suffix}.lock")
+    if not lock_file.exists():
+        return False
+
+    try:
+        lock_doc = json.loads(lock_file.read_text(encoding="utf-8"))
+    except json.JSONDecodeError:
+        return False
+
+    if not isinstance(lock_doc, dict):
+        return False
+
+    created_at_ms = parse_timestamp_ms(lock_doc.get("createdAt"))
+    if created_at_ms is not None and now_ms - created_at_ms > MAIN_SESSION_LOCK_STALE_MS:
+        return False
+
+    pid = lock_doc.get("pid")
+    if isinstance(pid, int):
+        return is_live_pid(pid)
+
+    return created_at_ms is not None and now_ms - created_at_ms <= MAIN_SESSION_LOCK_STALE_MS
+
+
+def collect_main_session_tool_events(events: List[Dict[str, Any]], since_ms: int) -> List[Tuple[int, str]]:
+    tool_events: List[Tuple[int, str]] = []
+
+    for event in events:
+        event_ms = parse_timestamp_ms(event.get("timestamp"))
+        if event_ms is None or event_ms < since_ms:
+            continue
+
+        message = event.get("message")
+        if not isinstance(message, dict):
+            continue
+
+        role = message.get("role")
+        if role == "toolResult":
+            tool_name = message.get("toolName")
+            if not isinstance(tool_name, str) or not tool_name.strip():
+                tool_name = "tool"
+            tool_events.append((event_ms, tool_name.strip()))
+            continue
+
+        if role != "assistant":
+            continue
+
+        content = message.get("content")
+        if not isinstance(content, list):
+            continue
+
+        for item in content:
+            if not isinstance(item, dict) or item.get("type") != "toolCall":
+                continue
+            tool_name = item.get("name") or item.get("toolName")
+            if not isinstance(tool_name, str) or not tool_name.strip():
+                tool_name = "tool"
+            tool_events.append((event_ms, tool_name.strip()))
+
+    return tool_events
+
+
 def active_main_session_run(
     main_session_meta: Dict[str, Any],
     now_ms: int,
@@ -777,26 +851,13 @@ def active_main_session_run(
     if latest_user_ms is None:
         return None
 
-    tool_events: List[Tuple[int, str]] = []
-    for event in events:
-        message = event.get("message")
-        if not isinstance(message, dict) or message.get("role") != "toolResult":
-            continue
-
-        event_ms = parse_timestamp_ms(event.get("timestamp"))
-        if event_ms is None or event_ms < latest_user_ms:
-            continue
-
-        tool_name = message.get("toolName")
-        if not isinstance(tool_name, str) or not tool_name.strip():
-            tool_name = "tool"
-        tool_events.append((event_ms, tool_name.strip()))
-
+    tool_events = collect_main_session_tool_events(events, latest_user_ms)
     if not tool_events:
         return None
 
     last_tool_ms = max(item[0] for item in tool_events)
-    if now_ms - last_tool_ms > max_age_ms:
+    lock_active = main_session_lock_active(session_file, now_ms)
+    if not lock_active and now_ms - last_tool_ms > max_age_ms:
         return None
 
     started_at_ms = min(item[0] for item in tool_events)

@@ -398,6 +398,143 @@ class StatusBuilderTests(unittest.TestCase):
             self.assertEqual(runtime["activeRuns"][0]["activityType"], "interactive")
             self.assertIn("code change", runtime["activeRuns"][0]["jobName"].lower())
 
+    def test_runtime_activity_detects_inflight_main_session_tool_call(self) -> None:
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            jobs_file = root / "jobs.json"
+            sessions_file = root / "sessions.json"
+            runs_dir = root / "runs"
+            session_file = root / "main-session.jsonl"
+            runs_dir.mkdir(parents=True, exist_ok=True)
+
+            jobs_file.write_text(json.dumps({"jobs": []}), encoding="utf-8")
+
+            now = dt.datetime.now(dt.timezone.utc)
+            user_ts = now - dt.timedelta(seconds=50)
+            tool_call_ts = now - dt.timedelta(seconds=5)
+
+            session_file.write_text(
+                "\n".join(
+                    [
+                        json.dumps(
+                            {
+                                "type": "message",
+                                "timestamp": user_ts.isoformat().replace("+00:00", "Z"),
+                                "message": {
+                                    "role": "user",
+                                    "content": [{"type": "text", "text": "Patch the runtime parser"}],
+                                    "timestamp": int(user_ts.timestamp() * 1000),
+                                },
+                            }
+                        ),
+                        json.dumps(
+                            {
+                                "type": "message",
+                                "timestamp": tool_call_ts.isoformat().replace("+00:00", "Z"),
+                                "message": {
+                                    "role": "assistant",
+                                    "content": [
+                                        {
+                                            "type": "toolCall",
+                                            "name": "exec",
+                                            "arguments": {"command": "echo hi"},
+                                        }
+                                    ],
+                                },
+                            }
+                        ),
+                    ]
+                )
+                + "\n",
+                encoding="utf-8",
+            )
+
+            sessions_file.write_text(
+                json.dumps(
+                    {
+                        "agent:main:main": {
+                            "sessionId": "main-session-id",
+                            "sessionFile": str(session_file),
+                            "updatedAt": int(now.timestamp() * 1000),
+                        }
+                    }
+                ),
+                encoding="utf-8",
+            )
+
+            runtime = runtime_activity(jobs_file, sessions_file, runs_dir)
+            self.assertEqual(runtime["status"], "running")
+            self.assertEqual(runtime["activeCount"], 1)
+            self.assertEqual(runtime["activeRuns"][0]["activityType"], "interactive")
+
+    def test_runtime_activity_ignores_stale_main_session_tool_signal_without_lock(self) -> None:
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            jobs_file = root / "jobs.json"
+            sessions_file = root / "sessions.json"
+            runs_dir = root / "runs"
+            session_file = root / "main-session.jsonl"
+            runs_dir.mkdir(parents=True, exist_ok=True)
+
+            jobs_file.write_text(json.dumps({"jobs": []}), encoding="utf-8")
+
+            now = dt.datetime.now(dt.timezone.utc)
+            user_ts = now - dt.timedelta(minutes=7)
+            tool_call_ts = now - dt.timedelta(minutes=6)
+
+            session_file.write_text(
+                "\n".join(
+                    [
+                        json.dumps(
+                            {
+                                "type": "message",
+                                "timestamp": user_ts.isoformat().replace("+00:00", "Z"),
+                                "message": {
+                                    "role": "user",
+                                    "content": [{"type": "text", "text": "Do the thing"}],
+                                    "timestamp": int(user_ts.timestamp() * 1000),
+                                },
+                            }
+                        ),
+                        json.dumps(
+                            {
+                                "type": "message",
+                                "timestamp": tool_call_ts.isoformat().replace("+00:00", "Z"),
+                                "message": {
+                                    "role": "assistant",
+                                    "content": [
+                                        {
+                                            "type": "toolCall",
+                                            "name": "exec",
+                                            "arguments": {"command": "echo hi"},
+                                        }
+                                    ],
+                                },
+                            }
+                        ),
+                    ]
+                )
+                + "\n",
+                encoding="utf-8",
+            )
+
+            sessions_file.write_text(
+                json.dumps(
+                    {
+                        "agent:main:main": {
+                            "sessionId": "main-session-id",
+                            "sessionFile": str(session_file),
+                            "updatedAt": int(now.timestamp() * 1000),
+                        }
+                    }
+                ),
+                encoding="utf-8",
+            )
+
+            runtime = runtime_activity(jobs_file, sessions_file, runs_dir)
+            self.assertEqual(runtime["status"], "idle")
+            self.assertEqual(runtime["activeCount"], 0)
+
     def test_runtime_activity_ignores_main_session_chat_only(self) -> None:
         with tempfile.TemporaryDirectory() as td:
             root = Path(td)

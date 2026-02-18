@@ -1,5 +1,17 @@
 # Changelog
 
+## v1.4.10 - 2026-02-17
+
+### Fixed
+- Runtime no longer drops to false `IDLE` during in-flight main-session execution before tool results arrive.
+
+### Changed
+- Main-session runtime detection now considers assistant `toolCall` events in addition to `toolResult` events.
+- Added session-lock awareness to keep active main-session task runs visible while execution is in progress.
+
+### Added
+- Tests for in-flight `toolCall`-only detection and stale signal suppression without active lock.
+
 ## v1.4.9 - 2026-02-17
 
 ### Changed
