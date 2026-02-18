@@ -2,7 +2,9 @@ import { X } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { computeSkillTreeLayout } from '../lib/skillTreeLayout';
+import { getSkillTierProgress } from '../lib/skillsModel';
 import type { SkillNode, SkillsPayload } from '../types/status';
+import { SkillTierLadder } from './SkillTierLadder';
 
 interface SkillsTreeProps {
   skills: SkillsPayload;
@@ -17,10 +19,31 @@ function stateLabel(state: VisualState): string {
   return 'Locked';
 }
 
+function dedupeDomainNodes(nodes: SkillNode[]): SkillNode[] {
+  const merged = new Map<string, SkillNode>();
+  for (const node of nodes) {
+    const existing = merged.get(node.id);
+    if (!existing) {
+      merged.set(node.id, node);
+      continue;
+    }
+
+    const existingTier = getSkillTierProgress(existing).currentTier;
+    const incomingTier = getSkillTierProgress(node).currentTier;
+    if (incomingTier > existingTier || node.progress > existing.progress) {
+      merged.set(node.id, node);
+    }
+  }
+
+  return [...merged.values()];
+}
+
 function toVisualState(node: SkillNode): VisualState {
-  if (node.state === 'locked') return 'locked';
-  if (node.state === 'active' || node.progress >= 1) return 'active';
-  if (node.progress > 0) return 'in-progress';
+  const tier = getSkillTierProgress(node);
+
+  if (node.state === 'locked' && tier.currentTier === 0) return 'locked';
+  if (node.state === 'active' || tier.currentTier >= tier.maxTier) return 'active';
+  if (tier.currentTier > 0 || node.progress > 0) return 'in-progress';
   return 'planned';
 }
 
@@ -31,22 +54,36 @@ export function SkillsTree({ skills }: SkillsTreeProps) {
   const mapRef = useRef<HTMLDivElement | null>(null);
   const dragStateRef = useRef<{ pointerId: number; startX: number; startY: number; startLeft: number; startTop: number } | null>(null);
 
+  const domainNodes = useMemo(() => dedupeDomainNodes(skills.nodes), [skills.nodes]);
+
+  const counts = useMemo(() => {
+    let active = 0;
+    let planned = 0;
+    let locked = 0;
+    for (const node of domainNodes) {
+      if (node.state === 'active') active += 1;
+      else if (node.state === 'locked') locked += 1;
+      else planned += 1;
+    }
+    return { active, planned, locked };
+  }, [domainNodes]);
+
   const selected = useMemo(
-    () => skills.nodes.find((node) => node.id === selectedNodeId) ?? null,
-    [skills.nodes, selectedNodeId],
+    () => domainNodes.find((node) => node.id === selectedNodeId) ?? null,
+    [domainNodes, selectedNodeId],
   );
 
   const nodeNameById = useMemo(
-    () => new Map(skills.nodes.map((node) => [node.id, node.name])),
-    [skills.nodes],
+    () => new Map(domainNodes.map((node) => [node.id, node.name])),
+    [domainNodes],
   );
 
   const layout = useMemo(() => {
-    const tierCount = new Set(skills.nodes.map((node) => node.tier)).size;
+    const tierCount = new Set(domainNodes.map((node) => node.tier)).size;
     const width = Math.max(980, 840 + tierCount * 96);
     const height = Math.max(760, 620 + tierCount * 50);
-    return computeSkillTreeLayout(skills.nodes, width, height);
-  }, [skills.nodes]);
+    return computeSkillTreeLayout(domainNodes, width, height);
+  }, [domainNodes]);
 
   useEffect(() => {
     const map = mapRef.current;
@@ -79,7 +116,7 @@ export function SkillsTree({ skills }: SkillsTreeProps) {
       <div className="section-header">
         <h2>Skill Tree</h2>
         <span className="muted">
-          {skills.activeCount} active · {skills.plannedCount} planned · {skills.lockedCount} locked
+          {counts.active} active · {counts.planned} planned · {counts.locked} locked
         </span>
       </div>
 
@@ -95,7 +132,7 @@ export function SkillsTree({ skills }: SkillsTreeProps) {
           ref={mapRef}
           className={`skills-tree-map ${isPannable ? 'is-pannable' : ''} ${dragging ? 'is-dragging' : ''}`}
           role="list"
-          aria-label="Game-style skill tree"
+          aria-label="Skill domain tree"
           onPointerDown={(event) => {
             const map = mapRef.current;
             if (!map || event.button !== 0 || !isPannable) return;
@@ -160,20 +197,26 @@ export function SkillsTree({ skills }: SkillsTreeProps) {
             </svg>
 
             <div className="skills-tree-nodes">
-              {skills.nodes.map((node) => {
+              {domainNodes.map((node) => {
                 const pos = layout.positions.get(node.id) ?? { x: layout.centerX, y: layout.centerY };
                 const visual = toVisualState(node);
                 const isSelected = selected?.id === node.id;
+                const tierProgress = getSkillTierProgress(node);
+
+                const nextLabel = tierProgress.nextTier
+                  ? `Next: Tier ${tierProgress.nextTier}`
+                  : 'Tier path complete';
 
                 return (
                   <button
                     key={node.id}
                     role="listitem"
                     data-node-id={node.id}
-                    data-tier={node.tier}
+                    data-graph-tier={node.tier}
                     className={`skill-node ${visual} ${isSelected ? 'selected' : ''}`}
                     onClick={() => setSelectedNodeId(node.id)}
                     title={`${node.name} (${stateLabel(visual)})`}
+                    aria-label={`${node.name}. Tier ${tierProgress.currentTier} of ${tierProgress.maxTier}. ${stateLabel(visual)}.`}
                     style={{
                       left: `${pos.x}px`,
                       top: `${pos.y}px`,
@@ -181,11 +224,11 @@ export function SkillsTree({ skills }: SkillsTreeProps) {
                   >
                     <span className="skill-node-core" aria-hidden="true" />
                     <div className="skill-node-header">
-                      <span className="skill-node-tier">Tier {node.tier}</span>
                       <span className={`skill-node-state ${visual}`}>{stateLabel(visual)}</span>
+                      <span className="skill-node-progress">Tier {tierProgress.currentTier}/{tierProgress.maxTier}</span>
                     </div>
                     <div className="skill-node-title">{node.name}</div>
-                    <div className="skill-node-meta">Level {node.level} · {Math.round(node.progress * 100)}% complete</div>
+                    <div className="skill-node-meta">{nextLabel}</div>
                   </button>
                 );
               })}
@@ -194,11 +237,12 @@ export function SkillsTree({ skills }: SkillsTreeProps) {
         </div>
 
         <div className="skills-mobile-list" role="list" aria-label="Skill progression list">
-          {skills.nodes
+          {domainNodes
             .slice()
             .sort((a, b) => a.tier - b.tier || a.name.localeCompare(b.name))
             .map((node) => {
               const visual = toVisualState(node);
+              const tierProgress = getSkillTierProgress(node);
               return (
                 <button
                   key={`mobile-${node.id}`}
@@ -206,9 +250,9 @@ export function SkillsTree({ skills }: SkillsTreeProps) {
                   className={`skill-mobile-item ${visual} ${selected?.id === node.id ? 'selected' : ''}`}
                   onClick={() => setSelectedNodeId(node.id)}
                 >
-                  <span className="skill-mobile-tier">Tier {node.tier}</span>
+                  <span className="skill-mobile-tier">Tier {tierProgress.currentTier}/{tierProgress.maxTier}</span>
                   <strong>{node.name}</strong>
-                  <span className="muted">{stateLabel(visual)} · Level {node.level} · {Math.round(node.progress * 100)}% complete</span>
+                  <span className="muted">{stateLabel(visual)} · {tierProgress.nextTier ? `Next Tier ${tierProgress.nextTier}` : 'Tier path complete'}</span>
                 </button>
               );
             })}
@@ -227,9 +271,12 @@ export function SkillsTree({ skills }: SkillsTreeProps) {
             if (event.target === event.currentTarget) setSelectedNodeId(null);
           }}
         >
-          <section className="skill-modal" role="dialog" aria-modal="true" aria-label="Skill details">
+          <section className="skill-modal" role="dialog" aria-modal="true" aria-labelledby="skill-modal-title">
             <header className="skill-modal-header">
-              <h3>{selected.name}</h3>
+              <div>
+                <h3 id="skill-modal-title">{selected.name}</h3>
+                <p className="muted">Domain progression and tier ladder</p>
+              </div>
               <button
                 type="button"
                 className="skill-modal-close"
@@ -243,6 +290,8 @@ export function SkillsTree({ skills }: SkillsTreeProps) {
             <p className="muted">{selected.description}</p>
             <p>{selected.effect}</p>
 
+            <SkillTierLadder node={selected} />
+
             <dl className="skill-detail-grid">
               <div>
                 <dt>State</dt>
@@ -253,7 +302,7 @@ export function SkillsTree({ skills }: SkillsTreeProps) {
                 <dd>{selected.learnedAt ?? 'Not learned yet'}</dd>
               </div>
               <div>
-                <dt>Level / Progress</dt>
+                <dt>Signal</dt>
                 <dd>Level {selected.level} · {Math.round(selected.progress * 100)}%</dd>
               </div>
               <div>

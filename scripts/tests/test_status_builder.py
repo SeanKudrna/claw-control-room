@@ -18,6 +18,8 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from scripts.lib.status_builder import (
+    SKILL_CATALOG,
+    SKILL_MAX_TIER,
     build_payload,
     build_skills_payload,
     build_workstream_lanes,
@@ -571,8 +573,19 @@ class StatusBuilderTests(unittest.TestCase):
             payload_b = build_skills_payload(workspace, now_local)
 
             self.assertEqual(payload_a["evolution"]["deterministicSeed"], payload_b["evolution"]["deterministicSeed"])
-            self.assertGreaterEqual(len(payload_a["nodes"]), 1)
+            self.assertEqual(len(payload_a["nodes"]), len(SKILL_CATALOG))
             self.assertIn("activeCount", payload_a)
+
+            for node in payload_a["nodes"]:
+                self.assertIn("currentTier", node)
+                self.assertIn("maxTier", node)
+                self.assertIn("tierLadder", node)
+                self.assertEqual(node["maxTier"], SKILL_MAX_TIER)
+                self.assertGreaterEqual(node["currentTier"], 0)
+                self.assertLessEqual(node["currentTier"], SKILL_MAX_TIER)
+                self.assertEqual(len(node["tierLadder"]), SKILL_MAX_TIER)
+                self.assertEqual(node["tierLadder"][0]["tier"], 1)
+                self.assertEqual(node["tierLadder"][-1]["tier"], SKILL_MAX_TIER)
 
     def test_build_payload_shape(self) -> None:
         with tempfile.TemporaryDirectory() as td:

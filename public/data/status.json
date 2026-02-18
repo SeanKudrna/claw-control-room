@@ -1,7 +1,7 @@
 {
-  "generatedAt": "2026-02-18T16:50:02.128680+00:00",
-  "generatedAtLocal": "2026-02-18 10:50 ",
-  "controlRoomVersion": "1.4.33",
+  "generatedAt": "2026-02-18T17:03:52.591412+00:00",
+  "generatedAtLocal": "2026-02-18 11:03 ",
+  "controlRoomVersion": "1.4.34",
   "currentFocus": "downtime-guard monitoring/continuity mode.",
   "activeWork": "downtime-guard monitoring/continuity mode.",
   "reliability": {
@@ -44,17 +44,12 @@
   "nextJobs": [
     {
       "name": "Control room status publish (gist backend)",
-      "nextRun": "10:50",
+      "nextRun": "11:04",
       "lastStatus": "ok"
     },
     {
       "name": "Critical update failover guard",
-      "nextRun": "10:52",
-      "lastStatus": "ok"
-    },
-    {
-      "name": "Downtime gap auto-fill guard (quiet unless triggered)",
-      "nextRun": "11:00",
+      "nextRun": "11:07",
       "lastStatus": "ok"
     },
     {
@@ -78,6 +73,11 @@
       "lastStatus": "ok"
     },
     {
+      "name": "Downtime gap auto-fill guard (quiet unless triggered)",
+      "nextRun": "12:00",
+      "lastStatus": "ok"
+    },
+    {
       "name": "Capability build block (plan+result pings)",
       "nextRun": "13:10",
       "lastStatus": "ok"
@@ -93,21 +93,21 @@
   ],
   "workstream": {
     "now": [
-      "Implement issue #46 end-to-end in /Users/seankudrna/.openclaw/workspace/claw-control-room. Issue: https://github.com/SeanKudrna/claw-control-room/issues/46 User-required outcomes: \u2026"
+      "Implement issue #47 end-to-end in /Users/seankudrna/.openclaw/workspace/claw-control-room. Issue: https://github.com/SeanKudrna/claw-control-room/issues/47 Hard requirements from u\u2026"
     ],
     "next": [
-      "10:52 \u2014 Scheduled job: Critical update failover guard",
-      "11:00 \u2014 Scheduled job: Downtime gap auto-fill guard (quiet unless triggered)",
+      "11:04 \u2014 Scheduled job: Control room status publish (gist backend)",
+      "11:07 \u2014 Scheduled job: Critical update failover guard",
       "11:10 \u2014 Scheduled job: Reliability deep-work block A (DAILY_PLAN-driven)",
       "11:15 \u2014 Scheduled job: Today dashboard refresh (every 3h)",
       "11:20 \u2014 Scheduled job: Reliability watchdog hourly (self-heal + conditional alert)"
     ],
     "done": [
-      "09:10 \u2014 Control-room issue triage block (mandatory)",
-      "Critical update failover guard",
-      "Finalize and ship issue #42 from current working tree in /Users/seankudrna/.openclaw/workspace/claw-control-room. Current state has local uncommitted implementation for skills tab/\u2026",
-      "Resume and finish the in-progress worktree changes for claw-control-room issue set #30 #31 #32. Repo: /Users/seankudrna/.openclaw/workspace/claw-control-room Current state: local w\u2026",
-      "Fix issue #40 in /Users/seankudrna/.openclaw/workspace/claw-control-room. Issue: https://github.com/SeanKudrna/claw-control-room/issues/40 Bug: in-progress timeline blocks are tran\u2026"
+      "10:45 \u2014 Publish proof + status sync",
+      "10:20 \u2014 Control-room product lane block (mandatory)",
+      "Autonomy daily planner (DAILY_PLAN source of truth)",
+      "Implement issue #42 end-to-end in /Users/seankudrna/.openclaw/workspace/claw-control-room. Issue: https://github.com/SeanKudrna/claw-control-room/issues/42 Feature goals: - Add new\u2026",
+      "Implement issue #45 in /Users/seankudrna/.openclaw/workspace/claw-control-room. Issue: https://github.com/SeanKudrna/claw-control-room/issues/45 Design direction: - Rework Skills t\u2026"
     ]
   },
   "charts": {
@@ -173,46 +173,31 @@
         "job": "Control room issue triage + QA intake"
       },
       {
-        "label": "10:00",
-        "status": "ok",
-        "score": 1.0,
-        "job": "Downtime gap auto-fill guard (quiet unless triggered)"
-      },
-      {
         "label": "10:20",
         "status": "ok",
         "score": 1.0,
         "job": "Reliability watchdog hourly (self-heal + conditional alert)"
       },
       {
-        "label": "10:37",
+        "label": "10:52",
         "status": "ok",
         "score": 1.0,
         "job": "Critical update failover guard"
       },
       {
-        "label": "10:49",
+        "label": "11:00",
+        "status": "ok",
+        "score": 1.0,
+        "job": "Downtime gap auto-fill guard (quiet unless triggered)"
+      },
+      {
+        "label": "11:03",
         "status": "ok",
         "score": 1.0,
         "job": "Control room status publish (gist backend)"
       }
     ],
     "reliabilityTrend": [
-      {
-        "label": "03:51",
-        "status": "green",
-        "score": 1.0
-      },
-      {
-        "label": "04:20",
-        "status": "green",
-        "score": 1.0
-      },
-      {
-        "label": "04:51",
-        "status": "green",
-        "score": 1.0
-      },
       {
         "label": "05:20",
         "status": "green",
@@ -265,6 +250,21 @@
       },
       {
         "label": "10:20",
+        "status": "green",
+        "score": 1.0
+      },
+      {
+        "label": "10:51",
+        "status": "green",
+        "score": 1.0
+      },
+      {
+        "label": "11:00",
+        "status": "green",
+        "score": 1.0
+      },
+      {
+        "label": "11:02",
         "status": "green",
         "score": 1.0
       }
@@ -404,6 +404,42 @@
         "effect": "Keeps now/next/done and runtime surfaces synchronized.",
         "state": "active",
         "tier": 1,
+        "currentTier": 5,
+        "maxTier": 5,
+        "nextTier": null,
+        "nextUnlock": null,
+        "tierLadder": [
+          {
+            "tier": 1,
+            "title": "Foundation",
+            "definition": "Establish baseline terminology and starter workflows for Runtime Orchestration.",
+            "difference": "Unlocks dependable baseline execution in this domain."
+          },
+          {
+            "tier": 2,
+            "title": "Guided Delivery",
+            "definition": "Deliver scoped improvements for Runtime Orchestration with QA-guided feedback loops.",
+            "difference": "Moves from familiarity to repeatable hands-on delivery."
+          },
+          {
+            "tier": 3,
+            "title": "Independent Reliability",
+            "definition": "Run Runtime Orchestration workflows end-to-end with consistent reliability.",
+            "difference": "Shifts from guided execution into autonomous ownership."
+          },
+          {
+            "tier": 4,
+            "title": "Strategic Optimization",
+            "definition": "Instrument and optimize Runtime Orchestration systems proactively.",
+            "difference": "Elevates delivery into durable system-level optimization."
+          },
+          {
+            "tier": 5,
+            "title": "System Stewardship",
+            "definition": "Set standards and evolve long-term capability across Runtime Orchestration.",
+            "difference": "Represents expert-level stewardship and long-range leverage."
+          }
+        ],
         "dependencies": [],
         "learnedAt": "2026-02-18",
         "level": 5,
@@ -416,6 +452,42 @@
         "effect": "Improves trust by preventing silent failure modes.",
         "state": "active",
         "tier": 2,
+        "currentTier": 5,
+        "maxTier": 5,
+        "nextTier": null,
+        "nextUnlock": null,
+        "tierLadder": [
+          {
+            "tier": 1,
+            "title": "Foundation",
+            "definition": "Establish baseline terminology and starter workflows for Reliability Guardrails.",
+            "difference": "Unlocks dependable baseline execution in this domain."
+          },
+          {
+            "tier": 2,
+            "title": "Guided Delivery",
+            "definition": "Deliver scoped improvements for Reliability Guardrails with QA-guided feedback loops.",
+            "difference": "Moves from familiarity to repeatable hands-on delivery."
+          },
+          {
+            "tier": 3,
+            "title": "Independent Reliability",
+            "definition": "Run Reliability Guardrails workflows end-to-end with consistent reliability.",
+            "difference": "Shifts from guided execution into autonomous ownership."
+          },
+          {
+            "tier": 4,
+            "title": "Strategic Optimization",
+            "definition": "Instrument and optimize Reliability Guardrails systems proactively.",
+            "difference": "Elevates delivery into durable system-level optimization."
+          },
+          {
+            "tier": 5,
+            "title": "System Stewardship",
+            "definition": "Set standards and evolve long-term capability across Reliability Guardrails.",
+            "difference": "Represents expert-level stewardship and long-range leverage."
+          }
+        ],
         "dependencies": [
           "runtime-orchestration"
         ],
@@ -430,6 +502,42 @@
         "effect": "Raises scanability and interaction quality across devices.",
         "state": "active",
         "tier": 3,
+        "currentTier": 5,
+        "maxTier": 5,
+        "nextTier": null,
+        "nextUnlock": null,
+        "tierLadder": [
+          {
+            "tier": 1,
+            "title": "Foundation",
+            "definition": "Establish baseline terminology and starter workflows for UI Systems.",
+            "difference": "Unlocks dependable baseline execution in this domain."
+          },
+          {
+            "tier": 2,
+            "title": "Guided Delivery",
+            "definition": "Deliver scoped improvements for UI Systems with QA-guided feedback loops.",
+            "difference": "Moves from familiarity to repeatable hands-on delivery."
+          },
+          {
+            "tier": 3,
+            "title": "Independent Reliability",
+            "definition": "Run UI Systems workflows end-to-end with consistent reliability.",
+            "difference": "Shifts from guided execution into autonomous ownership."
+          },
+          {
+            "tier": 4,
+            "title": "Strategic Optimization",
+            "definition": "Instrument and optimize UI Systems systems proactively.",
+            "difference": "Elevates delivery into durable system-level optimization."
+          },
+          {
+            "tier": 5,
+            "title": "System Stewardship",
+            "definition": "Set standards and evolve long-term capability across UI Systems.",
+            "difference": "Represents expert-level stewardship and long-range leverage."
+          }
+        ],
         "dependencies": [
           "runtime-orchestration"
         ],
@@ -444,6 +552,42 @@
         "effect": "Accelerates diagnosis and informed execution decisions.",
         "state": "active",
         "tier": 4,
+        "currentTier": 5,
+        "maxTier": 5,
+        "nextTier": null,
+        "nextUnlock": null,
+        "tierLadder": [
+          {
+            "tier": 1,
+            "title": "Foundation",
+            "definition": "Establish baseline terminology and starter workflows for Observability.",
+            "difference": "Unlocks dependable baseline execution in this domain."
+          },
+          {
+            "tier": 2,
+            "title": "Guided Delivery",
+            "definition": "Deliver scoped improvements for Observability with QA-guided feedback loops.",
+            "difference": "Moves from familiarity to repeatable hands-on delivery."
+          },
+          {
+            "tier": 3,
+            "title": "Independent Reliability",
+            "definition": "Run Observability workflows end-to-end with consistent reliability.",
+            "difference": "Shifts from guided execution into autonomous ownership."
+          },
+          {
+            "tier": 4,
+            "title": "Strategic Optimization",
+            "definition": "Instrument and optimize Observability systems proactively.",
+            "difference": "Elevates delivery into durable system-level optimization."
+          },
+          {
+            "tier": 5,
+            "title": "System Stewardship",
+            "definition": "Set standards and evolve long-term capability across Observability.",
+            "difference": "Represents expert-level stewardship and long-range leverage."
+          }
+        ],
         "dependencies": [
           "runtime-orchestration"
         ],
@@ -458,6 +602,42 @@
         "effect": "Keeps delivery predictable with auditable release evidence.",
         "state": "active",
         "tier": 5,
+        "currentTier": 5,
+        "maxTier": 5,
+        "nextTier": null,
+        "nextUnlock": null,
+        "tierLadder": [
+          {
+            "tier": 1,
+            "title": "Foundation",
+            "definition": "Establish baseline terminology and starter workflows for Release Operations.",
+            "difference": "Unlocks dependable baseline execution in this domain."
+          },
+          {
+            "tier": 2,
+            "title": "Guided Delivery",
+            "definition": "Deliver scoped improvements for Release Operations with QA-guided feedback loops.",
+            "difference": "Moves from familiarity to repeatable hands-on delivery."
+          },
+          {
+            "tier": 3,
+            "title": "Independent Reliability",
+            "definition": "Run Release Operations workflows end-to-end with consistent reliability.",
+            "difference": "Shifts from guided execution into autonomous ownership."
+          },
+          {
+            "tier": 4,
+            "title": "Strategic Optimization",
+            "definition": "Instrument and optimize Release Operations systems proactively.",
+            "difference": "Elevates delivery into durable system-level optimization."
+          },
+          {
+            "tier": 5,
+            "title": "System Stewardship",
+            "definition": "Set standards and evolve long-term capability across Release Operations.",
+            "difference": "Represents expert-level stewardship and long-range leverage."
+          }
+        ],
         "dependencies": [
           "reliability-guardrails",
           "observability"
@@ -473,6 +653,42 @@
         "effect": "Compounds operational quality through deterministic learning loops.",
         "state": "active",
         "tier": 6,
+        "currentTier": 5,
+        "maxTier": 5,
+        "nextTier": null,
+        "nextUnlock": null,
+        "tierLadder": [
+          {
+            "tier": 1,
+            "title": "Foundation",
+            "definition": "Establish baseline terminology and starter workflows for Memory Evolution.",
+            "difference": "Unlocks dependable baseline execution in this domain."
+          },
+          {
+            "tier": 2,
+            "title": "Guided Delivery",
+            "definition": "Deliver scoped improvements for Memory Evolution with QA-guided feedback loops.",
+            "difference": "Moves from familiarity to repeatable hands-on delivery."
+          },
+          {
+            "tier": 3,
+            "title": "Independent Reliability",
+            "definition": "Run Memory Evolution workflows end-to-end with consistent reliability.",
+            "difference": "Shifts from guided execution into autonomous ownership."
+          },
+          {
+            "tier": 4,
+            "title": "Strategic Optimization",
+            "definition": "Instrument and optimize Memory Evolution systems proactively.",
+            "difference": "Elevates delivery into durable system-level optimization."
+          },
+          {
+            "tier": 5,
+            "title": "System Stewardship",
+            "definition": "Set standards and evolve long-term capability across Memory Evolution.",
+            "difference": "Represents expert-level stewardship and long-range leverage."
+          }
+        ],
         "dependencies": [
           "reliability-guardrails",
           "ui-systems"
@@ -490,7 +706,7 @@
         "/Users/seankudrna/.openclaw/workspace/ClawPrime_Memory.md"
       ],
       "deterministicSeed": "7b37e8fb9c86",
-      "lastProcessedAt": "2026-02-18T10:50:02.068325",
+      "lastProcessedAt": "2026-02-18T11:03:52.523755",
       "mode": "keyword-scan-v1"
     }
   },
@@ -499,7 +715,7 @@
     "isIdle": true,
     "activeCount": 0,
     "activeRuns": [],
-    "checkedAtMs": 1771433402068,
+    "checkedAtMs": 1771434232524,
     "source": "cron-run reconciliation + subagent registry [static fallback runtime sanitized]"
   }
 }

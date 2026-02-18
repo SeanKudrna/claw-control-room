@@ -38,9 +38,10 @@ UI nav notes:
 - Runtime details modal should render via body portal with z-index above sticky tab/header layers.
 - Skills tree interactions should work on desktop click/drag and mobile tap/drag (tap opens modal details; drag pans overflow map).
 - Desktop Skills view should preserve game-style semantics: radial/branching hierarchy, visible dependency connectors behind nodes, and distinct visual states (`active`, `in-progress`, `planned`, `locked`).
+- Main graph contract: one node per skill domain (no tier-per-card graph clutter) with concise in-node progression text (`Tier X/5`).
 - Skills layout engine (`src/lib/skillTreeLayout.ts`) should remain deterministic and dependency-aware; prefer custom SVG/DOM tuning over heavyweight graph libs unless complexity materially exceeds current needs.
-- Skills detail modal must include key fields (name, state, learned date, level/progress, description, dependencies) and support escape/backdrop/close-button dismissal.
-- Skills readability guard (`scripts/tests/test_ui_regressions.mjs`) should pass: no node overlap, no title overflow, outward tier trend for radial layout, connector layer behind nodes, modal open/close contract, and drag-pan behavior.
+- Skills detail modal must include key fields (name, state, learned date, signal/dependencies, description) and a visual tier ladder (Tier 1..5 definitions/differences, current highlight, complete tiers, and next unlock) with escape/backdrop/close-button dismissal.
+- Skills readability guard (`scripts/tests/test_ui_regressions.mjs`) should pass: no node overlap, no title overflow, outward tier trend for radial layout, connector layer behind nodes, modal open/close contract, tier-ladder presence, and drag-pan behavior.
 - Skills evolution ingestion is deterministic and artifact-driven (workspace memory files only; no network/LLM mutation in builder path).
 
 ## Build output for GitHub Pages

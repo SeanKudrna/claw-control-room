@@ -38,13 +38,27 @@ export interface RuntimeRun {
 
 export type SkillState = 'active' | 'planned' | 'locked';
 
+export interface SkillTierDefinition {
+  tier: number;
+  title: string;
+  definition: string;
+  difference: string;
+}
+
 export interface SkillNode {
   id: string;
   name: string;
   description: string;
   effect: string;
   state: SkillState;
+  /** Graph ring/order tier used for radial layout placement. */
   tier: number;
+  /** Domain progression tier (0..maxTier). */
+  currentTier?: number;
+  maxTier?: number;
+  nextTier?: number | null;
+  nextUnlock?: string | null;
+  tierLadder?: SkillTierDefinition[];
   dependencies: string[];
   learnedAt: string | null;
   level: number;

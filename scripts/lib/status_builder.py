@@ -133,6 +133,42 @@ SKILL_CATALOG: List[Dict[str, Any]] = [
         "dependencies": ["reliability-guardrails", "ui-systems"],
     },
 ]
+
+SKILL_TIER_FRAMEWORK: List[Dict[str, Any]] = [
+    {
+        "tier": 1,
+        "title": "Foundation",
+        "definition": "Establish baseline terminology and starter workflows for {domain}.",
+        "difference": "Unlocks dependable baseline execution in this domain.",
+    },
+    {
+        "tier": 2,
+        "title": "Guided Delivery",
+        "definition": "Deliver scoped improvements for {domain} with QA-guided feedback loops.",
+        "difference": "Moves from familiarity to repeatable hands-on delivery.",
+    },
+    {
+        "tier": 3,
+        "title": "Independent Reliability",
+        "definition": "Run {domain} workflows end-to-end with consistent reliability.",
+        "difference": "Shifts from guided execution into autonomous ownership.",
+    },
+    {
+        "tier": 4,
+        "title": "Strategic Optimization",
+        "definition": "Instrument and optimize {domain} systems proactively.",
+        "difference": "Elevates delivery into durable system-level optimization.",
+    },
+    {
+        "tier": 5,
+        "title": "System Stewardship",
+        "definition": "Set standards and evolve long-term capability across {domain}.",
+        "difference": "Represents expert-level stewardship and long-range leverage.",
+    },
+]
+
+SKILL_MAX_TIER = 5
+
 WORKSTREAM_RUNTIME_NOW_LIMIT = 1
 WORKSTREAM_NEXT_LIMIT = 5
 WORKSTREAM_DONE_LIMIT = 5
@@ -974,6 +1010,26 @@ def recent_activity(memory_markdown: str, limit: int = 24) -> List[Dict[str, str
 
 
 
+def build_skill_tier_ladder(spec: Dict[str, Any]) -> List[Dict[str, Any]]:
+    domain_name = str(spec.get("name") or "this domain")
+    ladder: List[Dict[str, Any]] = []
+    for entry in SKILL_TIER_FRAMEWORK:
+        tier_value = int(entry.get("tier", 0))
+        if tier_value < 1 or tier_value > SKILL_MAX_TIER:
+            continue
+        ladder.append(
+            {
+                "tier": tier_value,
+                "title": str(entry.get("title") or f"Tier {tier_value}"),
+                "definition": str(entry.get("definition") or "").format(domain=domain_name),
+                "difference": str(entry.get("difference") or ""),
+            }
+        )
+
+    ladder.sort(key=lambda item: int(item.get("tier", 0)))
+    return ladder
+
+
 def gather_skill_artifacts(workspace_root: Path, now_local: dt.datetime) -> List[Tuple[str, str]]:
     artifacts: List[Tuple[str, str]] = []
     memory_root = workspace_root / "memory"
@@ -1001,23 +1057,34 @@ def build_skills_payload(workspace_root: Path, now_local: dt.datetime) -> Dict[s
     planned_count = 0
     locked_count = 0
 
-    for tier, spec in enumerate(SKILL_CATALOG, start=1):
+    for graph_tier, spec in enumerate(SKILL_CATALOG, start=1):
         skill_id = spec["id"]
         hits = 0
         for keyword in SKILL_KEYWORDS.get(skill_id, ()): 
             hits += weighted_text.count(keyword)
 
         progress = max(0.0, min(1.0, hits / 8.0))
-        level = max(0, min(5, int(progress * 5)))
+        inferred_tier = max(0, min(SKILL_MAX_TIER, int(progress * SKILL_MAX_TIER)))
+        if progress > 0 and inferred_tier == 0:
+            inferred_tier = 1
 
         deps = spec.get("dependencies", [])
         deps_met = all(any(node.get("id") == dep and node.get("state") == "active" for node in skill_nodes) for dep in deps)
 
-        if level >= 3 and deps_met:
+        current_tier = inferred_tier if deps_met else 0
+        next_tier = current_tier + 1 if current_tier < SKILL_MAX_TIER else None
+        tier_ladder = build_skill_tier_ladder(spec)
+        next_unlock = (
+            tier_ladder[next_tier - 1]["difference"]
+            if next_tier is not None and len(tier_ladder) >= next_tier
+            else None
+        )
+
+        if current_tier >= 3 and deps_met:
             state = "active"
             active_count += 1
             learned_at = now_local.date().isoformat()
-        elif progress > 0 and deps_met:
+        elif current_tier > 0 and deps_met:
             state = "planned"
             planned_count += 1
             learned_at = None
@@ -1033,10 +1100,15 @@ def build_skills_payload(workspace_root: Path, now_local: dt.datetime) -> Dict[s
                 "description": spec["description"],
                 "effect": spec["effect"],
                 "state": state,
-                "tier": tier,
+                "tier": graph_tier,
+                "currentTier": current_tier,
+                "maxTier": SKILL_MAX_TIER,
+                "nextTier": next_tier,
+                "nextUnlock": next_unlock,
+                "tierLadder": tier_ladder,
                 "dependencies": deps,
                 "learnedAt": learned_at,
-                "level": level,
+                "level": current_tier,
                 "progress": round(progress, 2),
             }
         )

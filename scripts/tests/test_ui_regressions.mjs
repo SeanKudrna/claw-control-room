@@ -29,6 +29,25 @@ try {
   const skillNodeCount = await page.$$eval('.skills-card .skill-node', (nodes) => nodes.length);
   assert(skillNodeCount > 0, 'Skills tab should render at least one skill node.');
 
+  const nodeDomainContract = await page.$$eval('.skills-card .skill-node', (nodes) => {
+    const ids = nodes.map((node) => node.getAttribute('data-node-id') ?? '');
+    const progressLabels = nodes.map((node) => node.querySelector('.skill-node-progress')?.textContent?.trim() ?? '');
+    return {
+      uniqueCount: new Set(ids).size,
+      totalCount: ids.length,
+      progressLabels,
+    };
+  });
+  assert.equal(
+    nodeDomainContract.uniqueCount,
+    nodeDomainContract.totalCount,
+    'Skills graph should render a single node per domain (no duplicate domain cards).',
+  );
+  assert(
+    nodeDomainContract.progressLabels.every((label) => /^Tier\s+\d+\s*\/\s*\d+$/i.test(label)),
+    `Each skill node should show concise tier progression (e.g., Tier 3/5). Got: ${nodeDomainContract.progressLabels.join(', ')}`,
+  );
+
   const initialScroll = await page.$eval('.skills-tree-map', (node) => ({ left: node.scrollLeft, top: node.scrollTop }));
   await page.hover('.skills-tree-map');
   await page.mouse.down();
@@ -50,9 +69,34 @@ try {
   assert.equal(modalTitle, firstNodeTitle, 'Skill modal title should match clicked node title.');
 
   const modalFieldLabels = await page.$$eval('.skill-detail-grid dt', (nodes) => nodes.map((node) => node.textContent?.trim() ?? ''));
-  for (const expectedLabel of ['State', 'Learned', 'Level / Progress', 'Dependencies']) {
+  for (const expectedLabel of ['State', 'Learned', 'Signal', 'Dependencies']) {
     assert(modalFieldLabels.includes(expectedLabel), `Skill modal missing field: ${expectedLabel}`);
   }
+
+  const tierLadderState = await page.$eval('.skill-tier-panel', (panel) => {
+    const steps = [...panel.querySelectorAll('.skill-tier-step')];
+    const current = panel.querySelectorAll('.skill-tier-step.current').length;
+    const next = panel.querySelectorAll('.skill-tier-step.next').length;
+    const complete = panel.querySelectorAll('.skill-tier-step.complete').length;
+    const summary = panel.querySelector('.skill-tier-pill')?.textContent?.trim() ?? '';
+    return {
+      stepCount: steps.length,
+      current,
+      next,
+      complete,
+      summary,
+    };
+  });
+  assert.equal(tierLadderState.stepCount, 5, 'Skill modal tier ladder should render tier definitions 1..5.');
+  assert(tierLadderState.current <= 1, 'Skill modal should have at most one current tier highlight.');
+  assert(
+    tierLadderState.current === 1 || tierLadderState.next >= 1,
+    'Skill modal should indicate current tier or next unlock state.',
+  );
+  assert(
+    /Tier\s+\d+\s*\/\s*5/i.test(tierLadderState.summary),
+    `Skill modal summary should show Tier x/5 progression. Got: ${tierLadderState.summary}`,
+  );
 
   await page.keyboard.press('Escape');
   await page.waitForSelector('.skill-modal', { state: 'detached' });
@@ -74,7 +118,7 @@ try {
       }
       return {
         index,
-        tier: Number.parseInt(node.getAttribute('data-tier') ?? '0', 10),
+        tier: Number.parseInt(node.getAttribute('data-graph-tier') ?? '0', 10),
         cx: rect.left + rect.width / 2,
         cy: rect.top + rect.height / 2,
         left: rect.left,

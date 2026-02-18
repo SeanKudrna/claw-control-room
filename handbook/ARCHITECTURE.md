@@ -14,7 +14,7 @@ Claw Control Room provides a readable, near-real-time view of Claw's operations:
 ### 1) Data generation + publish (Python)
 - `scripts/build_status_json.py` is the CLI entrypoint for local snapshot generation.
 - Core payload assembly lives in `scripts/lib/status_builder.py`.
-- Skills payload assembly is deterministic (`build_skills_payload`): keyword-weighted extraction from `memory/YYYY-MM-DD.md` + `ClawPrime_Memory.md` builds active/planned/locked nodes and evolution metadata (source artifact list + deterministic seed).
+- Skills payload assembly is deterministic (`build_skills_payload`): keyword-weighted extraction from `memory/YYYY-MM-DD.md` + `ClawPrime_Memory.md` builds one node per skill domain, computes current tier progression (`Tier X/5`), emits per-domain tier-ladder metadata (definitions + difference copy for tiers 1..5), and records evolution metadata (source artifact list + deterministic seed).
 - Payload builder applies timeline-aware stale-guard logic so `currentFocus` and `workstream.now` stay accurate even when `TODAY_STATUS.md` lags behind clock time.
 - Workstream now/next/done is built from a unified chronological event model: timeline blocks (`DAILY_PLAN`), scheduled jobs (`nextRunAtMs`), and active runtime rows.
 - Deterministic lane-state rules define `now`, `next`, and `done` transitions (including day reset), removing ad-hoc stale carryover behavior.
@@ -36,8 +36,9 @@ Claw Control Room provides a readable, near-real-time view of Claw's operations:
   - `src/types/status.ts` shared payload contracts
 - Information architecture uses tabbed views (`Overview`, `Operations`, `Insights`, `Skills`) plus collapsible sections to reduce visual overload.
 - Skills tab renders a deterministic radial/branching map using a custom SVG+DOM layout engine (`src/lib/skillTreeLayout.ts`) instead of a React graph runtime, prioritizing visual quality, dependency-line control, and lightweight bundle impact.
-- Dependency connectors are painted in an SVG layer beneath interactive node cards to avoid line/text collisions; node placement expands outward by tier ring to preserve hierarchy readability.
-- Skill details are presented in a modal dialog (not a persistent side panel), preserving full-width tree canvas while keeping detail data/metadata accessible.
+- Main graph renders one node per domain and keeps connectors in an SVG layer beneath interactive cards to avoid line/text collisions; node placement expands outward by graph tier ring to preserve hierarchy readability.
+- Node chrome is intentionally concise (`Tier X/5` + state) so progression signal stays visible without cluttering the graph.
+- Skill details are presented in a modal dialog (not a persistent side panel), preserving full-width tree canvas while exposing a visual tier ladder (tiers 1..5 definitions, current-tier highlight, complete tiers, and next unlock guidance).
 - Overflow map navigation supports pointer-driven drag-pan (mouse + touch), keeping the full radial map explorable at constrained viewport sizes.
 - Components rendered inside collapsible bodies support compact heading mode, so section titles stay in the summary row while inner content keeps accessibility labels without duplicate heading stacks.
 - Active tab is URL-hash persisted (`#tab-*`) for direct navigation/state restore.

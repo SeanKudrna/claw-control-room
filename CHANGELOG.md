@@ -1,5 +1,23 @@
 # Changelog
 
+## v1.4.34 - 2026-02-18
+
+### Added
+- Added domain-tier progression metadata to skills payload (`currentTier`, `maxTier`, `nextTier`, `nextUnlock`, `tierLadder`) so each domain can render a full Tier 1..5 ladder without adding graph-node clutter.
+- Added reusable tier-progression helpers in `src/lib/skillsModel.ts` and a dedicated modal ladder UI component (`src/components/SkillTierLadder.tsx`).
+- Added issue #47 visual QA capture script (`scripts/tests/capture_issue47_screenshots.mjs`) and proof artifacts under `status/ui-validation/issue47-*.png`.
+
+### Changed
+- Updated Skills graph rendering to enforce one node per domain and present concise node progression labels (`Tier X/5`) while preserving full-width radial layout and drag-pan behavior.
+- Reworked skill modal content to include a visual tier ladder with definition/difference copy, current-tier highlight, completed tiers, and next unlock guidance.
+- Updated UI regression checks to validate domain-node uniqueness, node tier labels, and tier-ladder modal semantics alongside existing overlap/connector/drag-pan guardrails.
+
+### Tests
+- Extended status-builder regression coverage to assert deterministic domain-node count and tier-ladder payload shape.
+
+### Docs
+- Updated README + handbook architecture/development docs for one-node-per-domain model, concise tier labels, and ladder modal contracts.
+
 ## v1.4.33 - 2026-02-18
 
 ### Added
