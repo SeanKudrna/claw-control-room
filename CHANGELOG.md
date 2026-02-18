@@ -1,5 +1,15 @@
 # Changelog
 
+## v1.4.14 - 2026-02-17
+
+### Fixed
+- Prevented out-of-order status races where overlapping refreshes could let an older response overwrite a newer snapshot.
+- Suppressed false error banners from intentionally aborted superseded refresh requests.
+
+### Changed
+- `useStatus` now enforces latest-request-wins semantics using a request sequence + `AbortController` cancellation strategy.
+- `fetchStatus` now accepts an optional abort signal so source-resolution and payload fetch both honor cancellation.
+
 ## v1.4.13 - 2026-02-17
 
 ### Fixed

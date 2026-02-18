@@ -41,6 +41,8 @@ Claw Control Room provides a readable, near-real-time view of Claw's operations:
 - Fallback source: `public/data/status.json`.
 - Fallback payload is runtime-sanitized (`idle`, no active runs) so cached/static fallback cannot present stale `RUNNING` activity.
 - Frontend polling keeps showing the last known good snapshot when refresh fails, and header state explicitly marks failure/retry instead of implying success.
+- Polling is concurrency-safe: every refresh gets a monotonic request sequence and abort controller; only the newest successful request may commit state.
+- Aborted superseded requests are intentionally silent (no false error banners) to avoid degraded-noise during quick retry/manual refresh patterns.
 - Freshness age is recomputed on a timer between polls so stale data visibly ages even if payload timestamp is unchanged.
 - This preserves commitless status refreshes while keeping a safe local fallback snapshot and honest degraded-state UX.
 

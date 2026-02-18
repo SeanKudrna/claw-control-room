@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { fetchStatus } from '../lib/statusApi';
 import type { StatusPayload } from '../types/status';
 
@@ -26,24 +26,42 @@ export function useStatus(refreshMs = 60_000): UseStatusResult {
   const [error, setError] = useState<string | null>(null);
   const [refreshOutcome, setRefreshOutcome] = useState<RefreshOutcome>('idle');
   const [nowMs, setNowMs] = useState<number>(() => Date.now());
+  const requestSeqRef = useRef(0);
+  const activeControllerRef = useRef<AbortController | null>(null);
 
   const refresh = async () => {
+    const requestSeq = requestSeqRef.current + 1;
+    requestSeqRef.current = requestSeq;
+
+    activeControllerRef.current?.abort();
+    const controller = new AbortController();
+    activeControllerRef.current = controller;
+
     try {
       if (!data) {
         setLoading(true);
       }
       setRefreshing(true);
       setError(null);
-      const next = await fetchStatus();
+      const next = await fetchStatus({ signal: controller.signal });
+
+      if (requestSeq !== requestSeqRef.current) return;
+
       setData(next);
       setLastRefreshAtMs(Date.now());
       setRefreshOutcome('success');
     } catch (err) {
+      if (controller.signal.aborted || requestSeq !== requestSeqRef.current) return;
       setError(err instanceof Error ? err.message : 'Unknown status error');
       setRefreshOutcome('error');
     } finally {
-      setRefreshing(false);
-      setLoading(false);
+      if (requestSeq === requestSeqRef.current) {
+        setRefreshing(false);
+        setLoading(false);
+      }
+      if (activeControllerRef.current === controller) {
+        activeControllerRef.current = null;
+      }
     }
   };
 
@@ -52,7 +70,10 @@ export function useStatus(refreshMs = 60_000): UseStatusResult {
     const timer = window.setInterval(() => {
       void refresh();
     }, refreshMs);
-    return () => window.clearInterval(timer);
+    return () => {
+      window.clearInterval(timer);
+      activeControllerRef.current?.abort();
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [refreshMs]);
 

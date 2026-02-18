@@ -14,10 +14,10 @@ function resolveBasePath(path: string): string {
   return `${base}${path}`.replace(/\/\//g, '/').replace('http:/', 'http://').replace('https:/', 'https://');
 }
 
-async function resolveStatusUrl(): Promise<string> {
+async function resolveStatusUrl(signal?: AbortSignal): Promise<string> {
   try {
     const configUrl = withCacheBust(resolveBasePath(SOURCE_CONFIG_PATH));
-    const cfgRes = await fetch(configUrl);
+    const cfgRes = await fetch(configUrl, { signal });
     if (!cfgRes.ok) throw new Error('source config unavailable');
 
     const cfg = (await cfgRes.json()) as { url?: string };
@@ -31,9 +31,9 @@ async function resolveStatusUrl(): Promise<string> {
   return withCacheBust(resolveBasePath(FALLBACK_PATH));
 }
 
-export async function fetchStatus(): Promise<StatusPayload> {
-  const statusUrl = await resolveStatusUrl();
-  const response = await fetch(statusUrl);
+export async function fetchStatus(options?: { signal?: AbortSignal }): Promise<StatusPayload> {
+  const statusUrl = await resolveStatusUrl(options?.signal);
+  const response = await fetch(statusUrl, { signal: options?.signal });
   if (!response.ok) {
     throw new Error(`Status fetch failed: ${response.status}`);
   }
