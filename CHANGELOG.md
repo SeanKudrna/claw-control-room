@@ -1,5 +1,19 @@
 # Changelog
 
+## v1.4.28 - 2026-02-18
+
+### Fixed
+- Removed residual `N/A` noise from Activity Feed UI by suppressing `N/A` timestamp pills while retaining category-filter behavior (unknown categories still normalize to `OPS`).
+- Hardened Execution Timeline current-block detection to support `AM/PM` time ranges in addition to 24-hour ranges, ensuring highlight state renders in the visible UI.
+- Updated timeline current-item styling to use in-theme accent tokens for clearer, consistent highlight visibility.
+
+### Added
+- Added Playwright UI regression checks (`scripts/tests/test_ui_regressions.mjs`) covering Activity Feed `N/A` chip suppression and timeline current-highlight rendering contract.
+- Added repeatable screenshot capture helper for issue validation (`scripts/tests/capture_issue41_screenshots.mjs`).
+
+### Docs
+- Updated README and handbook architecture/development notes for Activity Feed `N/A` suppression and timeline highlight parsing/rendering behavior.
+
 ## v1.4.27 - 2026-02-18
 
 ### Fixed

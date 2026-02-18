@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-02-18T15:02:20.135223+00:00",
-  "generatedAtLocal": "2026-02-18 09:02 ",
-  "controlRoomVersion": "1.4.27",
-  "currentFocus": "Control-room issue triage block (mandatory)",
+  "generatedAt": "2026-02-18T15:13:38.571441+00:00",
+  "generatedAtLocal": "2026-02-18 09:13 ",
+  "controlRoomVersion": "1.4.28",
+  "currentFocus": "Control-room product lane block (mandatory)",
   "activeWork": "downtime-guard monitoring/continuity mode.",
   "reliability": {
     "status": "green"
@@ -44,17 +44,17 @@
   "nextJobs": [
     {
       "name": "Control room status publish (gist backend)",
-      "nextRun": "09:03",
-      "lastStatus": "ok"
-    },
-    {
-      "name": "Critical update failover guard",
-      "nextRun": "09:07",
+      "nextRun": "09:14",
       "lastStatus": "ok"
     },
     {
       "name": "Reliability watchdog hourly (self-heal + conditional alert)",
       "nextRun": "09:20",
+      "lastStatus": "ok"
+    },
+    {
+      "name": "Critical update failover guard",
+      "nextRun": "09:22",
       "lastStatus": "ok"
     },
     {
@@ -93,21 +93,21 @@
   ],
   "workstream": {
     "now": [
-      "Fix issue #40 in /Users/seankudrna/.openclaw/workspace/claw-control-room. Issue: https://github.com/SeanKudrna/claw-control-room/issues/40 Bug: in-progress timeline blocks are tran\u2026"
+      "Implement issue #41 in /Users/seankudrna/.openclaw/workspace/claw-control-room. Issue: https://github.com/SeanKudrna/claw-control-room/issues/41 Must-fix items: 1) Activity Feed st\u2026"
     ],
     "next": [
-      "08:40-09:10 \u2014 Control-room issue triage block (mandatory)",
-      "09:03 \u2014 Scheduled job: Control room status publish (gist backend)",
-      "09:07 \u2014 Scheduled job: Critical update failover guard",
       "09:10-10:20 \u2014 Control-room product lane block (mandatory)",
-      "09:20 \u2014 Scheduled job: Reliability watchdog hourly (self-heal + conditional alert)"
+      "09:14 \u2014 Scheduled job: Control room status publish (gist backend)",
+      "09:20 \u2014 Scheduled job: Reliability watchdog hourly (self-heal + conditional alert)",
+      "09:22 \u2014 Scheduled job: Critical update failover guard",
+      "09:35 \u2014 Scheduled job: Control room issue triage + QA intake"
     ],
     "done": [
       "Autonomy daily planner (DAILY_PLAN source of truth)",
-      "Critical update failover guard",
       "Resume and finish the in-progress worktree changes for claw-control-room issue set #30 #31 #32. Repo: /Users/seankudrna/.openclaw/workspace/claw-control-room Current state: local w\u2026",
+      "Fix issue #40 in /Users/seankudrna/.openclaw/workspace/claw-control-room. Issue: https://github.com/SeanKudrna/claw-control-room/issues/40 Bug: in-progress timeline blocks are tran\u2026",
       "Apply the latest UI refinements in /Users/seankudrna/.openclaw/workspace/claw-control-room. User-requested changes: 1) Remove helper text under refresh button during click/refresh/\u2026",
-      "Implement issue #30 in /Users/seankudrna/.openclaw/workspace/claw-control-room. Issue: https://github.com/SeanKudrna/claw-control-room/issues/30 User-required semantics (must match\u2026"
+      "Implement issue #37 in /Users/seankudrna/.openclaw/workspace/claw-control-room. Issue: https://github.com/SeanKudrna/claw-control-room/issues/37 Goal: Move refresh control into sti\u2026"
     ]
   },
   "charts": {
@@ -179,19 +179,19 @@
         "job": "Daily plan preflight validator"
       },
       {
-        "label": "08:52",
-        "status": "ok",
-        "score": 1.0,
-        "job": "Critical update failover guard"
-      },
-      {
         "label": "09:00",
         "status": "ok",
         "score": 1.0,
         "job": "Downtime gap auto-fill guard (quiet unless triggered)"
       },
       {
-        "label": "09:02",
+        "label": "09:07",
+        "status": "ok",
+        "score": 1.0,
+        "job": "Critical update failover guard"
+      },
+      {
+        "label": "09:13",
         "status": "ok",
         "score": 1.0,
         "job": "Control room status publish (gist backend)"
@@ -387,7 +387,7 @@
     "isIdle": true,
     "activeCount": 0,
     "activeRuns": [],
-    "checkedAtMs": 1771426940078,
+    "checkedAtMs": 1771427618514,
     "source": "cron-run reconciliation + subagent registry [static fallback runtime sanitized]"
   }
 }

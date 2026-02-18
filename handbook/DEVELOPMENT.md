@@ -31,9 +31,10 @@ UI nav notes:
 - If timeline `next` blocks are far away, near-term scheduled jobs should be promoted into `next` lane to keep Overview aligned with Operations job schedule.
 - `Done` lane should exclude proof/evidence scaffolding bullets, auto-expire stale timestamped completions, render newest completions first, and display completion-time prefixes when derivable.
 - Timeline blocks must remain eligible for now/next while in progress (end-time semantics); transition to done only after block end.
+- Timeline highlight parsing should accept both `HH:MM-HH:MM` and `h:mma/h:mmpm`-style ranges so current-block emphasis renders reliably.
 - Refresh success helper text should explicitly call out stale carryover when the newest available payload is still old.
 - Refresh idle helper text should stay empty (show helper copy only for meaningful non-idle states).
-- Activity Feed category normalization should prevent `N/A` category chips/options from appearing; unknown values map to `ops`.
+- Activity Feed category normalization should prevent `N/A` category chips/options from appearing; unknown values map to `ops`, and `N/A` timestamp pills should not render in item metadata.
 - Runtime details modal should render via body portal with z-index above sticky tab/header layers.
 
 ## Build output for GitHub Pages

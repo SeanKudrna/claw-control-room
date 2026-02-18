@@ -45,6 +45,7 @@ If dashboard payload shape, timeline parsing, data-source behavior, publish flow
 - Monitor open GitHub issues daily and keep backlog current.
 - During UI QA or defect discovery, create an issue immediately with a clear title + markdown body.
 - Use issue templates under `.github/ISSUE_TEMPLATE/`.
+- Bugs: add regression test when it fits.
 - Ticket-directed commits must include the issue reference in commit text (e.g. `refs #123`).
 - Use `./scripts/update_and_push.sh --version X.Y.Z --issue 123 --message "..."` for ticket-linked releases.
 

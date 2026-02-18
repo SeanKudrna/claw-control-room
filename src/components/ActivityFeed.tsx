@@ -8,12 +8,25 @@ const DEFAULT_VISIBLE_ITEMS = 12;
 type FilterValue = (typeof ORDER)[number];
 type ActivityCategory = (typeof CATEGORY_ORDER)[number];
 
-function normalizeActivityCategory(category: string): ActivityCategory {
-  const normalized = category.trim().toLowerCase();
+function normalizeActivityCategory(category: string | null | undefined): ActivityCategory {
+  const normalized = (category ?? '').trim().toLowerCase();
   if (CATEGORY_ORDER.includes(normalized as ActivityCategory)) {
     return normalized as ActivityCategory;
   }
   return 'ops';
+}
+
+function getDisplayTimeLabel(value: string | null | undefined): string | null {
+  const normalized = (value ?? '').trim();
+  if (!normalized) {
+    return null;
+  }
+
+  if (/^n\/?a$/i.test(normalized)) {
+    return null;
+  }
+
+  return normalized;
 }
 
 interface ActivityFeedProps {
@@ -78,10 +91,11 @@ export function ActivityFeed({ activity, hideHeading = false }: ActivityFeedProp
         {filtered.length === 0 && <li className="muted">No activity items in this filter.</li>}
         {visibleItems.map((item, idx) => {
           const normalizedCategory = normalizeActivityCategory(item.category);
+          const displayTime = getDisplayTimeLabel(item.time);
           return (
             <li key={`${item.time}-${item.category}-${idx}`} className="activity-item">
               <div className="activity-item-meta">
-                <span className="tiny-pill neutral">{item.time}</span>
+                {displayTime && <span className="tiny-pill neutral">{displayTime}</span>}
                 <span className={`tiny-pill ${normalizedCategory}`}>{normalizedCategory.toUpperCase()}</span>
               </div>
               <p className="activity-item-text">{item.text}</p>
