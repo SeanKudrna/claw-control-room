@@ -13,6 +13,8 @@ A React + TypeScript dashboard (GitHub Pages) that gives a clear window into Cla
 - data freshness pill (fresh / aging / stale) based on payload generation time, with live age progression between polls
 - refresh control truthfulness states (refreshing, success, and explicit failure/retry while retaining last known good snapshot)
 - structured refresh-failure taxonomy (network/http/payload/source) for clearer degraded-mode operator guidance
+- explicit source semantics pill (Live source vs Fallback snapshot) with fallback reason detail for transparent degraded-mode awareness
+- fallback behavior hardening: if configured source fails, dashboard automatically falls back to local snapshot and labels the state
 - race-safe polling (latest request wins; older/aborted responses cannot overwrite newer status)
 - tactile refresh interaction states (press, refreshing spinner, completion confirmation)
 - OpenClaw brand-aligned coral/orange/dark gradient palette for visual continuity

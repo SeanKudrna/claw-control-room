@@ -23,6 +23,9 @@ interface UseStatusResult {
   freshnessLevel: FreshnessLevel;
   freshnessLabel: string;
   refreshOutcome: RefreshOutcome;
+  sourceMode: 'configured' | 'fallback';
+  sourceLabel: string;
+  sourceDetail: string;
 }
 
 export function useStatus(refreshMs = 60_000): UseStatusResult {
@@ -33,6 +36,9 @@ export function useStatus(refreshMs = 60_000): UseStatusResult {
   const [error, setError] = useState<string | null>(null);
   const [errorCode, setErrorCode] = useState<RefreshErrorCode | null>(null);
   const [refreshOutcome, setRefreshOutcome] = useState<RefreshOutcome>('idle');
+  const [sourceMode, setSourceMode] = useState<'configured' | 'fallback'>('fallback');
+  const [sourceLabel, setSourceLabel] = useState<string>('Fallback snapshot');
+  const [sourceDetail, setSourceDetail] = useState<string>('Using local fallback snapshot.');
   const [nowMs, setNowMs] = useState<number>(() => Date.now());
   const requestSeqRef = useRef(0);
   const activeControllerRef = useRef<AbortController | null>(null);
@@ -56,7 +62,10 @@ export function useStatus(refreshMs = 60_000): UseStatusResult {
 
       if (requestSeq !== requestSeqRef.current) return;
 
-      setData(next);
+      setData(next.payload);
+      setSourceMode(next.source.mode);
+      setSourceLabel(next.source.label);
+      setSourceDetail(next.source.detail);
       setLastRefreshAtMs(Date.now());
       setRefreshOutcome('success');
     } catch (err) {
@@ -138,5 +147,8 @@ export function useStatus(refreshMs = 60_000): UseStatusResult {
     freshnessLevel: freshness.level,
     freshnessLabel: freshness.label,
     refreshOutcome,
+    sourceMode,
+    sourceLabel,
+    sourceDetail,
   };
 }

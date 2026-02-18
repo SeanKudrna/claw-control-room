@@ -190,6 +190,28 @@ p {
   border: 1px solid rgba(255, 77, 77, 0.5);
 }
 
+.source-pill {
+  border-radius: 999px;
+  font-size: 0.74rem;
+  font-weight: 700;
+  padding: 6px 10px;
+  border: 1px solid rgba(136, 146, 176, 0.45);
+  background: rgba(136, 146, 176, 0.16);
+  color: #d8deef;
+}
+
+.source-pill.configured {
+  color: #ffd9ca;
+  background: rgba(230, 57, 70, 0.2);
+  border-color: rgba(230, 57, 70, 0.5);
+}
+
+.source-pill.fallback {
+  color: #ffe5c0;
+  background: rgba(251, 191, 36, 0.16);
+  border-color: rgba(251, 191, 36, 0.42);
+}
+
 .ghost-btn {
   display: inline-flex;
   align-items: center;

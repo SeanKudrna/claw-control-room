@@ -22,6 +22,8 @@ UI nav notes:
 - Polling/state updates are latest-wins: superseded requests must be aborted/ignored so stale responses cannot overwrite newer snapshots.
 - Aborted/superseded requests should not surface user-visible error banners.
 - Refresh failures should map to stable error taxonomy (`status-network-error`, `status-http-error`, `status-payload-invalid`, `status-url-unavailable`) so degraded-state messaging is actionable.
+- Header source indicator should remain truthful (`Live source` vs `Fallback snapshot`) with fallback reason detail available from the latest fetch path.
+- If configured source fetch fails, fetch logic should attempt local fallback snapshot and explicitly mark fallback mode.
 - Freshness labels should age on a timer between polls (truthful stale-state progression).
 
 ## Build output for GitHub Pages

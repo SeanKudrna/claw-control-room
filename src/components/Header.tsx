@@ -10,6 +10,9 @@ interface HeaderProps {
   lastRefreshAtMs: number | null;
   refreshOutcome: 'idle' | 'success' | 'error';
   errorCode: string | null;
+  sourceMode: 'configured' | 'fallback';
+  sourceLabel: string;
+  sourceDetail: string;
   onRefresh: () => void;
 }
 
@@ -24,6 +27,9 @@ export function Header({
   lastRefreshAtMs,
   refreshOutcome,
   errorCode,
+  sourceMode,
+  sourceLabel,
+  sourceDetail,
   onRefresh,
 }: HeaderProps) {
   const [isPressed, setIsPressed] = useState(false);
@@ -94,6 +100,7 @@ export function Header({
       <div className="hero-meta">
         <div className="updated-pill">Updated: {lastUpdatedLabel}</div>
         <div className={`freshness-pill ${freshnessLevel}`}>{freshnessLabel}</div>
+        <div className={`source-pill ${sourceMode}`} title={sourceDetail}>{sourceLabel}</div>
         <div className="refresh-control">
           <button
             className={`ghost-btn ${feedbackState !== 'idle' ? `is-${feedbackState}` : ''} ${isPressed ? 'is-pressed' : ''}`.trim()}

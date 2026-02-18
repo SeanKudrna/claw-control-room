@@ -1,5 +1,15 @@
 # Changelog
 
+## v1.4.16 - 2026-02-18
+
+### Fixed
+- Truthfulness gap where fallback mode could be active without explicit UI signaling of source semantics.
+
+### Changed
+- `statusApi.fetchStatus` now returns structured source metadata and performs fail-soft primary->fallback fetch behavior.
+- Header now displays a source pill (`Live source` or `Fallback snapshot`) with fallback reason detail for transparent degraded-state awareness.
+- `useStatus` now tracks and exposes source mode/label/detail alongside existing refresh and freshness state.
+
 ## v1.4.15 - 2026-02-18
 
 ### Fixed

@@ -9,6 +9,15 @@ type StatusFetchErrorCode =
   | 'status-payload-invalid'
   | 'status-url-unavailable';
 
+export interface StatusFetchResult {
+  payload: StatusPayload;
+  source: {
+    mode: 'configured' | 'fallback';
+    label: string;
+    detail: string;
+  };
+}
+
 export class StatusFetchError extends Error {
   code: StatusFetchErrorCode;
   status?: number;
@@ -32,33 +41,55 @@ function resolveBasePath(path: string): string {
   return `${base}${path}`.replace(/\/\//g, '/').replace('http:/', 'http://').replace('https:/', 'https://');
 }
 
-async function resolveStatusUrl(signal?: AbortSignal): Promise<string> {
-  try {
-    const configUrl = withCacheBust(resolveBasePath(SOURCE_CONFIG_PATH));
-    const cfgRes = await fetch(configUrl, { signal });
-    if (cfgRes.ok) {
-      const cfg = (await cfgRes.json()) as { url?: string };
-      if (cfg.url && cfg.url.trim()) {
-        return withCacheBust(cfg.url.trim());
-      }
-    }
-  } catch {
-    // Use fallback below.
-  }
-
+async function resolveStatusUrls(signal?: AbortSignal): Promise<{
+  configuredUrl: string | null;
+  fallbackUrl: string;
+  configStatus: 'configured' | 'missing' | 'unreachable';
+}> {
   const fallbackUrl = withCacheBust(resolveBasePath(FALLBACK_PATH));
   if (!fallbackUrl) {
     throw new StatusFetchError('status-url-unavailable', 'No status source URL could be resolved');
   }
-  return fallbackUrl;
+
+  try {
+    const configUrl = withCacheBust(resolveBasePath(SOURCE_CONFIG_PATH));
+    const cfgRes = await fetch(configUrl, { signal });
+    if (!cfgRes.ok) {
+      return {
+        configuredUrl: null,
+        fallbackUrl,
+        configStatus: 'unreachable',
+      };
+    }
+
+    const cfg = (await cfgRes.json()) as { url?: string };
+    const configured = cfg.url?.trim();
+    if (configured) {
+      return {
+        configuredUrl: withCacheBust(configured),
+        fallbackUrl,
+        configStatus: 'configured',
+      };
+    }
+
+    return {
+      configuredUrl: null,
+      fallbackUrl,
+      configStatus: 'missing',
+    };
+  } catch {
+    return {
+      configuredUrl: null,
+      fallbackUrl,
+      configStatus: 'unreachable',
+    };
+  }
 }
 
-export async function fetchStatus(options?: { signal?: AbortSignal }): Promise<StatusPayload> {
-  const statusUrl = await resolveStatusUrl(options?.signal);
-
+async function fetchStatusPayload(url: string, signal?: AbortSignal): Promise<StatusPayload> {
   let response: Response;
   try {
-    response = await fetch(statusUrl, { signal: options?.signal });
+    response = await fetch(url, { signal });
   } catch {
     throw new StatusFetchError('status-network-error', 'Status endpoint could not be reached');
   }
@@ -74,4 +105,46 @@ export async function fetchStatus(options?: { signal?: AbortSignal }): Promise<S
   } catch {
     throw new StatusFetchError('status-payload-invalid', 'Status payload is not valid JSON');
   }
+}
+
+export async function fetchStatus(options?: { signal?: AbortSignal }): Promise<StatusFetchResult> {
+  const resolved = await resolveStatusUrls(options?.signal);
+
+  if (resolved.configuredUrl) {
+    try {
+      const payload = await fetchStatusPayload(resolved.configuredUrl, options?.signal);
+      return {
+        payload,
+        source: {
+          mode: 'configured',
+          label: 'Live source',
+          detail: 'Using configured status source (gist/live feed).',
+        },
+      };
+    } catch (primaryError) {
+      const payload = await fetchStatusPayload(resolved.fallbackUrl, options?.signal);
+      const primaryCode = primaryError instanceof StatusFetchError ? primaryError.code : 'status-network-error';
+      return {
+        payload,
+        source: {
+          mode: 'fallback',
+          label: 'Fallback snapshot',
+          detail: `Primary source failed (${primaryCode}); using local fallback snapshot.`,
+        },
+      };
+    }
+  }
+
+  const payload = await fetchStatusPayload(resolved.fallbackUrl, options?.signal);
+  return {
+    payload,
+    source: {
+      mode: 'fallback',
+      label: 'Fallback snapshot',
+      detail:
+        resolved.configStatus === 'unreachable'
+          ? 'Source config unavailable; using local fallback snapshot.'
+          : 'No configured source URL; using local fallback snapshot.',
+    },
+  };
 }

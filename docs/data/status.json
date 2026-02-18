@@ -1,9 +1,9 @@
 {
-  "generatedAt": "2026-02-18T06:47:15.536608+00:00",
-  "generatedAtLocal": "2026-02-18 00:47 ",
-  "controlRoomVersion": "1.4.15",
-  "currentFocus": "reliability fallback + close-out hygiene after missing 7:00 usage-report history state",
-  "activeWork": "post-19:00 reliability fallback block; re-checking stale 7am usage-report error state and maintaining low-friction recovery path after gateway timeout.",
+  "generatedAt": "2026-02-18T08:17:19.949831+00:00",
+  "generatedAtLocal": "2026-02-18 02:17 ",
+  "controlRoomVersion": "1.4.16",
+  "currentFocus": "reliability monitoring + overnight control-room continuity.",
+  "activeWork": "01:00 downtime-guard reliability deep-work fallback (completed with fresh proof).",
   "reliability": {
     "status": "green"
   },
@@ -39,34 +39,24 @@
   ],
   "nextJobs": [
     {
-      "name": "Overnight control-room block 3",
-      "nextRun": "00:45",
+      "name": "Overnight control-room block 4",
+      "nextRun": "02:15",
       "lastStatus": null
     },
     {
+      "name": "Reliability watchdog hourly (self-heal + conditional alert)",
+      "nextRun": "02:20",
+      "lastStatus": "ok"
+    },
+    {
       "name": "Critical update failover guard",
-      "nextRun": "00:52",
+      "nextRun": "02:22",
       "lastStatus": "ok"
     },
     {
       "name": "Downtime gap auto-fill guard (quiet unless triggered)",
-      "nextRun": "01:00",
+      "nextRun": "03:00",
       "lastStatus": "ok"
-    },
-    {
-      "name": "Reliability watchdog hourly (self-heal + conditional alert)",
-      "nextRun": "01:20",
-      "lastStatus": "ok"
-    },
-    {
-      "name": "Nightly stale cron prune (scripted)",
-      "nextRun": "01:35",
-      "lastStatus": null
-    },
-    {
-      "name": "Overnight control-room block 4",
-      "nextRun": "02:15",
-      "lastStatus": null
     },
     {
       "name": "Overnight control-room block 5",
@@ -76,6 +66,16 @@
     {
       "name": "Overnight control-room block 6",
       "nextRun": "05:15",
+      "lastStatus": null
+    },
+    {
+      "name": "ClawPrime daily memory evolution pass",
+      "nextRun": "06:10",
+      "lastStatus": null
+    },
+    {
+      "name": "Morning control-room overnight summary (6:20 AM)",
+      "nextRun": "06:20",
       "lastStatus": null
     }
   ],
@@ -89,28 +89,25 @@
   ],
   "workstream": {
     "now": [
-      "post-19:00 reliability fallback block; re-checking stale 7am usage-report error state and maintaining low-friction recovery path after gateway timeout."
+      "01:00 downtime-guard reliability deep-work fallback (completed with fresh proof)."
     ],
     "next": [
       "13:20-13:45 \u2014 Midday reliability + queue reconciliation",
       "13:45-14:25 \u2014 Prepare 5pm update evidence pack",
       "15:10-16:05 \u2014 Reliability deep-work block B (scheduled cron)",
-      "Finish today\u2019s wrap-up and tomorrow pre-plan (if not already published).",
-      "Re-attempt/verify forced 7:00 usage-report job validation during next safe window and clear stale historical `lastStatus=error` if still present."
+      "01:35 nightly stale-cron prune maintenance pass.",
+      "02:00 downtime guard reevaluation (trigger only if no substantive block is upcoming)."
     ],
     "done": [
-      "12-hour reliability watchdog audit completed and green.",
-      "Proof: `python3 scripts/reliability_watchdog_report.py --window-hours 12` -> `Health: GREEN`, `required jobs: missing=0, disabled=0, model_mismatch=0, delivery_mismatch=0` (see `status/downtime-guard-deepwork-2026-02-17-2000.md`)."
+      "01:00 CST reliability reconciliation fallback completed.",
+      "Proof:",
+      "`python3 scripts/reliability_watchdog_report.py --window-hours 12` -> `Health: GREEN`, `missing=0, disabled=0, model_mismatch=0, delivery_mismatch=0`",
+      "`cron runs` for `Usage report - 7am` shows follow-up success (`status: ok`) after prior historical error.",
+      "Evidence file: `status/downtime-guard-deepwork-2026-02-18-0100.md`."
     ]
   },
   "charts": {
     "jobSuccessTrend": [
-      {
-        "label": "16:10",
-        "status": "ok",
-        "score": 1.0,
-        "job": "Surprise value lane (daily)"
-      },
       {
         "label": "16:50",
         "status": "ok",
@@ -172,40 +169,31 @@
         "job": "Control room status publish (gist backend)"
       },
       {
-        "label": "00:00",
-        "status": "ok",
-        "score": 1.0,
-        "job": "Downtime gap auto-fill guard (quiet unless triggered)"
-      },
-      {
-        "label": "00:20",
+        "label": "01:20",
         "status": "ok",
         "score": 1.0,
         "job": "Reliability watchdog hourly (self-heal + conditional alert)"
       },
       {
-        "label": "00:37",
+        "label": "01:35",
+        "status": "ok",
+        "score": 1.0,
+        "job": "Nightly stale cron prune (scripted)"
+      },
+      {
+        "label": "02:00",
+        "status": "ok",
+        "score": 1.0,
+        "job": "Downtime gap auto-fill guard (quiet unless triggered)"
+      },
+      {
+        "label": "02:07",
         "status": "ok",
         "score": 1.0,
         "job": "Critical update failover guard"
       }
     ],
     "reliabilityTrend": [
-      {
-        "label": "19:20",
-        "status": "green",
-        "score": 1.0
-      },
-      {
-        "label": "19:51",
-        "status": "green",
-        "score": 1.0
-      },
-      {
-        "label": "20:20",
-        "status": "green",
-        "score": 1.0
-      },
       {
         "label": "20:51",
         "status": "green",
@@ -258,6 +246,21 @@
       },
       {
         "label": "00:20",
+        "status": "green",
+        "score": 1.0
+      },
+      {
+        "label": "00:51",
+        "status": "green",
+        "score": 1.0
+      },
+      {
+        "label": "01:20",
+        "status": "green",
+        "score": 1.0
+      },
+      {
+        "label": "01:51",
         "status": "green",
         "score": 1.0
       }
@@ -340,7 +343,7 @@
     "isIdle": true,
     "activeCount": 0,
     "activeRuns": [],
-    "checkedAtMs": 1771397235567,
+    "checkedAtMs": 1771402639983,
     "source": "cron-run reconciliation + subagent registry + main-session tool activity [static fallback runtime sanitized]"
   }
 }

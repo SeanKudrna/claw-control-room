@@ -50,6 +50,9 @@ export default function App() {
     freshnessLevel,
     freshnessLabel,
     refreshOutcome,
+    sourceMode,
+    sourceLabel,
+    sourceDetail,
   } = useStatus();
   const [activeTab, setActiveTab] = useState<string>(resolveInitialTab());
 
@@ -170,6 +173,9 @@ export default function App() {
         lastRefreshAtMs={lastRefreshAtMs}
         refreshOutcome={refreshOutcome}
         errorCode={errorCode}
+        sourceMode={sourceMode}
+        sourceLabel={sourceLabel}
+        sourceDetail={sourceDetail}
         onRefresh={() => void refresh()}
       />
 
