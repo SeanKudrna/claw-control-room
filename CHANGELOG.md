@@ -1,5 +1,12 @@
 # Changelog
 
+## v1.4.5 - 2026-02-17
+
+### Improved
+- Runtime background labels now fall back to task summaries when labels are generic, reducing vague `Background task` rows.
+- Runtime details sheet polish: source type shows friendly label (`Cron`/`Background`), and detail actions include tighter accessibility semantics.
+- Runtime source badges now align to the warm coral palette for visual consistency.
+
 ## v1.4.4 - 2026-02-17
 
 ### Changed

@@ -1,7 +1,7 @@
 {
-  "generatedAt": "2026-02-18T02:09:08.316737+00:00",
-  "generatedAtLocal": "2026-02-17 20:09 ",
-  "controlRoomVersion": "1.4.4",
+  "generatedAt": "2026-02-18T02:12:20.296861+00:00",
+  "generatedAtLocal": "2026-02-17 20:12 ",
+  "controlRoomVersion": "1.4.5",
   "currentFocus": "Post-release verification and next-ticket readiness",
   "activeWork": "v1.4.0 shipped and verified live (UX/mobile/theme/favicon overhaul)",
   "reliability": {
@@ -40,7 +40,7 @@
   "nextJobs": [
     {
       "name": "Control room status publish (gist backend)",
-      "nextRun": "20:10",
+      "nextRun": "20:13",
       "lastStatus": "ok"
     },
     {
@@ -182,7 +182,7 @@
         "job": "Critical update failover guard"
       },
       {
-        "label": "20:09",
+        "label": "20:12",
         "status": "ok",
         "score": 1.0,
         "job": "Control room status publish (gist backend)"
@@ -388,7 +388,7 @@
     "isIdle": true,
     "activeCount": 0,
     "activeRuns": [],
-    "checkedAtMs": 1771380548347,
+    "checkedAtMs": 1771380740327,
     "source": "cron-run reconciliation + subagent registry (background only)"
   }
 }
