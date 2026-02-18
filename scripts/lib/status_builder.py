@@ -57,6 +57,7 @@ SUBAGENT_REGISTRY_PATH = Path("/Users/seankudrna/.openclaw/subagents/runs.json")
 CRON_RUN_SESSION_KEY_RE = re.compile(r"^agent:main:cron:([^:]+):run:([^:]+)$")
 MAIN_SESSION_KEY = "agent:main:main"
 MAIN_SESSION_RUNTIME_MAX_AGE_MS = 2 * 60 * 1000
+MAIN_SESSION_PENDING_CALL_MAX_AGE_MS = 10 * 60 * 1000
 MAIN_SESSION_LOCK_STALE_MS = 30 * 60 * 1000
 EXCLUDED_RUNTIME_JOB_NAME_SUBSTRINGS = (
     "control room status publish",
@@ -774,8 +775,22 @@ def main_session_lock_active(session_file: Path, now_ms: int) -> bool:
     return created_at_ms is not None and now_ms - created_at_ms <= MAIN_SESSION_LOCK_STALE_MS
 
 
-def collect_main_session_tool_events(events: List[Dict[str, Any]], since_ms: int) -> List[Tuple[int, str]]:
+def normalize_tool_call_id(value: Any) -> Optional[str]:
+    if not isinstance(value, str):
+        return None
+    cleaned = value.strip()
+    if not cleaned:
+        return None
+    # Tool results may include suffix metadata like `call_x|fc_x`.
+    return cleaned.split("|", 1)[0]
+
+
+def collect_main_session_tool_events(
+    events: List[Dict[str, Any]],
+    since_ms: int,
+) -> Tuple[List[Tuple[int, str]], int]:
     tool_events: List[Tuple[int, str]] = []
+    pending_call_ids: set[str] = set()
 
     for event in events:
         event_ms = parse_timestamp_ms(event.get("timestamp"))
@@ -792,6 +807,10 @@ def collect_main_session_tool_events(events: List[Dict[str, Any]], since_ms: int
             if not isinstance(tool_name, str) or not tool_name.strip():
                 tool_name = "tool"
             tool_events.append((event_ms, tool_name.strip()))
+
+            result_id = normalize_tool_call_id(message.get("toolCallId"))
+            if result_id is not None:
+                pending_call_ids.discard(result_id)
             continue
 
         if role != "assistant":
@@ -809,7 +828,11 @@ def collect_main_session_tool_events(events: List[Dict[str, Any]], since_ms: int
                 tool_name = "tool"
             tool_events.append((event_ms, tool_name.strip()))
 
-    return tool_events
+            call_id = normalize_tool_call_id(item.get("id") or item.get("toolCallId"))
+            if call_id is not None:
+                pending_call_ids.add(call_id)
+
+    return tool_events, len(pending_call_ids)
 
 
 def active_main_session_run(
@@ -851,13 +874,20 @@ def active_main_session_run(
     if latest_user_ms is None:
         return None
 
-    tool_events = collect_main_session_tool_events(events, latest_user_ms)
+    tool_events, pending_call_count = collect_main_session_tool_events(events, latest_user_ms)
     if not tool_events:
         return None
 
     last_tool_ms = max(item[0] for item in tool_events)
-    lock_active = main_session_lock_active(session_file, now_ms)
-    if not lock_active and now_ms - last_tool_ms > max_age_ms:
+    if pending_call_count > 0:
+        # Keep in-flight tool execution visible for longer windows.
+        if now_ms - last_tool_ms > MAIN_SESSION_PENDING_CALL_MAX_AGE_MS:
+            return None
+        # If the lock is missing but the activity is very recent, still consider it running.
+        lock_active = main_session_lock_active(session_file, now_ms)
+        if not lock_active and now_ms - last_tool_ms > max_age_ms:
+            return None
+    elif now_ms - last_tool_ms > max_age_ms:
         return None
 
     started_at_ms = min(item[0] for item in tool_events)

@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import datetime as dt
 import json
+import os
 import tempfile
 import unittest
 from pathlib import Path
@@ -479,8 +480,8 @@ class StatusBuilderTests(unittest.TestCase):
             jobs_file.write_text(json.dumps({"jobs": []}), encoding="utf-8")
 
             now = dt.datetime.now(dt.timezone.utc)
-            user_ts = now - dt.timedelta(minutes=7)
-            tool_call_ts = now - dt.timedelta(minutes=6)
+            user_ts = now - dt.timedelta(minutes=14)
+            tool_call_ts = now - dt.timedelta(minutes=13)
 
             session_file.write_text(
                 "\n".join(
@@ -515,6 +516,99 @@ class StatusBuilderTests(unittest.TestCase):
                     ]
                 )
                 + "\n",
+                encoding="utf-8",
+            )
+
+            sessions_file.write_text(
+                json.dumps(
+                    {
+                        "agent:main:main": {
+                            "sessionId": "main-session-id",
+                            "sessionFile": str(session_file),
+                            "updatedAt": int(now.timestamp() * 1000),
+                        }
+                    }
+                ),
+                encoding="utf-8",
+            )
+
+            runtime = runtime_activity(jobs_file, sessions_file, runs_dir)
+            self.assertEqual(runtime["status"], "idle")
+            self.assertEqual(runtime["activeCount"], 0)
+
+    def test_runtime_activity_ignores_completed_main_session_call_even_with_lock(self) -> None:
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            jobs_file = root / "jobs.json"
+            sessions_file = root / "sessions.json"
+            runs_dir = root / "runs"
+            session_file = root / "main-session.jsonl"
+            runs_dir.mkdir(parents=True, exist_ok=True)
+
+            jobs_file.write_text(json.dumps({"jobs": []}), encoding="utf-8")
+
+            now = dt.datetime.now(dt.timezone.utc)
+            user_ts = now - dt.timedelta(minutes=5)
+            call_ts = now - dt.timedelta(minutes=5)
+            result_ts = now - dt.timedelta(minutes=4, seconds=50)
+
+            session_file.write_text(
+                "\n".join(
+                    [
+                        json.dumps(
+                            {
+                                "type": "message",
+                                "timestamp": user_ts.isoformat().replace("+00:00", "Z"),
+                                "message": {
+                                    "role": "user",
+                                    "content": [{"type": "text", "text": "Run the release check"}],
+                                    "timestamp": int(user_ts.timestamp() * 1000),
+                                },
+                            }
+                        ),
+                        json.dumps(
+                            {
+                                "type": "message",
+                                "timestamp": call_ts.isoformat().replace("+00:00", "Z"),
+                                "message": {
+                                    "role": "assistant",
+                                    "content": [
+                                        {
+                                            "type": "toolCall",
+                                            "id": "call_abc",
+                                            "name": "exec",
+                                            "arguments": {"command": "echo hi"},
+                                        }
+                                    ],
+                                },
+                            }
+                        ),
+                        json.dumps(
+                            {
+                                "type": "message",
+                                "timestamp": result_ts.isoformat().replace("+00:00", "Z"),
+                                "message": {
+                                    "role": "toolResult",
+                                    "toolName": "exec",
+                                    "toolCallId": "call_abc|fc_1",
+                                    "content": [{"type": "text", "text": "done"}],
+                                },
+                            }
+                        ),
+                    ]
+                )
+                + "\n",
+                encoding="utf-8",
+            )
+
+            lock_file = session_file.with_suffix(f"{session_file.suffix}.lock")
+            lock_file.write_text(
+                json.dumps(
+                    {
+                        "pid": os.getpid(),
+                        "createdAt": now.isoformat().replace("+00:00", "Z"),
+                    }
+                ),
                 encoding="utf-8",
             )
 

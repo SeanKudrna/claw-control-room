@@ -1,5 +1,17 @@
 # Changelog
 
+## v1.4.11 - 2026-02-17
+
+### Fixed
+- Resolved sticky main-session runtime rows that could remain `RUNNING` after work finished.
+
+### Changed
+- Main-session runtime now tracks pending tool calls by `toolCallId` and only applies lock-based in-flight extension when calls are truly unresolved.
+- Completed tool calls now age out on normal runtime windows, reducing false-running persistence.
+
+### Added
+- Test coverage for completed-call + lock scenario to prevent regressions.
+
 ## v1.4.10 - 2026-02-17
 
 ### Fixed
