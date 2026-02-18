@@ -670,11 +670,27 @@ def finished_run_session_ids(job_id: str, runs_dir: Path, cache: Dict[str, set[s
     return finished
 
 
+def summarize_subagent_task(entry: Dict[str, Any]) -> Optional[str]:
+    task = entry.get("task")
+    if not isinstance(task, str):
+        return None
+
+    cleaned = " ".join(line.strip() for line in task.splitlines() if line.strip())
+    if not cleaned:
+        return None
+
+    return cleaned[:180] + "…" if len(cleaned) > 180 else cleaned
+
+
 def resolve_subagent_label(entry: Dict[str, Any], run_id: str) -> str:
     """Return the most descriptive label available for sub-agent runs."""
     label = entry.get("label")
     if isinstance(label, str) and label.strip() and label.strip().lower() != "background task":
         return label.strip()
+
+    task_summary = summarize_subagent_task(entry)
+    if task_summary:
+        return task_summary
 
     invoke_command = entry.get("invokeCommand")
     if isinstance(invoke_command, str) and invoke_command.strip():
@@ -731,6 +747,7 @@ def active_subagent_runs(subagent_registry_path: Path, now_ms: int) -> List[Dict
         )
 
         label = resolve_subagent_label(entry, run_id)
+        task_summary = summarize_subagent_task(entry)
 
         child_session_key = entry.get("childSessionKey")
         session_key = child_session_key if isinstance(child_session_key, str) and child_session_key else f"subagent:{run_id}"
@@ -742,7 +759,7 @@ def active_subagent_runs(subagent_registry_path: Path, now_ms: int) -> List[Dict
                 "jobName": label,
                 "sessionId": session_id,
                 "sessionKey": session_key,
-                "summary": label,
+                "summary": task_summary or label,
                 "startedAtMs": started_at_ms,
                 "startedAtLocal": started_local,
                 "runningForMs": max(0, now_ms - started_at_ms),

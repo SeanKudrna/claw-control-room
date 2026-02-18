@@ -434,8 +434,8 @@ summary {
 
 .runtime-source-cron {
   color: #ffd9c9;
-  background: rgba(45, 212, 191, 0.18);
-  border-color: rgba(45, 212, 191, 0.4);
+  background: rgba(255, 77, 77, 0.18);
+  border-color: rgba(255, 77, 77, 0.4);
 }
 
 .runtime-source-subagent,

@@ -102,11 +102,13 @@ export function RuntimeStatus({ runtime }: { runtime: StatusPayload['runtime'] }
                 <span className="muted">{run.timePrefix} {run.startedAtLocal}</span>
               </div>
               <button
+                type="button"
                 className="runtime-detail-btn"
                 onClick={(event) => {
                   lastTriggerRef.current = event.currentTarget;
                   setSelectedRun(run);
                 }}
+                aria-label={`Show runtime details for ${run.jobName}`}
               >
                 Details
               </button>
@@ -129,6 +131,7 @@ export function RuntimeStatus({ runtime }: { runtime: StatusPayload['runtime'] }
             <header className="runtime-modal-header">
               <h3>{selectedRun.jobName}</h3>
               <button
+                type="button"
                 className="runtime-modal-close"
                 onClick={() => setSelectedRun(null)}
                 aria-label="Close runtime details"
@@ -140,7 +143,7 @@ export function RuntimeStatus({ runtime }: { runtime: StatusPayload['runtime'] }
             <dl className="runtime-detail-grid">
               <div>
                 <dt>Source type</dt>
-                <dd>{selectedRun.activityType}</dd>
+                <dd>{selectedRun.sourceLabel}</dd>
               </div>
               <div>
                 <dt>Session</dt>

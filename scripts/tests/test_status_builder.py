@@ -285,6 +285,49 @@ class StatusBuilderTests(unittest.TestCase):
             self.assertEqual(runtime["status"], "idle")
             self.assertEqual(runtime["activeCount"], 0)
 
+    def test_runtime_activity_subagent_label_uses_task_when_generic(self) -> None:
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            jobs_file = root / "jobs.json"
+            sessions_file = root / "sessions.json"
+            runs_dir = root / "runs"
+            subagent_runs_file = root / "subagent-runs.json"
+            runs_dir.mkdir(parents=True, exist_ok=True)
+
+            jobs_file.write_text(json.dumps({"jobs": []}), encoding="utf-8")
+            sessions_file.write_text(json.dumps({}), encoding="utf-8")
+
+            now_ms = int(dt.datetime.now(dt.timezone.utc).timestamp() * 1000)
+            subagent_runs_file.write_text(
+                json.dumps(
+                    {
+                        "version": 2,
+                        "runs": {
+                            "run-1": {
+                                "runId": "run-1",
+                                "childSessionKey": "agent:main:subagent:abc123",
+                                "label": "Background task",
+                                "task": "Audit dashboard readability and ship visual hierarchy cleanup",
+                                "createdAt": now_ms - 60_000,
+                                "startedAt": now_ms - 58_000,
+                            }
+                        },
+                    }
+                ),
+                encoding="utf-8",
+            )
+
+            runtime = runtime_activity(
+                jobs_file,
+                sessions_store_path=sessions_file,
+                runs_dir=runs_dir,
+                subagent_registry_path=subagent_runs_file,
+            )
+            self.assertEqual(runtime["status"], "running")
+            self.assertEqual(runtime["activeCount"], 1)
+            self.assertIn("Audit dashboard readability", runtime["activeRuns"][0]["jobName"])
+            self.assertEqual(runtime["activeRuns"][0]["sessionKey"], "agent:main:subagent:abc123")
+
     def test_runtime_activity_excludes_status_publish_job(self) -> None:
         with tempfile.TemporaryDirectory() as td:
             root = Path(td)
