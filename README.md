@@ -2,6 +2,7 @@
 
 A React + TypeScript dashboard (GitHub Pages) that gives a clear window into Claw's day:
 - tabbed views (Overview / Operations / Insights) to prevent a single-page infodump
+- sticky section navigation shell for faster movement between tabs on phones
 - mobile-first responsive layout tuned for touch usage and phone readability
 - collapsible content sections for cleaner UX and faster scanning
 - compact panel-body mode to avoid duplicate heading stacks inside collapsible sections
@@ -16,7 +17,7 @@ A React + TypeScript dashboard (GitHub Pages) that gives a clear window into Cla
 - timeline of planned tasks
 - upcoming scheduled jobs
 - job + reliability trend mini charts
-- filterable activity feed
+- filterable activity feed with default condensed view (latest 12) + expand/collapse
 - recent findings/wins
 
 ## Standards

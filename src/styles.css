@@ -39,6 +39,8 @@ body {
     calc(14px + env(safe-area-inset-right))
     calc(34px + env(safe-area-inset-bottom))
     calc(14px + env(safe-area-inset-left));
+  display: grid;
+  gap: 14px;
 }
 
 h1,
@@ -54,7 +56,8 @@ h1 {
 
 h2 {
   font-size: 1.02rem;
-  margin-bottom: 10px;
+  margin-bottom: 8px;
+  line-height: 1.3;
 }
 
 h3 {
@@ -74,7 +77,7 @@ p {
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.01));
   border: 1px solid var(--border);
   border-radius: 14px;
-  padding: 14px;
+  padding: 15px;
   backdrop-filter: blur(2px);
   box-shadow: 0 10px 26px rgba(0, 0, 0, 0.22);
 }
@@ -84,7 +87,6 @@ p {
   justify-content: space-between;
   align-items: flex-start;
   gap: 16px;
-  margin-bottom: 14px;
 }
 
 .title-row {
@@ -231,13 +233,17 @@ p {
 }
 
 .tab-shell {
-  margin-bottom: 14px;
+  position: sticky;
+  top: calc(6px + env(safe-area-inset-top));
+  z-index: 20;
+  backdrop-filter: blur(8px);
 }
 
 .tab-row {
   display: flex;
   gap: 8px;
   flex-wrap: wrap;
+  scroll-snap-type: x mandatory;
 }
 
 .tab-btn {
@@ -250,6 +256,7 @@ p {
   padding: 8px 11px;
   min-height: var(--touch-target);
   cursor: pointer;
+  scroll-snap-align: start;
   transition: border-color 0.2s ease, background-color 0.2s ease, color 0.2s ease, transform 0.16s ease;
 }
 
@@ -281,8 +288,10 @@ summary {
 }
 
 .tab-description {
-  margin-top: 9px;
-  font-size: 0.85rem;
+  margin-top: 10px;
+  padding-top: 8px;
+  border-top: 1px solid rgba(255, 255, 255, 0.07);
+  font-size: 0.84rem;
 }
 
 .collapse-panel {
@@ -333,7 +342,7 @@ summary {
 .collapse-content {
   padding: 0 12px 12px;
   display: grid;
-  gap: 12px;
+  gap: 14px;
 }
 
 .collapse-content > .card {
@@ -344,7 +353,7 @@ summary {
 
 .dashboard-grid {
   display: grid;
-  gap: 14px;
+  gap: 16px;
 }
 
 .section-header {
@@ -646,11 +655,47 @@ th {
   font-weight: 600;
 }
 
+.job-time-cell {
+  white-space: nowrap;
+  font-weight: 600;
+}
+
+.job-name-cell {
+  line-height: 1.4;
+}
+
+.job-status-cell {
+  width: 92px;
+}
+
 .chip-row {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
   margin-bottom: 10px;
+}
+
+.feed-meta-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.inline-link-btn {
+  border: none;
+  background: none;
+  color: #ffd7c7;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 2px 0;
+}
+
+.inline-link-btn:hover {
+  color: #ffe5da;
+  text-decoration: underline;
 }
 
 .chip {
@@ -686,12 +731,22 @@ th {
 }
 
 .activity-item {
-  display: flex;
-  align-items: flex-start;
-  flex-wrap: wrap;
+  display: grid;
   gap: 7px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.07);
-  padding-bottom: 8px;
+  padding-bottom: 10px;
+}
+
+.activity-item-meta {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
+.activity-item-text {
+  margin: 0;
+  line-height: 1.45;
 }
 
 .tiny-pill {
@@ -780,6 +835,7 @@ th {
   .app-shell {
     padding-top: calc(12px + env(safe-area-inset-top));
     padding-bottom: calc(24px + env(safe-area-inset-bottom));
+    gap: 12px;
   }
 
   h1 {
@@ -813,6 +869,11 @@ th {
     justify-content: center;
     width: 100%;
     min-height: 46px;
+  }
+
+  .tab-shell {
+    top: calc(4px + env(safe-area-inset-top));
+    padding: 12px;
   }
 
   .tab-row {
@@ -860,6 +921,21 @@ th {
     padding: 10px;
   }
 
+  .feed-meta-row {
+    align-items: flex-start;
+    flex-direction: column;
+    margin-bottom: 8px;
+  }
+
+  .inline-link-btn {
+    min-height: var(--touch-target);
+    padding: 8px 0;
+  }
+
+  .activity-item-text {
+    font-size: 0.92rem;
+  }
+
   .mini-chart {
     grid-template-columns: repeat(auto-fit, minmax(18px, 1fr));
     gap: 6px;
@@ -905,6 +981,15 @@ th {
     align-items: center;
     gap: 10px;
     font-size: 0.85rem;
+  }
+
+  .job-name-cell {
+    align-items: flex-start;
+    line-height: 1.35;
+  }
+
+  .job-status-cell {
+    justify-content: space-between;
   }
 
   td[data-label]::before {

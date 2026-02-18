@@ -1,5 +1,16 @@
 # Changelog
 
+## v1.4.4 - 2026-02-17
+
+### Changed
+- Polished information hierarchy and spacing rhythm across dashboard cards/panels for cleaner scanability (updated card density, section spacing, panel content rhythm).
+- Made section navigation more mobile-friendly with a sticky tab shell and improved horizontal tab snap behavior.
+- Refined Activity Feed readability: clearer meta/text separation per row plus a default condensed window (latest 12) with optional expand/collapse.
+- Improved Operations jobs readability with stronger time/job/status emphasis in both table and small-screen card layouts.
+
+### Docs
+- Updated README feature list to reflect sticky mobile tab navigation and condensed Activity Feed behavior.
+
 ## v1.4.3 - 2026-02-17
 
 ### Fixed

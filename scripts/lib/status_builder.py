@@ -733,7 +733,7 @@ def runtime_activity(
     jobs_file: Path,
     sessions_store_path: Path = SESSIONS_STORE_PATH,
     runs_dir: Path = CRON_RUNS_DIR,
-    subagent_registry_path: Path = SUBAGENT_REGISTRY_PATH,
+    subagent_registry_path: Optional[Path] = None,
     max_age_ms: int = 6 * 60 * 60 * 1000,
 ) -> Dict[str, Any]:
     """Return real-time runtime/idle state from background work only.
@@ -841,7 +841,8 @@ def runtime_activity(
             }
         )
 
-    active_runs.extend(active_subagent_runs(subagent_registry_path, now_ms))
+    if subagent_registry_path is not None:
+        active_runs.extend(active_subagent_runs(subagent_registry_path, now_ms))
     active_runs.sort(key=lambda item: item.get("startedAtMs", 0))
 
     return {
@@ -898,5 +899,5 @@ def build_payload(workspace_root: Path, jobs_file: Path) -> Dict[str, Any]:
             "reliabilityTrend": reliability_trend(Path("/Users/seankudrna/.openclaw/logs/reliability-watchdog.jsonl")),
         },
         "activity": recent_activity(memory_text),
-        "runtime": runtime_activity(jobs_file),
+        "runtime": runtime_activity(jobs_file, subagent_registry_path=SUBAGENT_REGISTRY_PATH),
     }

@@ -17,7 +17,7 @@ export function JobsTable({ jobs, hideHeading = false }: JobsTableProps) {
     <section className="card" aria-label={hideHeading ? 'Next Scheduled Jobs' : undefined}>
       {!hideHeading && <h2>Next Scheduled Jobs</h2>}
       <div className="table-wrap">
-        <table>
+        <table className="jobs-table">
           <thead>
             <tr>
               <th>Time</th>
@@ -33,9 +33,9 @@ export function JobsTable({ jobs, hideHeading = false }: JobsTableProps) {
             )}
             {jobs.map((job, idx) => (
               <tr key={`${job.name}-${idx}`}>
-                <td data-label="Time">{job.nextRun}</td>
-                <td data-label="Job">{job.name}</td>
-                <td data-label="Status">
+                <td data-label="Time" className="job-time-cell">{job.nextRun}</td>
+                <td data-label="Job" className="job-name-cell">{job.name}</td>
+                <td data-label="Status" className="job-status-cell">
                   <span className={`tiny-pill ${statusClass(job.lastStatus)}`}>{(job.lastStatus || 'n/a').toUpperCase()}</span>
                 </td>
               </tr>
