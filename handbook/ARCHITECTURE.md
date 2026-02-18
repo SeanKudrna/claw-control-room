@@ -33,6 +33,7 @@ Claw Control Room provides a readable, near-real-time view of Claw's operations:
 - Theme tokens align to OpenClaw website palette conventions (deep dark surface + coral/orange accents) for product continuity.
 - Branding assets (favicon/home-screen icons + manifest) are served from `public/icons/` and linked in `index.html`.
 - Interaction system standardizes hover/active/focus-visible states across tabs, chips, refresh, and collapsible summaries for UX coherence.
+- Viewport edge-fade scrims (top/bottom) are rendered as fixed non-interactive overlays to soften scroll exits without affecting input hit targets.
 - Build output: `docs/` (served by GitHub Pages).
 
 ### 3) Status source strategy

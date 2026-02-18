@@ -1,5 +1,11 @@
 # Changelog
 
+## v1.4.9 - 2026-02-17
+
+### Changed
+- Tuned sticky tab header to be less opaque while preserving button contrast.
+- Added subtle fixed top/bottom viewport fade overlays so scrolling content dims out near screen edges instead of hard-cutting.
+
 ## v1.4.8 - 2026-02-17
 
 ### Changed

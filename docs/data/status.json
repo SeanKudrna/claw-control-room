@@ -1,7 +1,7 @@
 {
-  "generatedAt": "2026-02-18T02:35:27.859281+00:00",
-  "generatedAtLocal": "2026-02-17 20:35 ",
-  "controlRoomVersion": "1.4.8",
+  "generatedAt": "2026-02-18T02:52:10.515053+00:00",
+  "generatedAtLocal": "2026-02-17 20:52 ",
+  "controlRoomVersion": "1.4.9",
   "currentFocus": "reliability fallback + close-out hygiene after missing 7:00 usage-report history state",
   "activeWork": "post-19:00 reliability fallback block; re-checking stale 7am usage-report error state and maintaining low-friction recovery path after gateway timeout.",
   "reliability": {
@@ -39,13 +39,13 @@
   ],
   "nextJobs": [
     {
-      "name": "Control room status publish (gist backend)",
-      "nextRun": "20:36",
+      "name": "Critical update failover guard",
+      "nextRun": "20:52",
       "lastStatus": "ok"
     },
     {
-      "name": "Critical update failover guard",
-      "nextRun": "20:37",
+      "name": "Control room status publish (gist backend)",
+      "nextRun": "20:52",
       "lastStatus": "ok"
     },
     {
@@ -176,24 +176,19 @@
         "job": "Reliability watchdog hourly (self-heal + conditional alert)"
       },
       {
-        "label": "20:22",
+        "label": "20:37",
         "status": "ok",
         "score": 1.0,
         "job": "Critical update failover guard"
       },
       {
-        "label": "20:35",
+        "label": "20:51",
         "status": "ok",
         "score": 1.0,
         "job": "Control room status publish (gist backend)"
       }
     ],
     "reliabilityTrend": [
-      {
-        "label": "13:51",
-        "status": "green",
-        "score": 1.0
-      },
       {
         "label": "13:51",
         "status": "green",
@@ -256,6 +251,11 @@
       },
       {
         "label": "20:20",
+        "status": "green",
+        "score": 1.0
+      },
+      {
+        "label": "20:51",
         "status": "green",
         "score": 1.0
       }
@@ -386,21 +386,32 @@
   "runtime": {
     "status": "running",
     "isIdle": false,
-    "activeCount": 1,
+    "activeCount": 2,
     "activeRuns": [
       {
         "jobId": "interactive:main-session",
-        "jobName": "Yeah it would be good if main session jobs also show up. What I was talking about previously was I just don't want the mere fact of us chatt\u2026",
+        "jobName": "Make the sticky header a little bit less darker, it\u2019s barely transparent anymore. It just needs enough darkness to not be totally clear and \u2026",
         "sessionId": "agent:main:main",
         "sessionKey": "agent:main:main",
-        "summary": "Yeah it would be good if main session jobs also show up. What I was talking about previously was I just don't want the mere fact of us chatt\u2026 (tools: edit, exec, read)",
-        "startedAtMs": 1771381861504,
-        "startedAtLocal": "2026-02-17 20:31:01",
-        "runningForMs": 266386,
+        "summary": "Make the sticky header a little bit less darker, it\u2019s barely transparent anymore. It just needs enough darkness to not be totally clear and \u2026 (tools: edit, exec, read)",
+        "startedAtMs": 1771383076106,
+        "startedAtLocal": "2026-02-17 20:51:16",
+        "runningForMs": 54439,
         "activityType": "interactive"
+      },
+      {
+        "jobId": "0dc3c27a-e1c3-4f6f-934a-7e331ffd78ed",
+        "jobName": "Critical update failover guard",
+        "sessionId": "38622004-caf0-4244-9b0a-ea60f363ed18",
+        "sessionKey": "agent:main:cron:0dc3c27a-e1c3-4f6f-934a-7e331ffd78ed:run:38622004-caf0-4244-9b0a-ea60f363ed18",
+        "summary": "Critical update failover guard",
+        "startedAtMs": 1771383120027,
+        "startedAtLocal": "2026-02-17 20:52:00",
+        "runningForMs": 10518,
+        "activityType": "cron"
       }
     ],
-    "checkedAtMs": 1771382127890,
+    "checkedAtMs": 1771383130545,
     "source": "cron-run reconciliation + subagent registry + main-session tool activity"
   }
 }

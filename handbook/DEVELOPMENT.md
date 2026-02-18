@@ -17,6 +17,7 @@ npm run dev
 UI nav notes:
 - Tabs are hash-driven (`#tab-overview`, `#tab-operations`, `#tab-insights`).
 - Major sections are collapsible via native `<details>` wrappers.
+- Sticky tab shell uses a translucent contrast layer; viewport edge-fade overlays are fixed and non-interactive.
 
 ## Build output for GitHub Pages
 
