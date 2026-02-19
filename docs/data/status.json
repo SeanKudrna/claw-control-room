@@ -1,9 +1,9 @@
 {
-  "generatedAt": "2026-02-18T21:35:52.425692+00:00",
-  "generatedAtLocal": "2026-02-18 15:35 ",
-  "controlRoomVersion": "1.4.36",
-  "currentFocus": "Next up:  \u2014 Usage checkpoint window (5pm)",
-  "activeWork": "Next up: 17:00-17:15 \u2014 Usage checkpoint window (5pm)",
+  "generatedAt": "2026-02-19T11:13:33.758920+00:00",
+  "generatedAtLocal": "2026-02-19 05:13 ",
+  "controlRoomVersion": "1.4.39",
+  "currentFocus": "Next up:  \u2014 Start-of-day planning + validator",
+  "activeWork": "Next up: 08:25-08:40 \u2014 Start-of-day planning + validator",
   "reliability": {
     "status": "green"
   },
@@ -43,228 +43,226 @@
   ],
   "nextJobs": [
     {
-      "name": "Control room status publish (gist backend)",
-      "nextRun": "15:36",
+      "name": "Overnight Sprint B6 \u2014 QA gauntlet + release packaging (#50)",
+      "nextRun": "05:10",
+      "lastStatus": null
+    },
+    {
+      "name": "Reliability watchdog hourly (self-heal + conditional alert)",
+      "nextRun": "05:20",
       "lastStatus": "ok"
     },
     {
       "name": "Critical update failover guard",
-      "nextRun": "15:37",
+      "nextRun": "05:22",
       "lastStatus": "ok"
     },
     {
       "name": "Downtime gap auto-fill guard (quiet unless triggered)",
-      "nextRun": "16:00",
+      "nextRun": "06:00",
       "lastStatus": "ok"
     },
     {
-      "name": "Surprise value lane (daily)",
-      "nextRun": "16:10",
+      "name": "ClawPrime daily memory evolution pass",
+      "nextRun": "06:10",
       "lastStatus": "ok"
     },
     {
-      "name": "Reliability watchdog hourly (self-heal + conditional alert)",
-      "nextRun": "16:20",
+      "name": "Overnight Sprint B7 \u2014 Morning 6:25 handoff (#50)",
+      "nextRun": "06:25",
+      "lastStatus": null
+    },
+    {
+      "name": "Control room status publish (gist backend)",
+      "nextRun": "07:00",
       "lastStatus": "ok"
     },
     {
-      "name": "Pre-5pm reliability checkpoint (DAILY_PLAN-driven)",
-      "nextRun": "16:50",
-      "lastStatus": "ok"
-    },
-    {
-      "name": "Usage report - 5pm",
-      "nextRun": "17:00",
-      "lastStatus": "ok"
-    },
-    {
-      "name": "Daily reliability SLO snapshot",
-      "nextRun": "17:05",
+      "name": "Usage check - morning (5h window)",
+      "nextRun": "07:05",
       "lastStatus": "ok"
     }
   ],
   "findings": [
-    "If overflow/large map requires navigation, support click-and-drag panning.",
-    "QA lesson reinforced: screenshot-based visual verification must include real readability/hierarchy checks (line overlap, clipping, layering, navigation ergonomics), not just screenshot capture.",
-    "Upgraded `scripts/build_daily_priority_checklist.py` with `--mark-complete-from HH:MM` so time-passed items auto-check as done.",
-    "Added/ran tests in `scripts/test_daily_priority_checklist.py` (2/2 passing).",
-    "Live proof run wrote `status/daily_priority_checklist.md` with 13:10-aware completion state; evidence logged in `status/capability-build-2026-02-18-1310.md`.",
-    "New comms preference from Sean: for updates, default to short future-impact summaries only; skip long reports unless explicitly requested."
+    "Saved proof notes: `status/overnight/skill-actions-proof.md`.",
+    "Added MCP scaffold transport/helpers under `claw-control-room/scripts/mcp/` and implemented Control-Room server actions for issue/status/release/runtime.",
+    "Added Skill-Lab MCP scaffold server with discover/learn/level-transition flows and JSON-backed scaffold state.",
+    "Drafted Runtime-Bridge low-latency sync protocol in `claw-control-room/docs/mcp/runtime-bridge-protocol-draft.md`.",
+    "Implemented and validated an end-to-end MCP-connected flow (`run_control_room_mcp_flow.py` + `test_control_room_mcp_flow.py`), with proof artifact at `status/overnight/mcp-control-room-flow-proof.json`.",
+    "Wrote overnight deliverables: `status/overnight/mcp-pack.md` and related plan/draft files; full quality gate passed."
   ],
   "workstream": {
     "now": [
-      "Retry issue #49 implementation in /Users/seankudrna/.openclaw/workspace/claw-control-room (previous run terminated unexpectedly). Issue: https://github.com/SeanKudrna/claw-control-\u2026"
+      "Overnight Sprint B6 \u2014 QA gauntlet + release packaging (#50)"
     ],
     "next": [
-      "15:36 \u2014 Scheduled job: Control room status publish (gist backend)",
-      "15:37 \u2014 Scheduled job: Critical update failover guard",
-      "16:00 \u2014 Scheduled job: Downtime gap auto-fill guard (quiet unless triggered)",
-      "16:10 \u2014 Scheduled job: Surprise value lane (daily)",
-      "16:20 \u2014 Scheduled job: Reliability watchdog hourly (self-heal + conditional alert)"
+      "05:20 \u2014 Scheduled job: Reliability watchdog hourly (self-heal + conditional alert)",
+      "05:22 \u2014 Scheduled job: Critical update failover guard",
+      "06:00 \u2014 Scheduled job: Downtime gap auto-fill guard (quiet unless triggered)",
+      "06:10 \u2014 Scheduled job: ClawPrime daily memory evolution pass",
+      "06:25 \u2014 Scheduled job: Overnight Sprint B7 \u2014 Morning 6:25 handoff (#50)"
     ],
     "done": [
-      "14:30 \u2014 Reliability + quality hardening block",
-      "12:15 \u2014 Usage checkpoint window",
-      "09:10 \u2014 Control-room issue triage block (mandatory)",
-      "Critical update failover guard",
-      "Usage report - noon"
+      "Overnight Sprint B5 \u2014 MCP expansion pack (#50)",
+      "Overnight Sprint B4 \u2014 Skill actions + live job states (#50)",
+      "Overnight Sprint B3.5 \u2014 Job model/thinking visibility in details (#50)"
     ]
   },
   "charts": {
     "jobSuccessTrend": [
       {
-        "label": "06:10",
+        "label": "16:10",
         "status": "ok",
         "score": 1.0,
-        "job": "ClawPrime daily memory evolution pass"
+        "job": "Surprise value lane (daily)"
       },
       {
-        "label": "07:00",
+        "label": "16:50",
         "status": "ok",
         "score": 1.0,
-        "job": "Usage report - 7am"
+        "job": "Pre-5pm reliability checkpoint (DAILY_PLAN-driven)"
       },
       {
-        "label": "08:20",
+        "label": "17:05",
         "status": "ok",
         "score": 1.0,
-        "job": "Autonomy daily planner (DAILY_PLAN source of truth)"
+        "job": "Daily reliability SLO snapshot"
       },
       {
-        "label": "08:24",
+        "label": "17:40",
         "status": "ok",
         "score": 1.0,
-        "job": "Daily plan preflight validator"
+        "job": "Proof schema lint sweep"
       },
       {
-        "label": "11:10",
+        "label": "19:00",
         "status": "ok",
         "score": 1.0,
-        "job": "Reliability deep-work block A (DAILY_PLAN-driven)"
+        "job": "Autonomy evening wrap + next-day prep"
       },
       {
-        "label": "12:00",
+        "label": "19:30",
         "status": "ok",
         "score": 1.0,
-        "job": "Usage report - noon"
+        "job": "Evolution profile refresh (helper, non-planner)"
       },
       {
-        "label": "13:10",
-        "status": "ok",
-        "score": 1.0,
-        "job": "Capability build block (plan+result pings)"
-      },
-      {
-        "label": "13:35",
-        "status": "ok",
-        "score": 1.0,
-        "job": "Control room issue triage + QA intake"
-      },
-      {
-        "label": "14:15",
+        "label": "20:15",
         "status": "ok",
         "score": 1.0,
         "job": "Today dashboard refresh (every 3h)"
       },
       {
-        "label": "15:00",
+        "label": "21:35",
         "status": "ok",
         "score": 1.0,
-        "job": "Downtime gap auto-fill guard (quiet unless triggered)"
+        "job": "Control room issue triage + QA intake"
       },
       {
-        "label": "15:10",
+        "label": "21:35",
         "status": "ok",
         "score": 1.0,
-        "job": "Reliability deep-work block B (DAILY_PLAN-driven)"
+        "job": "Usage check - nightly (5h window)"
       },
       {
-        "label": "15:20",
+        "label": "22:59",
+        "status": "ok",
+        "score": 1.0,
+        "job": "Control room status publish (gist backend)"
+      },
+      {
+        "label": "01:35",
+        "status": "ok",
+        "score": 1.0,
+        "job": "Nightly stale cron prune (scripted)"
+      },
+      {
+        "label": "04:20",
         "status": "ok",
         "score": 1.0,
         "job": "Reliability watchdog hourly (self-heal + conditional alert)"
       },
       {
-        "label": "15:22",
+        "label": "05:00",
+        "status": "ok",
+        "score": 1.0,
+        "job": "Downtime gap auto-fill guard (quiet unless triggered)"
+      },
+      {
+        "label": "05:07",
         "status": "ok",
         "score": 1.0,
         "job": "Critical update failover guard"
-      },
-      {
-        "label": "15:35",
-        "status": "ok",
-        "score": 1.0,
-        "job": "Control room status publish (gist backend)"
       }
     ],
     "reliabilityTrend": [
       {
-        "label": "10:51",
+        "label": "00:51",
         "status": "green",
         "score": 1.0
       },
       {
-        "label": "11:00",
+        "label": "01:00",
         "status": "green",
         "score": 1.0
       },
       {
-        "label": "11:02",
+        "label": "01:51",
         "status": "green",
         "score": 1.0
       },
       {
-        "label": "11:10",
+        "label": "02:00",
         "status": "green",
         "score": 1.0
       },
       {
-        "label": "11:20",
+        "label": "02:20",
         "status": "green",
         "score": 1.0
       },
       {
-        "label": "11:51",
+        "label": "02:22",
         "status": "green",
         "score": 1.0
       },
       {
-        "label": "12:00",
+        "label": "02:51",
         "status": "green",
         "score": 1.0
       },
       {
-        "label": "12:20",
+        "label": "03:00",
         "status": "green",
         "score": 1.0
       },
       {
-        "label": "12:51",
+        "label": "03:20",
         "status": "green",
         "score": 1.0
       },
       {
-        "label": "13:20",
+        "label": "03:51",
         "status": "green",
         "score": 1.0
       },
       {
-        "label": "13:51",
+        "label": "04:00",
         "status": "green",
         "score": 1.0
       },
       {
-        "label": "14:20",
+        "label": "04:20",
         "status": "green",
         "score": 1.0
       },
       {
-        "label": "14:51",
+        "label": "04:51",
         "status": "green",
         "score": 1.0
       },
       {
-        "label": "15:20",
+        "label": "05:00",
         "status": "green",
         "score": 1.0
       }
@@ -273,123 +271,48 @@
   "activity": [
     {
       "time": "n/a",
-      "category": "reliability",
-      "text": "Sean directed an overnight steering sprint for claw-control-room (reliability + UX + transparency focus) to run through the night and deliver a strong 6:20-6:30 AM summary."
+      "category": "ops",
+      "text": "Implemented interactive Skills actions in `claw-control-room`: locked-skill `Start Learning`, `Discover New Skill` candidate flow, and live node/modal job states (`pending/running/completed`)."
     },
     {
       "time": "n/a",
       "category": "ops",
-      "text": "New operating directive from Sean: \"ClawPrime\" mode \u2014 maximum autonomy/resourcefulness by default, proactive end-to-end ownership, and concise done-state reporting (with high-stakes safety boundaries still respected)."
+      "text": "Added deterministic skill progression updates on learning-job completion (tier/level/progress/unlock transitions)."
     },
     {
       "time": "n/a",
       "category": "ops",
-      "text": "Evolution directive: every heartbeat/background cycle, review last 3 tasks for friction, ship one proactive optimization/fix/automation, log it, and send a one-line \"I just leveled myself up\" win; if idle, select highest-ROI opportunity and execute autonomously."
+      "text": "Added Playwright regression `scripts/tests/test_skill_actions_flow.mjs` and wired into `scripts/quality_gate.sh`; full quality gate passed."
     },
     {
       "time": "n/a",
       "category": "ops",
-      "text": "Output rules directive (non-negotiable): completion replies max 3 bullets + one emoji (+ link/file if created), complex work format = \"Done. Summary | Decisions | Next auto-step\", and only show internal reasoning when Sean explicitly requests \"show reasoning\"."
-    },
-    {
-      "time": "n/a",
-      "category": "ops",
-      "text": "Tool Fusion protocol added: default to rapid multi-tool chaining and parallel-path execution (pick winner, kill losers), prioritize free/public 2026 resources/MVPs first, and auto-automate anything feasible in under ~5 minutes."
-    },
-    {
-      "time": "n/a",
-      "category": "ops",
-      "text": "Memory Evolution directive added: auto-create and maintain `ClawPrime_Memory.md`; after each task store 1\u20133 key learnings; run daily memory prune + high-ROI pattern strengthening + one workflow self-improvement."
-    },
-    {
-      "time": "n/a",
-      "category": "ops",
-      "text": "Safety + Delight lock directive: apply internal safety/reversibility/benefit checklist before file/account/external actions; ask only for truly irreversible actions; include a small delight layer and occasional \ud83d\udd25 energy (1-10) in completions."
-    },
-    {
-      "time": "n/a",
-      "category": "ops",
-      "text": "Infinite Sprint directive: during background/heartbeat cycles, run continuous no-idle compounding improvements (scan for highest-leverage opportunities and execute autonomously overnight/daylong)."
-    },
-    {
-      "time": "n/a",
-      "category": "ui",
-      "text": "Overnight control-room sprint block 6 closeout completed (05:15 CST): full quality gate pass on v1.4.17, issue snapshot refreshed to 0 open, status gist republished, and complete handoff summary finalized in `status/overnight-control-room-log.md` (no additional patch required)."
+      "text": "Saved proof notes: `status/overnight/skill-actions-proof.md`."
     },
     {
       "time": "n/a",
       "category": "release",
-      "text": "ClawPrime daily memory evolution pass completed (06:10 CST): distilled 3 durable patterns into `ClawPrime_Memory.md` (layered runtime-truth guardrails, explicit degraded/source semantics, issue-first gate-verified release loop), pruned redundancy, and tightened the default friction-fix sequence."
+      "text": "Added MCP scaffold transport/helpers under `claw-control-room/scripts/mcp/` and implemented Control-Room server actions for issue/status/release/runtime."
     },
     {
       "time": "n/a",
       "category": "ops",
-      "text": "Workflow improvement auto-applied: added executable helper `scripts/clawprime_memory_evolution_helper.py` to auto-pull high-signal outcomes from recent memory + overnight log for faster daily memory evolution cycles."
+      "text": "Added Skill-Lab MCP scaffold server with discover/learn/level-transition flows and JSON-backed scaffold state."
     },
     {
       "time": "n/a",
-      "category": "ui",
-      "text": "Level-up directive from Sean: screenshot-based local visual verification is now a global default skill for UI work across all projects (not just control-room) before declaring completion."
-    },
-    {
-      "time": "n/a",
-      "category": "ui",
-      "text": "Reinforced ClawPrime expectation: proactively conceive and build fun, out-of-the-box, high-visibility/high-utility features without waiting to be asked."
+      "category": "docs",
+      "text": "Drafted Runtime-Bridge low-latency sync protocol in `claw-control-room/docs/mcp/runtime-bridge-protocol-draft.md`."
     },
     {
       "time": "n/a",
       "category": "ops",
-      "text": "Sean explicitly reinforced that ClawPrime should proactively invent and ship fun, out-of-the-box, high-utility, high-visibility features without waiting to be asked."
-    },
-    {
-      "time": "n/a",
-      "category": "ui",
-      "text": "Skills tab direction is now clear: it should feel like a genuine video-game skill tree (radial/branching node graph), not card rows with cosmetic connector lines."
-    },
-    {
-      "time": "n/a",
-      "category": "ui",
-      "text": "Usability requirements for Skills view:"
+      "text": "Implemented and validated an end-to-end MCP-connected flow (`run_control_room_mcp_flow.py` + `test_control_room_mcp_flow.py`), with proof artifact at `status/overnight/mcp-control-room-flow-proof.json`."
     },
     {
       "time": "n/a",
       "category": "ops",
-      "text": "Tree should use full available width (avoid cramped half-width layout)."
-    },
-    {
-      "time": "n/a",
-      "category": "ops",
-      "text": "Skill details should open in a popup/modal instead of permanently consuming side-panel space."
-    },
-    {
-      "time": "n/a",
-      "category": "ui",
-      "text": "If overflow/large map requires navigation, support click-and-drag panning."
-    },
-    {
-      "time": "n/a",
-      "category": "ops",
-      "text": "QA lesson reinforced: screenshot-based visual verification must include real readability/hierarchy checks (line overlap, clipping, layering, navigation ergonomics), not just screenshot capture."
-    },
-    {
-      "time": "n/a",
-      "category": "ui",
-      "text": "Upgraded `scripts/build_daily_priority_checklist.py` with `--mark-complete-from HH:MM` so time-passed items auto-check as done."
-    },
-    {
-      "time": "n/a",
-      "category": "ops",
-      "text": "Added/ran tests in `scripts/test_daily_priority_checklist.py` (2/2 passing)."
-    },
-    {
-      "time": "n/a",
-      "category": "ui",
-      "text": "Live proof run wrote `status/daily_priority_checklist.md` with 13:10-aware completion state; evidence logged in `status/capability-build-2026-02-18-1310.md`."
-    },
-    {
-      "time": "n/a",
-      "category": "ops",
-      "text": "New comms preference from Sean: for updates, default to short future-impact summaries only; skip long reports unless explicitly requested."
+      "text": "Wrote overnight deliverables: `status/overnight/mcp-pack.md` and related plan/draft files; full quality gate passed."
     }
   ],
   "skills": {
@@ -441,7 +364,7 @@
           }
         ],
         "dependencies": [],
-        "learnedAt": "2026-02-18",
+        "learnedAt": "2026-02-19",
         "level": 5,
         "progress": 1.0
       },
@@ -491,7 +414,7 @@
         "dependencies": [
           "runtime-orchestration"
         ],
-        "learnedAt": "2026-02-18",
+        "learnedAt": "2026-02-19",
         "level": 5,
         "progress": 1.0
       },
@@ -541,7 +464,7 @@
         "dependencies": [
           "runtime-orchestration"
         ],
-        "learnedAt": "2026-02-18",
+        "learnedAt": "2026-02-19",
         "level": 5,
         "progress": 1.0
       },
@@ -591,7 +514,7 @@
         "dependencies": [
           "runtime-orchestration"
         ],
-        "learnedAt": "2026-02-18",
+        "learnedAt": "2026-02-19",
         "level": 5,
         "progress": 1.0
       },
@@ -642,7 +565,7 @@
           "reliability-guardrails",
           "observability"
         ],
-        "learnedAt": "2026-02-18",
+        "learnedAt": "2026-02-19",
         "level": 5,
         "progress": 1.0
       },
@@ -693,20 +616,21 @@
           "reliability-guardrails",
           "ui-systems"
         ],
-        "learnedAt": "2026-02-18",
+        "learnedAt": "2026-02-19",
         "level": 5,
         "progress": 1.0
       }
     ],
     "evolution": {
       "sourceArtifacts": [
+        "/Users/seankudrna/.openclaw/workspace/memory/2026-02-19.md",
         "/Users/seankudrna/.openclaw/workspace/memory/2026-02-18.md",
         "/Users/seankudrna/.openclaw/workspace/memory/2026-02-17.md",
         "/Users/seankudrna/.openclaw/workspace/memory/2026-02-16.md",
         "/Users/seankudrna/.openclaw/workspace/ClawPrime_Memory.md"
       ],
-      "deterministicSeed": "7b37e8fb9c86",
-      "lastProcessedAt": "2026-02-18T15:35:52.344595",
+      "deterministicSeed": "b28f7d93e936",
+      "lastProcessedAt": "2026-02-19T05:13:33.671472",
       "mode": "keyword-scan-v1"
     }
   },
@@ -715,7 +639,12 @@
     "isIdle": true,
     "activeCount": 0,
     "activeRuns": [],
-    "checkedAtMs": 1771450552345,
-    "source": "cron-run reconciliation + subagent registry [static fallback runtime sanitized]"
+    "checkedAtMs": 1771499613672,
+    "source": "fallback-static",
+    "revision": "rtv1-1771499613672",
+    "snapshotMode": "fallback-sanitized",
+    "degradedReason": "Static snapshot cannot carry live runtime rows",
+    "droppedTerminalCount": 173,
+    "droppedStaleCount": 1
   }
 }

@@ -1,5 +1,124 @@
 # Changelog
 
+## v1.4.39 - 2026-02-19
+
+### Added
+- Added hybrid-runtime truth core delivery artifacts for Issue #50: deterministic live reconciler, runtime event journal/materializer pipeline, and provenance-rich runtime payload metadata.
+- Added MCP expansion-pack scaffolding (`control-room` + `skill-lab` stdio servers), JSON-RPC transport helpers, and end-to-end proof runner/tests.
+- Added skill operations loop for locked domains (`Start Learning`, `Discover New Skill`) with deterministic pending/running/completed job progression and auto-tier promotion/unlock updates.
+- Added focused visual QA capture scripts and proof artifacts for issue #50 critical paths (skills map fit/zoom/modal and runtime details model/thinking fallback).
+
+### Changed
+- Hardened Skills UX into a full-tab deterministic map surface with improved readability hierarchy, dependency-aware branch layout, bounded pan/zoom controls, modal meaning/requirements ladder, and real-time node job-state chips.
+- Extended runtime details UX with explicit `model` + `thinking` visibility, baseline target evaluation (`gpt-5.3-codex + high`), and fallback labels when metadata is unavailable.
+- Expanded quality gate to include runtime truth stress suites, MCP flow checks, runtime-details modal assertions, and skill action/realtime-transition validation.
+- Updated docs/runbooks for runtime ledger cadence, MCP operations, issue #50 QA capture loop, release discipline, and proof-location conventions.
+
+### Validation
+- Full quality gate passed (`./scripts/quality_gate.sh`).
+- Visual QA loop executed for critical issue #50 flows with refreshed artifacts under `status/ui-validation/issue50-*.png`.
+
+## v1.4.38 - 2026-02-19
+
+### Added
+- Added deterministic skill action runtime (`src/lib/skillActions.ts`) to support interactive learning jobs and candidate skill discovery.
+- Added locked-skill modal actions: `Start Learning` (background pending/running/completed job) and `Discover New Skill` (candidate locked-node creation flow).
+- Added near-real-time learning job state surfaces in Skills UI: per-node state chip + modal job log panel.
+- Added focused Playwright regression `scripts/tests/test_skill_actions_flow.mjs` and wired it into `scripts/quality_gate.sh`.
+
+### Changed
+- Skills completion handling now deterministically promotes tier/level/unlock state when learning jobs finish.
+- Skills modal now includes action-state rationale messaging for blocked/max-tier/in-flight conditions.
+
+### Docs
+- Updated README + architecture/development handbook contracts for skill actions, job-state visibility, and discover flow behavior.
+
+## Historical detail — Overnight Sprint Block 5 (Issue #50 MCP expansion pack)
+
+### Added
+- Added MCP stdio transport helpers in `scripts/mcp/jsonrpc_stdio.py`.
+- Added Control-Room MCP scaffold server `scripts/mcp/control_room_mcp_server.py` with tool actions:
+  - `control-room.issue.snapshot`
+  - `control-room.status.build`
+  - `control-room.release.extract-notes`
+  - `control-room.runtime.materialize`
+- Added Skill-Lab MCP scaffold server `scripts/mcp/skill_lab_mcp_server.py` with tool actions:
+  - `skill-lab.state.get`
+  - `skill-lab.discover`
+  - `skill-lab.learn.start`
+  - `skill-lab.level.transition`
+- Added end-to-end MCP proof runner `scripts/mcp/run_control_room_mcp_flow.py` and smoke test `scripts/tests/test_control_room_mcp_flow.py`.
+- Added MCP design docs under `docs/mcp/` including runtime-bridge protocol draft.
+
+### Changed
+- Extended repository runbook docs with MCP scaffold server commands and proof flow usage.
+
+### Docs
+- Updated README + architecture/development handbook with MCP integration layer and docs index.
+
+## Historical detail — Overnight Sprint Block 3.5 (Issue #50 Runtime job details model/thinking visibility)
+
+### Added
+- Added runtime-job-details visual proof capture script (`scripts/tests/capture_issue50_job_details_screenshots.mjs`) with outputs under `status/ui-validation/issue50-job-details-model-thinking-*.png`.
+- Added focused UI runtime details regression script (`scripts/tests/test_runtime_job_details_modal.mjs`) and wired it into `scripts/quality_gate.sh`.
+
+### Changed
+- Extended runtime metadata pipeline (collector -> materializer -> reconciler -> status payload) to carry per-run `model` and `thinking` fields for cron/subagent rows when available.
+- Runtime details modal now shows `Model used`, `Thinking level`, and `Baseline target` with explicit fallback handling when metadata is absent.
+- Baseline indicator now checks preferred default target (`gpt-5.3-codex + high`) and labels match/non-match/unavailable states.
+
+### Tests
+- Added regression coverage for runtime metadata propagation in `scripts/tests/test_status_builder.py` and `scripts/tests/test_runtime_materializer.py`.
+- Added Playwright runtime details modal checks for baseline and missing-metadata fallback behavior.
+
+### Docs
+- Updated README + handbook architecture/development docs for runtime job detail transparency contract.
+
+## Historical detail — Overnight Sprint Block 3 (Issue #50 Skill-tree visual excellence)
+
+### Added
+- Added focused issue #50 visual QA capture script (`scripts/tests/capture_issue50_screenshots.mjs`) with desktop/mobile proof outputs under `status/ui-validation/issue50-*.png`.
+- Added modal meaning/requirements surface for skills (`Current function`, `Next level-up meaning`, and `Locked requirements` checklist) to clarify progression intent and gating.
+
+### Changed
+- Upgraded Skills node visual hierarchy with larger card rhythm, stronger typography/contrast, and explicit in-node meaning layers (progress + function + next level-up copy).
+- Improved branch clarity with depth-guide ring overlays and expanded node-safe spacing constants in deterministic layout (`src/lib/skillTreeLayout.ts`).
+- Preserved full-tab pannable map + modal inspection UX while refining readability across desktop and mobile breakpoints.
+
+### Tests
+- Extended `scripts/tests/test_ui_regressions.mjs` to assert in-node function/next-meaning copy and modal locked-requirements semantics.
+- Re-ran full quality gate and captured local visual proof for the issue #50 pass.
+
+### Docs
+- Updated README + handbook architecture/development docs for the refined skill-tree meaning model and modal requirements contract.
+
+## Historical detail — Overnight Sprint Block 2 (Issue #50 Runtime Truth Core)
+
+### Added
+- Added `scripts/lib/runtime_reconciler.py` with deterministic run-key normalization, candidate/terminal collection, and terminal-dominant stale-aware reconciliation.
+- Added runtime event utilities in `scripts/lib/runtime_events.py` (canonical event schema helpers, deterministic event IDs, source-priority ordering).
+- Added runtime ledger scripts:
+  - `scripts/runtime/collect_runtime_events.py` (append-only runtime-event journal with idempotency guard)
+  - `scripts/runtime/materialize_runtime_state.py` (deterministic replay + monotonic revision materialization)
+- Added focused runtime correctness test suites:
+  - `scripts/tests/test_runtime_reconciler.py`
+  - `scripts/tests/test_runtime_materializer.py`
+  - `scripts/tests/test_runtime_truth_stress.py`
+
+### Changed
+- Upgraded `runtime_activity()` to prefer fresh materialized runtime state and fall back to live reconciler when materialized state is missing/stale/invalid.
+- Runtime payload contract now includes provenance metadata (`revision`, `snapshotMode`, `degradedReason`) and explicit source modes (`materialized-ledger`, `live-reconciler`, `fallback-static`).
+- Static snapshot sanitization now sets explicit fallback runtime semantics (`snapshotMode=fallback-sanitized`, `source=fallback-static`) while preserving idle-only guarantees.
+- Runtime UI/types/API validation now surface and enforce the new runtime provenance metadata.
+
+### Tests
+- Extended `scripts/tests/test_status_builder.py` with runtime materialized-preference, stale-fallback, stale-orphan expiry, and updated sanitization assertions.
+- Added deterministic replay stress validation to prove stable active-set output under shuffled event ingestion order.
+- Expanded quality gate to compile and execute all new runtime modules and test suites.
+
+### Docs
+- Updated README and handbook architecture/development docs for hybrid runtime truth flow, runtime ledger scripts, and runtime metadata contract updates.
+
 ## v1.4.36 - 2026-02-18
 
 ### Added

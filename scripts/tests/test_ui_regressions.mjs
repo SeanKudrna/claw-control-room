@@ -168,10 +168,14 @@ try {
   const nodeDomainContract = await desktopPage.$$eval('.skills-card .skill-node', (nodes) => {
     const ids = nodes.map((node) => node.getAttribute('data-node-id') ?? '');
     const progressLabels = nodes.map((node) => node.querySelector('.skill-node-progress')?.textContent?.trim() ?? '');
+    const functionCopy = nodes.map((node) => node.querySelector('.skill-node-function')?.textContent?.trim() ?? '');
+    const nextCopy = nodes.map((node) => node.querySelector('.skill-node-meta')?.textContent?.trim() ?? '');
     return {
       uniqueCount: new Set(ids).size,
       totalCount: ids.length,
       progressLabels,
+      functionCopy,
+      nextCopy,
     };
   });
   assert.equal(
@@ -182,6 +186,14 @@ try {
   assert(
     nodeDomainContract.progressLabels.every((label) => /^Tier\s+\d+\s*\/\s*\d+$/i.test(label)),
     `Each skill node should show concise tier progression (e.g., Tier 3/5). Got: ${nodeDomainContract.progressLabels.join(', ')}`,
+  );
+  assert(
+    nodeDomainContract.functionCopy.every((label) => label.length >= 12),
+    `Each skill node should include current-function copy. Got: ${nodeDomainContract.functionCopy.join(' | ')}`,
+  );
+  assert(
+    nodeDomainContract.nextCopy.every((label) => /^Next:/i.test(label)),
+    `Each skill node should include next level-up meaning. Got: ${nodeDomainContract.nextCopy.join(' | ')}`,
   );
 
   const controlContract = await desktopPage.$$eval('.skills-map-controls [data-map-control]', (controls) =>
@@ -289,6 +301,32 @@ try {
   for (const expectedLabel of ['State', 'Learned', 'Signal', 'Dependencies']) {
     assert(modalFieldLabels.includes(expectedLabel), `Skill modal missing field: ${expectedLabel}`);
   }
+
+  const modalMeaningHeadings = await desktopPage.$$eval('.skill-meaning-card h4', (nodes) => nodes.map((node) => node.textContent?.trim() ?? ''));
+  for (const heading of ['Current function', 'Next level-up meaning']) {
+    assert(modalMeaningHeadings.includes(heading), `Skill modal meaning card missing: ${heading}`);
+  }
+
+  const requirementContract = await desktopPage.$eval('.skill-requirements-panel', (panel) => {
+    const heading = panel.querySelector('.skill-requirements-header h4')?.textContent?.trim() ?? '';
+    const entries = [...panel.querySelectorAll('.skill-requirement')].map((entry) => ({
+      label: entry.querySelector('.skill-requirement-label')?.textContent?.trim() ?? '',
+      state: entry.querySelector('.skill-requirement-state')?.textContent?.trim() ?? '',
+      detail: entry.querySelector('.skill-requirement-copy .muted')?.textContent?.trim() ?? '',
+    }));
+
+    return {
+      heading,
+      count: entries.length,
+      entries,
+    };
+  });
+  assert.equal(requirementContract.heading, 'Locked requirements', 'Skill modal should include locked-requirements heading.');
+  assert(requirementContract.count >= 1, 'Skill modal should list at least one locked requirement row.');
+  assert(
+    requirementContract.entries.every((entry) => entry.label.length > 0 && entry.state.length > 0 && entry.detail.length > 0),
+    `Skill requirement rows should include label/state/detail. Got: ${JSON.stringify(requirementContract.entries)}`,
+  );
 
   const tierLadderState = await desktopPage.$eval('.skill-tier-panel', (panel) => {
     const steps = [...panel.querySelectorAll('.skill-tier-step')];

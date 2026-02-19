@@ -1,8 +1,18 @@
 import { Minus, Plus, X } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
+import {
+  applyLearningCompletion,
+  areSkillDependenciesMet,
+  createCandidateSkillNode,
+  createLearningJob,
+  latestLearningJobBySkill,
+  transitionLearningJobs,
+  type SkillLearningJob,
+  type SkillLearningJobState,
+} from '../lib/skillActions';
 import { computeSkillTreeLayout } from '../lib/skillTreeLayout';
-import { getSkillTierProgress } from '../lib/skillsModel';
+import { getSkillTierLadder, getSkillTierProgress } from '../lib/skillsModel';
 import type { SkillNode, SkillsPayload } from '../types/status';
 import { SkillTierLadder } from './SkillTierLadder';
 
@@ -11,6 +21,14 @@ interface SkillsTreeProps {
 }
 
 type VisualState = 'active' | 'in-progress' | 'planned' | 'locked';
+type RequirementStatus = 'met' | 'blocked' | 'pending';
+
+interface SkillRequirement {
+  id: string;
+  label: string;
+  detail: string;
+  status: RequirementStatus;
+}
 
 interface DragState {
   pointerId: number;
@@ -67,6 +85,29 @@ function stateLabel(state: VisualState): string {
   return 'Locked';
 }
 
+function learningJobStateLabel(state: SkillLearningJobState): string {
+  if (state === 'pending') return 'Queued';
+  if (state === 'running') return 'Running';
+  return 'Completed';
+}
+
+function describeLearningJobTiming(job: SkillLearningJob, nowMs: number): string {
+  if (job.state === 'pending') {
+    const queueMs = Math.max(0, job.createdAtMs + job.queueDelayMs - nowMs);
+    return `Starts in ${Math.ceil(queueMs / 1000)}s`;
+  }
+
+  if (job.state === 'running') {
+    const startedAtMs = job.startedAtMs ?? (job.createdAtMs + job.queueDelayMs);
+    const elapsedMs = Math.max(0, nowMs - startedAtMs);
+    return `Running ${Math.floor(elapsedMs / 1000)}s`;
+  }
+
+  const completedAtMs = job.completedAtMs ?? (job.startedAtMs ?? (job.createdAtMs + job.queueDelayMs)) + job.runDurationMs;
+  const finishedAgoMs = Math.max(0, nowMs - completedAtMs);
+  return `Finished ${Math.floor(finishedAgoMs / 1000)}s ago`;
+}
+
 function dedupeDomainNodes(nodes: SkillNode[]): SkillNode[] {
   const merged = new Map<string, SkillNode>();
   for (const node of nodes) {
@@ -95,27 +136,189 @@ function toVisualState(node: SkillNode): VisualState {
   return 'planned';
 }
 
+function getNextLevelMeaning(node: SkillNode): string {
+  if (node.nextUnlock && node.nextUnlock.trim().length > 0) {
+    return node.nextUnlock.trim();
+  }
+
+  const progress = getSkillTierProgress(node);
+  if (!progress.nextTier) {
+    return 'Tier path complete. Continue compounding consistency and system quality in this domain.';
+  }
+
+  const ladder = getSkillTierLadder(node);
+  const nextTier = ladder.find((entry) => entry.tier === progress.nextTier);
+  if (nextTier?.difference) return nextTier.difference;
+  if (nextTier?.definition) return nextTier.definition;
+
+  return `Tier ${progress.nextTier} expands execution capability in this domain.`;
+}
+
+function buildLockedRequirements(
+  node: SkillNode,
+  nodeById: Map<string, SkillNode>,
+  nodeNameById: Map<string, string>,
+): SkillRequirement[] {
+  const requirements: SkillRequirement[] = [];
+
+  for (const depId of node.dependencies) {
+    const depNode = nodeById.get(depId);
+    const depName = nodeNameById.get(depId) ?? depId;
+
+    if (!depNode) {
+      requirements.push({
+        id: `dep-${depId}`,
+        label: `${depName} dependency`,
+        detail: 'Dependency is missing from the current graph payload.',
+        status: 'blocked',
+      });
+      continue;
+    }
+
+    const depProgress = getSkillTierProgress(depNode);
+    const dependencyMet = depProgress.currentTier > 0 || depNode.state === 'active';
+
+    requirements.push({
+      id: `dep-${depId}`,
+      label: `${depName} unlocked`,
+      detail: dependencyMet
+        ? `Met at Tier ${depProgress.currentTier}/${depProgress.maxTier}.`
+        : `Requires Tier 1 unlock in ${depName}.`,
+      status: dependencyMet ? 'met' : 'blocked',
+    });
+  }
+
+  const progress = getSkillTierProgress(node);
+  if (progress.nextTier) {
+    requirements.push({
+      id: `${node.id}-next-tier`,
+      label: `Tier ${progress.nextTier} progression gate`,
+      detail: getNextLevelMeaning(node),
+      status: 'pending',
+    });
+  } else {
+    requirements.push({
+      id: `${node.id}-tier-complete`,
+      label: 'Tier path complete',
+      detail: 'No additional level lock remains in this domain.',
+      status: 'met',
+    });
+  }
+
+  if (!requirements.length) {
+    requirements.push({
+      id: `${node.id}-no-requirements`,
+      label: 'No prerequisite dependencies',
+      detail: 'This domain can progress independently.',
+      status: 'met',
+    });
+  }
+
+  return requirements;
+}
+
+function mergeSkillNodes(
+  baseNodes: SkillNode[],
+  overrides: Record<string, SkillNode>,
+  candidates: SkillNode[],
+): SkillNode[] {
+  const mergedBase = baseNodes.map((node) => overrides[node.id] ?? node);
+  const merged = [...mergedBase];
+  const seen = new Set(merged.map((node) => node.id));
+
+  for (const candidate of candidates) {
+    if (seen.has(candidate.id)) continue;
+    merged.push(candidate);
+    seen.add(candidate.id);
+  }
+
+  return dedupeDomainNodes(merged);
+}
+
 export function SkillsTree({ skills }: SkillsTreeProps) {
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
   const [dragging, setDragging] = useState(false);
   const [isPannable, setIsPannable] = useState(false);
   const [zoom, setZoom] = useState(DEFAULT_ZOOM);
   const [fitZoom, setFitZoom] = useState(DEFAULT_ZOOM);
+  const [skillJobs, setSkillJobs] = useState<SkillLearningJob[]>([]);
+  const [candidateNodes, setCandidateNodes] = useState<SkillNode[]>([]);
+  const [nodeOverrides, setNodeOverrides] = useState<Record<string, SkillNode>>({});
+  const [discoverFlowOpen, setDiscoverFlowOpen] = useState(false);
+  const [discoverName, setDiscoverName] = useState('');
+  const [jobNowMs, setJobNowMs] = useState(() => Date.now());
+
   const mapRef = useRef<HTMLDivElement | null>(null);
   const hasAutoCenteredRef = useRef(false);
   const zoomRef = useRef(DEFAULT_ZOOM);
   const dragStateRef = useRef<DragState | null>(null);
   const pendingZoomAnchorRef = useRef<{ worldX: number; worldY: number; anchorX: number; anchorY: number } | null>(null);
+  const appliedCompletionIdsRef = useRef<Set<string>>(new Set());
 
-  const domainNodes = useMemo(() => dedupeDomainNodes(skills.nodes), [skills.nodes]);
+  const baseDomainNodes = useMemo(() => dedupeDomainNodes(skills.nodes), [skills.nodes]);
+
+  useEffect(() => {
+    setCandidateNodes([]);
+    setNodeOverrides({});
+    setSkillJobs([]);
+    setDiscoverFlowOpen(false);
+    setDiscoverName('');
+    appliedCompletionIdsRef.current = new Set();
+  }, [skills.evolution.deterministicSeed]);
+
+  useEffect(() => {
+    const timer = window.setInterval(() => {
+      const nowMs = Date.now();
+      setJobNowMs(nowMs);
+      setSkillJobs((current) => transitionLearningJobs(current, nowMs));
+    }, 400);
+
+    return () => window.clearInterval(timer);
+  }, []);
+
+  const domainNodes = useMemo(
+    () => mergeSkillNodes(baseDomainNodes, nodeOverrides, candidateNodes),
+    [baseDomainNodes, candidateNodes, nodeOverrides],
+  );
+
+  useEffect(() => {
+    const completedJobs = skillJobs.filter((job) => job.state === 'completed' && !appliedCompletionIdsRef.current.has(job.id));
+    if (!completedJobs.length) return;
+
+    setNodeOverrides((currentOverrides) => {
+      const nextOverrides = { ...currentOverrides };
+      const liveNodes = mergeSkillNodes(baseDomainNodes, currentOverrides, candidateNodes);
+      const liveNodeById = new Map(liveNodes.map((node) => [node.id, node]));
+
+      for (const job of completedJobs) {
+        const node = liveNodeById.get(job.skillId);
+        if (!node) continue;
+        if (!areSkillDependenciesMet(node, liveNodeById)) continue;
+
+        const completedAtMs = job.completedAtMs ?? Date.now();
+        const progressed = applyLearningCompletion(node, completedAtMs);
+        nextOverrides[node.id] = progressed;
+        liveNodeById.set(node.id, progressed);
+      }
+
+      return nextOverrides;
+    });
+
+    for (const job of completedJobs) {
+      appliedCompletionIdsRef.current.add(job.id);
+    }
+  }, [baseDomainNodes, candidateNodes, skillJobs]);
+
+  const latestJobBySkill = useMemo(() => latestLearningJobBySkill(skillJobs), [skillJobs]);
 
   const counts = useMemo(() => {
     let active = 0;
     let planned = 0;
     let locked = 0;
     for (const node of domainNodes) {
-      if (node.state === 'active') active += 1;
-      else if (node.state === 'locked') locked += 1;
+      const visual = toVisualState(node);
+      if (visual === 'active') active += 1;
+      else if (visual === 'locked') locked += 1;
       else planned += 1;
     }
     return { active, planned, locked };
@@ -126,9 +329,35 @@ export function SkillsTree({ skills }: SkillsTreeProps) {
     [domainNodes, selectedNodeId],
   );
 
+  const nodeById = useMemo(
+    () => new Map(domainNodes.map((node) => [node.id, node])),
+    [domainNodes],
+  );
+
   const nodeNameById = useMemo(
     () => new Map(domainNodes.map((node) => [node.id, node.name])),
     [domainNodes],
+  );
+
+  const selectedProgress = selected ? getSkillTierProgress(selected) : null;
+  const selectedLatestJob = selected ? latestJobBySkill.get(selected.id) ?? null : null;
+  const selectedDependenciesMet = selected ? areSkillDependenciesMet(selected, nodeById) : false;
+  const selectedHasInFlightJob = selectedLatestJob ? selectedLatestJob.state !== 'completed' : false;
+  const selectedTierComplete = selectedProgress ? selectedProgress.currentTier >= selectedProgress.maxTier : false;
+
+  const canStartLearning = !!selected && selectedDependenciesMet && !selectedHasInFlightJob && !selectedTierComplete;
+
+  const startLearningHint = (() => {
+    if (!selected) return 'Select a skill node to launch learning.';
+    if (selectedTierComplete) return 'This skill has already reached max tier.';
+    if (selectedHasInFlightJob) return 'A learning job is already pending/running for this skill.';
+    if (!selectedDependenciesMet) return 'Dependencies are still blocked. Unlock prerequisites first.';
+    return 'Launches a deterministic background learning job for this skill.';
+  })();
+
+  const selectedJobs = useMemo(
+    () => (selected ? skillJobs.filter((job) => job.skillId === selected.id).slice().reverse() : []),
+    [selected, skillJobs],
   );
 
   const layout = useMemo(() => {
@@ -137,6 +366,40 @@ export function SkillsTree({ skills }: SkillsTreeProps) {
     const height = Math.max(1300, 980 + domainNodes.length * 95 + tierCount * 70);
     return computeSkillTreeLayout(domainNodes, width, height);
   }, [domainNodes]);
+
+  const depthGuides = useMemo(() => {
+    const buckets = new Map<number, { total: number; count: number }>();
+
+    for (const pos of layout.positions.values()) {
+      if (pos.depth <= 0) continue;
+      const radius = Math.hypot(pos.x - layout.centerX, pos.y - layout.centerY);
+      const existing = buckets.get(pos.depth) ?? { total: 0, count: 0 };
+      existing.total += radius;
+      existing.count += 1;
+      buckets.set(pos.depth, existing);
+    }
+
+    return [...buckets.entries()]
+      .map(([depth, value]) => ({
+        depth,
+        radius: value.total / Math.max(1, value.count),
+      }))
+      .sort((a, b) => a.depth - b.depth);
+  }, [layout.centerX, layout.centerY, layout.positions]);
+
+  const selectedRequirementState = useMemo(() => {
+    if (!selected) return null;
+
+    const nextMeaning = getNextLevelMeaning(selected);
+    const lockedRequirements = buildLockedRequirements(selected, nodeById, nodeNameById);
+    const blockedCount = lockedRequirements.filter((item) => item.status !== 'met').length;
+
+    return {
+      nextMeaning,
+      lockedRequirements,
+      blockedCount,
+    };
+  }, [selected, nodeById, nodeNameById]);
 
   const scaledWidth = Math.max(1, Math.round(layout.width * zoom));
   const scaledHeight = Math.max(1, Math.round(layout.height * zoom));
@@ -308,6 +571,26 @@ export function SkillsTree({ skills }: SkillsTreeProps) {
     setDragging(false);
   };
 
+  const handleStartLearning = () => {
+    if (!selected || !canStartLearning) return;
+    const nowMs = Date.now();
+    const attempt = skillJobs.filter((job) => job.skillId === selected.id).length + 1;
+    const nextJob = createLearningJob(selected.id, attempt, nowMs);
+    setSkillJobs((current) => [...current, nextJob]);
+  };
+
+  const handleCreateCandidateSkill = () => {
+    if (!selected) return;
+    const trimmedName = discoverName.trim();
+    if (!trimmedName) return;
+
+    const candidate = createCandidateSkillNode(trimmedName, selected, domainNodes);
+    setCandidateNodes((current) => [...current, candidate]);
+    setDiscoverName('');
+    setDiscoverFlowOpen(false);
+    setSelectedNodeId(candidate.id);
+  };
+
   return (
     <section className="skills-card" data-skills-surface="full-tab">
       <div className="skills-surface-header">
@@ -397,6 +680,26 @@ export function SkillsTree({ skills }: SkillsTreeProps) {
           <div className="skills-tree-canvas-scale" style={{ width: scaledWidth, height: scaledHeight }}>
             <div className="skills-tree-canvas" style={{ width: layout.width, height: layout.height, transform: `scale(${zoom})` }}>
               <svg className="skills-tree-lines" viewBox={`0 0 ${layout.width} ${layout.height}`} preserveAspectRatio="none" aria-hidden="true">
+                <g className="skills-depth-guides">
+                  {depthGuides.map((guide) => (
+                    <g key={`depth-guide-${guide.depth}`}>
+                      <circle
+                        className="skill-depth-ring"
+                        cx={layout.centerX}
+                        cy={layout.centerY}
+                        r={guide.radius}
+                      />
+                      <text
+                        className="skill-depth-label"
+                        x={layout.centerX}
+                        y={layout.centerY - guide.radius + 18}
+                      >
+                        Depth {guide.depth}
+                      </text>
+                    </g>
+                  ))}
+                </g>
+
                 {layout.edges.map((edge) => {
                   const from = layout.positions.get(edge.fromId);
                   const to = layout.positions.get(edge.toId);
@@ -432,9 +735,11 @@ export function SkillsTree({ skills }: SkillsTreeProps) {
                   const visual = toVisualState(node);
                   const isSelected = selected?.id === node.id;
                   const tierProgress = getSkillTierProgress(node);
+                  const nextMeaning = getNextLevelMeaning(node);
+                  const latestJob = latestJobBySkill.get(node.id) ?? null;
 
                   const nextLabel = tierProgress.nextTier
-                    ? `Next: Tier ${tierProgress.nextTier}`
+                    ? `Tier ${tierProgress.nextTier}: ${nextMeaning}`
                     : 'Tier path complete';
 
                   return (
@@ -447,10 +752,11 @@ export function SkillsTree({ skills }: SkillsTreeProps) {
                       data-layout-root={pos.rootId}
                       data-layout-branch={pos.branchId}
                       data-layout-ring={pos.ringIndex}
+                      data-skill-job-state={latestJob?.state ?? 'none'}
                       className={`skill-node ${visual} ${isSelected ? 'selected' : ''}`}
                       onClick={() => setSelectedNodeId(node.id)}
                       title={`${node.name} (${stateLabel(visual)})`}
-                      aria-label={`${node.name}. Tier ${tierProgress.currentTier} of ${tierProgress.maxTier}. ${stateLabel(visual)}.`}
+                      aria-label={`${node.name}. Tier ${tierProgress.currentTier} of ${tierProgress.maxTier}. ${stateLabel(visual)}. ${tierProgress.nextTier ? `Next unlock Tier ${tierProgress.nextTier}.` : 'Tier path complete.'}`}
                       style={{
                         left: `${pos.x}px`,
                         top: `${pos.y}px`,
@@ -461,8 +767,14 @@ export function SkillsTree({ skills }: SkillsTreeProps) {
                         <span className={`skill-node-state ${visual}`}>{stateLabel(visual)}</span>
                         <span className="skill-node-progress">Tier {tierProgress.currentTier}/{tierProgress.maxTier}</span>
                       </div>
+                      {latestJob && (
+                        <div className={`skill-node-job-pill ${latestJob.state}`} data-job-state={latestJob.state}>
+                          {learningJobStateLabel(latestJob.state)}
+                        </div>
+                      )}
                       <div className="skill-node-title">{node.name}</div>
-                      <div className="skill-node-meta">{nextLabel}</div>
+                      <p className="skill-node-function">{node.effect}</p>
+                      <div className="skill-node-meta">Next: {nextLabel}</div>
                     </button>
                   );
                 })}
@@ -532,18 +844,133 @@ export function SkillsTree({ skills }: SkillsTreeProps) {
                 <h3 id="skill-modal-title">{selected.name}</h3>
                 <p className="muted">Domain progression and tier ladder</p>
               </div>
-              <button
-                type="button"
-                className="skill-modal-close"
-                onClick={() => setSelectedNodeId(null)}
-                aria-label="Close skill details"
-              >
-                <X size={16} />
-              </button>
+              <div className="skill-modal-header-actions">
+                <span className={`skill-modal-state-pill ${toVisualState(selected)}`}>{stateLabel(toVisualState(selected))}</span>
+                <button
+                  type="button"
+                  className="skill-modal-close"
+                  onClick={() => setSelectedNodeId(null)}
+                  aria-label="Close skill details"
+                >
+                  <X size={16} />
+                </button>
+              </div>
             </header>
 
             <p className="muted">{selected.description}</p>
-            <p>{selected.effect}</p>
+
+            <section className="skill-meaning-grid" aria-label="Skill meaning and level-up details">
+              <article className="skill-meaning-card">
+                <h4>Current function</h4>
+                <p>{selected.effect}</p>
+              </article>
+              <article className="skill-meaning-card">
+                <h4>Next level-up meaning</h4>
+                <p>{selectedRequirementState?.nextMeaning}</p>
+              </article>
+            </section>
+
+            <section className="skill-actions-panel" aria-label="Skill actions">
+              <div className="skill-requirements-header">
+                <h4>Skill actions</h4>
+                <span className="muted" data-selected-job-state={selectedLatestJob?.state ?? 'none'}>
+                  {selectedLatestJob ? `${learningJobStateLabel(selectedLatestJob.state)} job` : 'No learning jobs yet'}
+                </span>
+              </div>
+
+              <div className="skill-actions-row">
+                <button
+                  type="button"
+                  className="skill-action-btn primary"
+                  data-skill-action="start-learning"
+                  onClick={handleStartLearning}
+                  disabled={!canStartLearning}
+                >
+                  Start Learning
+                </button>
+                <button
+                  type="button"
+                  className="skill-action-btn"
+                  data-skill-action="discover-new-skill"
+                  onClick={() => setDiscoverFlowOpen((current) => !current)}
+                >
+                  Discover New Skill
+                </button>
+              </div>
+
+              <p className="muted">{startLearningHint}</p>
+
+              {discoverFlowOpen && (
+                <div className="skill-discovery-form" data-discovery-flow="open">
+                  <label htmlFor="skill-discovery-name" className="muted">Candidate name</label>
+                  <input
+                    id="skill-discovery-name"
+                    className="skill-discovery-input"
+                    type="text"
+                    value={discoverName}
+                    onChange={(event) => setDiscoverName(event.target.value)}
+                    placeholder="e.g. Chaos Engineering"
+                  />
+                  <button
+                    type="button"
+                    className="skill-action-btn"
+                    data-skill-action="create-candidate"
+                    onClick={handleCreateCandidateSkill}
+                    disabled={!discoverName.trim().length}
+                  >
+                    Create Candidate Skill
+                  </button>
+                </div>
+              )}
+            </section>
+
+            <section className="skill-requirements-panel" aria-label="Locked requirements">
+              <div className="skill-requirements-header">
+                <h4>Locked requirements</h4>
+                <span className="muted">
+                  {selectedRequirementState?.blockedCount
+                    ? `${selectedRequirementState.blockedCount} requirement${selectedRequirementState.blockedCount === 1 ? '' : 's'} pending`
+                    : 'All requirements met'}
+                </span>
+              </div>
+
+              <ul className="skill-requirements-list">
+                {selectedRequirementState?.lockedRequirements.map((requirement) => (
+                  <li key={requirement.id} className={`skill-requirement ${requirement.status}`}>
+                    <span className={`skill-requirement-dot ${requirement.status}`} aria-hidden="true" />
+                    <div className="skill-requirement-copy">
+                      <p className="skill-requirement-label">{requirement.label}</p>
+                      <p className="muted">{requirement.detail}</p>
+                    </div>
+                    <span className={`skill-requirement-state ${requirement.status}`}>
+                      {requirement.status === 'met' ? 'Met' : requirement.status === 'blocked' ? 'Blocked' : 'Pending'}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </section>
+
+            <section className="skill-job-log-panel" aria-label="Learning job states">
+              <div className="skill-requirements-header">
+                <h4>Learning jobs</h4>
+                <span className="muted">pending / running / completed</span>
+              </div>
+
+              <ul className="skill-job-log-list">
+                {!selectedJobs.length && (
+                  <li className="skill-job-log-item muted">No jobs started for this skill yet.</li>
+                )}
+                {selectedJobs.map((job) => (
+                  <li key={job.id} className={`skill-job-log-item ${job.state}`} data-skill-job-state={job.state}>
+                    <div>
+                      <p className="skill-job-log-title">Attempt {job.attempt}</p>
+                      <p className="muted">{describeLearningJobTiming(job, jobNowMs)}</p>
+                    </div>
+                    <span className={`skill-job-log-state ${job.state}`}>{learningJobStateLabel(job.state)}</span>
+                  </li>
+                ))}
+              </ul>
+            </section>
 
             <SkillTierLadder node={selected} />
 

@@ -19,6 +19,8 @@ from collections import deque
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
+from scripts.lib.runtime_reconciler import normalize_run_key, reconcile
+
 BLOCK_RE = re.compile(r"^###\s+(\d{1,2}:\d{2})-(\d{1,2}:\d{2})\s+—\s+(.+)$")
 HEADING_RE = re.compile(r"^##\s+(.+)$")
 HEADING_TIME_RE = re.compile(r"^(\d{1,2}:\d{2})")
@@ -55,8 +57,11 @@ CONTROL_ROOM_ROOT = Path(__file__).resolve().parents[2]
 SESSIONS_STORE_PATH = Path("/Users/seankudrna/.openclaw/agents/main/sessions/sessions.json")
 CRON_RUNS_DIR = Path("/Users/seankudrna/.openclaw/cron/runs")
 SUBAGENT_REGISTRY_PATH = Path("/Users/seankudrna/.openclaw/subagents/runs.json")
+RUNTIME_STATE_FILE = Path("/Users/seankudrna/.openclaw/workspace/status/runtime-state.json")
 CRON_RUN_SESSION_KEY_RE = re.compile(r"^agent:main:cron:([^:]+):run:([^:]+)$")
 MAIN_SESSION_KEY = "agent:main:main"
+RUNTIME_STALE_MS = 10 * 60 * 1000
+RUNTIME_MATERIALIZED_MAX_AGE_MS = 90 * 1000
 MAIN_SESSION_RUNTIME_MAX_AGE_MS = 2 * 60 * 1000
 MAIN_SESSION_PENDING_CALL_MAX_AGE_MS = 10 * 60 * 1000
 MAIN_SESSION_LOCK_STALE_MS = 30 * 60 * 1000
@@ -1282,6 +1287,36 @@ def parse_timestamp_ms(value: Any) -> Optional[int]:
     return int(parsed.timestamp() * 1000)
 
 
+def normalize_runtime_model(value: Any) -> Optional[str]:
+    if not isinstance(value, str):
+        return None
+    cleaned = value.strip()
+    if not cleaned:
+        return None
+    if "/" not in cleaned and cleaned.startswith("gpt-"):
+        return f"openai-codex/{cleaned}"
+    return cleaned
+
+
+def normalize_runtime_thinking(value: Any) -> Optional[str]:
+    if not isinstance(value, str):
+        return None
+    cleaned = value.strip().lower().replace("-", "_").replace(" ", "_")
+    if not cleaned:
+        return None
+
+    aliases = {
+        "min": "minimal",
+        "very_high": "extra_high",
+        "maximum": "extra_high",
+        "max": "extra_high",
+    }
+    canonical = aliases.get(cleaned, cleaned)
+    if canonical in {"minimal", "low", "medium", "high", "extra_high"}:
+        return canonical
+    return canonical
+
+
 def read_jsonl_tail(path: Path, max_lines: int = 600) -> List[Dict[str, Any]]:
     """Read the tail of a jsonl file and parse valid JSON objects."""
     if not path.exists():
@@ -1543,32 +1578,12 @@ def resolve_subagent_label(entry: Dict[str, Any], run_id: str) -> str:
 
 def active_subagent_runs(subagent_registry_path: Path, now_ms: int) -> List[Dict[str, Any]]:
     """Read active sub-agent/background runs from subagent registry."""
-    if not subagent_registry_path.exists():
-        return []
-
-    try:
-        registry = json.loads(subagent_registry_path.read_text(encoding="utf-8"))
-    except json.JSONDecodeError:
-        return []
-
-    if not isinstance(registry, dict):
-        return []
-
-    runs = registry.get("runs")
-    if not isinstance(runs, dict):
-        return []
+    signals = collect_subagent_runtime_signals(subagent_registry_path)
+    rows = signals["candidates"]
 
     active: List[Dict[str, Any]] = []
-    for run_id, entry in runs.items():
-        if not isinstance(run_id, str) or not isinstance(entry, dict):
-            continue
-
-        if isinstance(entry.get("endedAt"), int):
-            continue
-
-        started_at_ms = entry.get("startedAt")
-        if not isinstance(started_at_ms, int):
-            started_at_ms = entry.get("createdAt")
+    for row in rows:
+        started_at_ms = row.get("startedAtMs")
         if not isinstance(started_at_ms, int):
             continue
 
@@ -1577,29 +1592,245 @@ def active_subagent_runs(subagent_registry_path: Path, now_ms: int) -> List[Dict
             .astimezone()
             .strftime("%Y-%m-%d %H:%M:%S")
         )
+        active.append(
+            {
+                "jobId": row.get("jobId"),
+                "jobName": row.get("jobName"),
+                "sessionId": row.get("sessionId"),
+                "sessionKey": row.get("sessionKey"),
+                "summary": row.get("summary") or row.get("jobName"),
+                "startedAtMs": started_at_ms,
+                "startedAtLocal": started_local,
+                "runningForMs": max(0, now_ms - started_at_ms),
+                "activityType": "subagent",
+                "model": row.get("model"),
+                "thinking": row.get("thinking"),
+            }
+        )
+
+    return active
+
+
+def collect_cron_terminal_events(job_id: str, runs_dir: Path, cache: Dict[str, List[Dict[str, Any]]]) -> List[Dict[str, Any]]:
+    if job_id in cache:
+        return cache[job_id]
+
+    run_file = runs_dir / f"{job_id}.jsonl"
+    if not run_file.exists():
+        cache[job_id] = []
+        return []
+
+    events: List[Dict[str, Any]] = []
+    for raw in run_file.read_text(encoding="utf-8").splitlines():
+        line = raw.strip()
+        if not line:
+            continue
+
+        try:
+            row = json.loads(line)
+        except json.JSONDecodeError:
+            continue
+
+        if not isinstance(row, dict) or row.get("action") != "finished":
+            continue
+
+        session_id = row.get("sessionId")
+        if not isinstance(session_id, str) or not session_id:
+            continue
+
+        run_key = normalize_run_key("cron", job_id=job_id, session_id=session_id)
+        if run_key is None:
+            continue
+
+        event_at_ms = (
+            parse_timestamp_ms(row.get("finishedAtMs"))
+            or parse_timestamp_ms(row.get("finishedAt"))
+            or parse_timestamp_ms(row.get("endedAt"))
+            or parse_timestamp_ms(row.get("timestamp"))
+            or parse_timestamp_ms(row.get("ts"))
+        )
+        if event_at_ms is None:
+            continue
+
+        terminal_type = str(row.get("status") or row.get("result") or "finished").lower()
+        if terminal_type in {"ok", "success", "completed", "done"}:
+            terminal_type = "finished"
+        elif terminal_type in {"cancelled", "canceled"}:
+            terminal_type = "cancelled"
+        elif terminal_type in {"timeout", "timedout", "timed_out"}:
+            terminal_type = "timed_out"
+        elif terminal_type in {"failed", "error", "errored"}:
+            terminal_type = "failed"
+        elif terminal_type not in {"finished", "failed", "cancelled", "timed_out"}:
+            terminal_type = "finished"
+
+        events.append(
+            {
+                "runKey": run_key,
+                "eventType": terminal_type,
+                "eventAtMs": event_at_ms,
+            }
+        )
+
+    cache[job_id] = events
+    return events
+
+
+def collect_subagent_runtime_signals(subagent_registry_path: Path) -> Dict[str, List[Dict[str, Any]]]:
+    if not subagent_registry_path.exists():
+        return {"candidates": [], "terminals": []}
+
+    try:
+        registry = json.loads(subagent_registry_path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError:
+        return {"candidates": [], "terminals": []}
+
+    if not isinstance(registry, dict):
+        return {"candidates": [], "terminals": []}
+
+    runs = registry.get("runs")
+    if not isinstance(runs, dict):
+        return {"candidates": [], "terminals": []}
+
+    candidates: List[Dict[str, Any]] = []
+    terminals: List[Dict[str, Any]] = []
+
+    for run_id, entry in runs.items():
+        if not isinstance(run_id, str) or not isinstance(entry, dict):
+            continue
+
+        run_key = normalize_run_key("subagent", run_id=run_id)
+        if run_key is None:
+            continue
+
+        started_at_ms = parse_timestamp_ms(entry.get("startedAt"))
+        if started_at_ms is None:
+            started_at_ms = parse_timestamp_ms(entry.get("createdAt"))
+        if started_at_ms is None:
+            continue
+
+        ended_at_ms = parse_timestamp_ms(entry.get("endedAt"))
 
         label = resolve_subagent_label(entry, run_id)
         task_summary = summarize_subagent_task(entry)
+        model = normalize_runtime_model(entry.get("model") or entry.get("agentModel"))
+        thinking = normalize_runtime_thinking(entry.get("thinking"))
 
         child_session_key = entry.get("childSessionKey")
         session_key = child_session_key if isinstance(child_session_key, str) and child_session_key else f"subagent:{run_id}"
         session_id = session_key
 
-        active.append(
+        if ended_at_ms is not None:
+            terminal_type = str(entry.get("status") or entry.get("endStatus") or "finished").lower()
+            if terminal_type in {"ok", "success", "completed", "done"}:
+                terminal_type = "finished"
+            elif terminal_type in {"cancelled", "canceled"}:
+                terminal_type = "cancelled"
+            elif terminal_type in {"timeout", "timedout", "timed_out"}:
+                terminal_type = "timed_out"
+            elif terminal_type in {"failed", "error", "errored"}:
+                terminal_type = "failed"
+            elif terminal_type not in {"finished", "failed", "cancelled", "timed_out"}:
+                terminal_type = "finished"
+
+            terminals.append(
+                {
+                    "runKey": run_key,
+                    "eventType": terminal_type,
+                    "eventAtMs": ended_at_ms,
+                }
+            )
+            continue
+
+        last_seen_at_ms = parse_timestamp_ms(entry.get("updatedAt")) or started_at_ms
+        candidates.append(
             {
+                "runKey": run_key,
                 "jobId": f"subagent:{run_id}",
                 "jobName": label,
                 "sessionId": session_id,
                 "sessionKey": session_key,
                 "summary": task_summary or label,
                 "startedAtMs": started_at_ms,
-                "startedAtLocal": started_local,
-                "runningForMs": max(0, now_ms - started_at_ms),
+                "lastSeenAtMs": last_seen_at_ms,
                 "activityType": "subagent",
+                "model": model,
+                "thinking": thinking,
             }
         )
 
-    return active
+    return {"candidates": candidates, "terminals": terminals}
+
+
+def load_materialized_runtime_state(
+    runtime_state_path: Path,
+    now_ms: int,
+    max_age_ms: int,
+) -> Tuple[Optional[Dict[str, Any]], str]:
+    if not runtime_state_path.exists():
+        return None, "materialized-state-missing"
+
+    try:
+        doc = json.loads(runtime_state_path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError:
+        return None, "materialized-state-invalid"
+
+    if not isinstance(doc, dict):
+        return None, "materialized-state-unexpected-shape"
+
+    materialized_at_ms = doc.get("materializedAtMs")
+    if not isinstance(materialized_at_ms, int):
+        materialized_at_ms = doc.get("checkedAtMs")
+    if not isinstance(materialized_at_ms, int):
+        return None, "materialized-state-missing-timestamp"
+
+    if now_ms - materialized_at_ms > max_age_ms:
+        return None, "materialized-state-stale"
+
+    active_rows_raw = doc.get("activeRuns")
+    if not isinstance(active_rows_raw, list):
+        return None, "materialized-state-missing-active-runs"
+
+    active_rows: List[Dict[str, Any]] = []
+    for row in active_rows_raw:
+        if not isinstance(row, dict):
+            continue
+        started_at_ms = row.get("startedAtMs")
+        if not isinstance(started_at_ms, int):
+            continue
+
+        normalized = dict(row)
+        normalized["runningForMs"] = max(0, now_ms - started_at_ms)
+        normalized["startedAtLocal"] = (
+            dt.datetime.fromtimestamp(started_at_ms / 1000, dt.timezone.utc)
+            .astimezone()
+            .strftime("%Y-%m-%d %H:%M:%S")
+        )
+        normalized["summary"] = str(row.get("summary") or row.get("jobName") or "Running activity")
+
+        model = normalize_runtime_model(row.get("model"))
+        if model is not None:
+            normalized["model"] = model
+
+        thinking = normalize_runtime_thinking(row.get("thinking"))
+        if thinking is not None:
+            normalized["thinking"] = thinking
+
+        active_rows.append(normalized)
+
+    active_rows.sort(key=lambda item: (item.get("startedAtMs", 0), item.get("runKey", "")))
+    runtime = {
+        "status": "running" if active_rows else "idle",
+        "isIdle": len(active_rows) == 0,
+        "activeCount": len(active_rows),
+        "activeRuns": active_rows,
+        "checkedAtMs": now_ms,
+        "source": "materialized-ledger",
+        "revision": str(doc.get("revision") or "rtv1-00000000"),
+        "snapshotMode": str(doc.get("snapshotMode") or "live"),
+        "degradedReason": str(doc.get("degradedReason") or ""),
+    }
+    return runtime, ""
 
 
 def runtime_activity(
@@ -1608,124 +1839,144 @@ def runtime_activity(
     runs_dir: Path = CRON_RUNS_DIR,
     subagent_registry_path: Optional[Path] = None,
     max_age_ms: int = 6 * 60 * 60 * 1000,
+    runtime_state_path: Path = RUNTIME_STATE_FILE,
+    stale_ms: int = RUNTIME_STALE_MS,
+    materialized_max_age_ms: int = RUNTIME_MATERIALIZED_MAX_AGE_MS,
 ) -> Dict[str, Any]:
-    """Return real-time runtime/idle state from active execution work.
-
-    Detection model:
-    - read cron run-session records from sessions store (`agent:main:cron:<jobId>:run:<sessionId>`)
-    - reconcile against cron run logs (`runs/<jobId>.jsonl`) finished entries
-    - include active sub-agent/background runs from subagent registry
-    """
+    """Return runtime truth using materialized ledger first, reconciler fallback second."""
     now_ms = int(dt.datetime.now(dt.timezone.utc).timestamp() * 1000)
 
+    materialized_runtime, materialized_reason = load_materialized_runtime_state(
+        runtime_state_path,
+        now_ms,
+        materialized_max_age_ms,
+    )
+    if materialized_runtime is not None:
+        return materialized_runtime
+
     jobs_doc_text = read_text(jobs_file)
-    jobs_by_id: Dict[str, str] = {}
+    jobs_by_id: Dict[str, Dict[str, Optional[str]]] = {}
     if jobs_doc_text:
         try:
             jobs_doc = json.loads(jobs_doc_text)
-            jobs_by_id = {
-                str(job.get("id")): str(job.get("name", ""))
-                for job in jobs_doc.get("jobs", [])
-                if job.get("id")
-            }
+            for job in jobs_doc.get("jobs", []):
+                if not isinstance(job, dict) or not job.get("id"):
+                    continue
+                job_id = str(job.get("id"))
+                payload = job.get("payload") if isinstance(job.get("payload"), dict) else {}
+                jobs_by_id[job_id] = {
+                    "name": str(job.get("name", "")),
+                    "model": normalize_runtime_model(payload.get("model")),
+                    "thinking": normalize_runtime_thinking(payload.get("thinking")),
+                }
         except json.JSONDecodeError:
             jobs_by_id = {}
 
-    if not sessions_store_path.exists():
-        return {
-            "status": "idle",
-            "isIdle": True,
-            "activeCount": 0,
-            "activeRuns": [],
-            "checkedAtMs": now_ms,
-            "source": "sessions-store-missing",
-        }
+    candidates: List[Dict[str, Any]] = []
+    terminal_events: List[Dict[str, Any]] = []
 
-    try:
-        sessions_doc = json.loads(sessions_store_path.read_text(encoding="utf-8"))
-    except json.JSONDecodeError:
-        return {
-            "status": "idle",
-            "isIdle": True,
-            "activeCount": 0,
-            "activeRuns": [],
-            "checkedAtMs": now_ms,
-            "source": "sessions-store-invalid",
-        }
+    sessions_reason = ""
+    if sessions_store_path.exists():
+        try:
+            sessions_doc = json.loads(sessions_store_path.read_text(encoding="utf-8"))
+        except json.JSONDecodeError:
+            sessions_doc = None
+            sessions_reason = "sessions-store-invalid"
 
-    if not isinstance(sessions_doc, dict):
-        return {
-            "status": "idle",
-            "isIdle": True,
-            "activeCount": 0,
-            "activeRuns": [],
-            "checkedAtMs": now_ms,
-            "source": "sessions-store-unexpected-shape",
-        }
+        if isinstance(sessions_doc, dict):
+            terminal_cache: Dict[str, List[Dict[str, Any]]] = {}
+            for key, meta in sessions_doc.items():
+                if not isinstance(key, str) or not isinstance(meta, dict):
+                    continue
 
-    finished_cache: Dict[str, set[str]] = {}
+                match = CRON_RUN_SESSION_KEY_RE.match(key)
+                if not match:
+                    continue
+
+                job_id, session_id = match.groups()
+                started_at_ms = parse_timestamp_ms(meta.get("updatedAt"))
+                if started_at_ms is None:
+                    continue
+
+                run_key = normalize_run_key("cron", job_id=job_id, session_id=session_id)
+                if run_key is None:
+                    continue
+
+                job_meta = jobs_by_id.get(job_id) or {}
+                job_name = str(job_meta.get("name") or f"Unknown job ({job_id[:8]})")
+                normalized_job_name = job_name.lower()
+                if any(token in normalized_job_name for token in EXCLUDED_RUNTIME_JOB_NAME_SUBSTRINGS):
+                    continue
+
+                session_model = normalize_runtime_model(meta.get("model"))
+                session_thinking = normalize_runtime_thinking(meta.get("thinking"))
+                model = session_model or job_meta.get("model")
+                thinking = session_thinking or job_meta.get("thinking")
+
+                candidates.append(
+                    {
+                        "runKey": run_key,
+                        "jobId": job_id,
+                        "jobName": job_name,
+                        "sessionId": session_id,
+                        "sessionKey": key,
+                        "summary": job_name,
+                        "startedAtMs": started_at_ms,
+                        "lastSeenAtMs": started_at_ms,
+                        "activityType": "cron",
+                        "model": model,
+                        "thinking": thinking,
+                    }
+                )
+                terminal_events.extend(collect_cron_terminal_events(job_id, runs_dir, terminal_cache))
+        elif not sessions_reason:
+            sessions_reason = "sessions-store-unexpected-shape"
+    else:
+        sessions_reason = "sessions-store-missing"
+
+    if subagent_registry_path is not None:
+        subagent_signals = collect_subagent_runtime_signals(subagent_registry_path)
+        candidates.extend(subagent_signals["candidates"])
+        terminal_events.extend(subagent_signals["terminals"])
+
+    reconciled = reconcile(
+        now_ms=now_ms,
+        candidates=candidates,
+        terminal_events=terminal_events,
+        stale_ms=min(max_age_ms, stale_ms),
+    )
+
     active_runs: List[Dict[str, Any]] = []
-
-    for key, meta in sessions_doc.items():
-        if not isinstance(key, str) or not isinstance(meta, dict):
-            continue
-
-        match = CRON_RUN_SESSION_KEY_RE.match(key)
-        if not match:
-            continue
-
-        job_id, session_id = match.groups()
-        finished_ids = finished_run_session_ids(job_id, runs_dir, finished_cache)
-        if session_id in finished_ids:
-            continue
-
-        started_at_ms = meta.get("updatedAt")
-        if not isinstance(started_at_ms, int):
-            continue
-
-        running_for_ms = max(0, now_ms - started_at_ms)
-        if running_for_ms > max_age_ms:
-            # Ignore orphaned stale sessions to avoid false "running" flags.
-            continue
-
-        job_name = jobs_by_id.get(job_id, f"Unknown job ({job_id[:8]})")
-        normalized_job_name = job_name.lower()
-        if any(token in normalized_job_name for token in EXCLUDED_RUNTIME_JOB_NAME_SUBSTRINGS):
-            # Prevent self-referential/sticky runtime false positives from fast publisher runs.
-            continue
-
-        started_local = (
-            dt.datetime.fromtimestamp(started_at_ms / 1000, dt.timezone.utc)
-            .astimezone()
-            .strftime("%Y-%m-%d %H:%M:%S")
-        )
-
+    for row in reconciled["activeRuns"]:
         active_runs.append(
             {
-                "jobId": job_id,
-                "jobName": job_name,
-                "sessionId": session_id,
-                "sessionKey": key,
-                "summary": job_name,
-                "startedAtMs": started_at_ms,
-                "startedAtLocal": started_local,
-                "runningForMs": running_for_ms,
-                "activityType": "cron",
+                "jobId": row.get("jobId"),
+                "jobName": row.get("jobName"),
+                "sessionId": row.get("sessionId"),
+                "sessionKey": row.get("sessionKey"),
+                "summary": row.get("summary"),
+                "startedAtMs": row.get("startedAtMs"),
+                "startedAtLocal": row.get("startedAtLocal"),
+                "runningForMs": row.get("runningForMs"),
+                "activityType": row.get("activityType", "cron"),
+                "model": row.get("model"),
+                "thinking": row.get("thinking"),
             }
         )
 
-    if subagent_registry_path is not None:
-        active_runs.extend(active_subagent_runs(subagent_registry_path, now_ms))
-
-    active_runs.sort(key=lambda item: item.get("startedAtMs", 0))
-
+    degraded_bits = [bit for bit in [materialized_reason, sessions_reason] if bit]
     return {
         "status": "running" if active_runs else "idle",
         "isIdle": len(active_runs) == 0,
         "activeCount": len(active_runs),
         "activeRuns": active_runs,
         "checkedAtMs": now_ms,
-        "source": "cron-run reconciliation + subagent registry",
+        "source": "live-reconciler",
+        "revision": f"rtv1-{now_ms:08d}",
+        "snapshotMode": "live",
+        "degradedReason": ", ".join(degraded_bits),
+        "droppedTerminalCount": reconciled.get("droppedTerminalCount", 0),
+        "droppedStaleCount": reconciled.get("droppedStaleCount", 0),
     }
 
 
@@ -1804,11 +2055,10 @@ def sanitize_payload_for_static_snapshot(payload: Dict[str, Any]) -> Dict[str, A
     sanitized_runtime["isIdle"] = True
     sanitized_runtime["activeCount"] = 0
     sanitized_runtime["activeRuns"] = []
-    source = sanitized_runtime.get("source")
-    if isinstance(source, str) and source.strip():
-        sanitized_runtime["source"] = f"{source} [static fallback runtime sanitized]"
-    else:
-        sanitized_runtime["source"] = "static fallback runtime sanitized"
+    sanitized_runtime["source"] = "fallback-static"
+    sanitized_runtime["snapshotMode"] = "fallback-sanitized"
+    sanitized_runtime["degradedReason"] = "Static snapshot cannot carry live runtime rows"
+    sanitized_runtime["revision"] = str(sanitized_runtime.get("revision") or "rtv1-00000000")
 
     out["runtime"] = sanitized_runtime
     return out

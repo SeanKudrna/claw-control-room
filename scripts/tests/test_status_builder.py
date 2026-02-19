@@ -326,18 +326,74 @@ class StatusBuilderTests(unittest.TestCase):
                     {
                         "action": "finished",
                         "sessionId": "session-finished",
+                        "finishedAtMs": now_ms - 8_000,
                     }
                 )
                 + "\n",
                 encoding="utf-8",
             )
 
-            runtime = runtime_activity(jobs_file, sessions_file, runs_dir)
+            runtime = runtime_activity(jobs_file, sessions_file, runs_dir, runtime_state_path=root / "missing-runtime-state.json")
             self.assertEqual(runtime["status"], "running")
             self.assertEqual(runtime["activeCount"], 1)
             self.assertEqual(runtime["activeRuns"][0]["sessionId"], "session-active")
             self.assertEqual(runtime["activeRuns"][0]["jobName"], "Job One")
             self.assertEqual(runtime["activeRuns"][0]["activityType"], "cron")
+            self.assertEqual(runtime["source"], "live-reconciler")
+            self.assertEqual(runtime["snapshotMode"], "live")
+
+    def test_runtime_activity_includes_model_and_thinking_metadata(self) -> None:
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            jobs_file = root / "jobs.json"
+            sessions_file = root / "sessions.json"
+            runs_dir = root / "runs"
+            runs_dir.mkdir(parents=True, exist_ok=True)
+
+            jobs_file.write_text(
+                json.dumps(
+                    {
+                        "jobs": [
+                            {
+                                "id": "job-1",
+                                "name": "Model-aware Job",
+                                "enabled": True,
+                                "payload": {
+                                    "kind": "agentTurn",
+                                    "model": "openai-codex/gpt-5.3-codex-spark",
+                                    "thinking": "medium",
+                                },
+                            },
+                        ]
+                    }
+                ),
+                encoding="utf-8",
+            )
+
+            now_ms = int(dt.datetime.now(dt.timezone.utc).timestamp() * 1000)
+            sessions_file.write_text(
+                json.dumps(
+                    {
+                        "agent:main:cron:job-1:run:session-active": {
+                            "sessionId": "session-active",
+                            "updatedAt": now_ms - 7_000,
+                            "model": "gpt-5.3-codex",
+                        },
+                    }
+                ),
+                encoding="utf-8",
+            )
+
+            runtime = runtime_activity(
+                jobs_file,
+                sessions_store_path=sessions_file,
+                runs_dir=runs_dir,
+                runtime_state_path=root / "missing-runtime-state.json",
+            )
+            self.assertEqual(runtime["status"], "running")
+            self.assertEqual(runtime["activeCount"], 1)
+            self.assertEqual(runtime["activeRuns"][0]["model"], "openai-codex/gpt-5.3-codex")
+            self.assertEqual(runtime["activeRuns"][0]["thinking"], "medium")
 
     def test_runtime_activity_detects_active_subagent_runs(self) -> None:
         with tempfile.TemporaryDirectory() as td:
@@ -375,6 +431,7 @@ class StatusBuilderTests(unittest.TestCase):
                 sessions_store_path=sessions_file,
                 runs_dir=runs_dir,
                 subagent_registry_path=subagent_runs_file,
+                runtime_state_path=root / "missing-runtime-state.json",
             )
             self.assertEqual(runtime["status"], "running")
             self.assertEqual(runtime["activeCount"], 1)
@@ -418,6 +475,7 @@ class StatusBuilderTests(unittest.TestCase):
                 sessions_store_path=sessions_file,
                 runs_dir=runs_dir,
                 subagent_registry_path=subagent_runs_file,
+                runtime_state_path=root / "missing-runtime-state.json",
             )
             self.assertEqual(runtime["status"], "idle")
             self.assertEqual(runtime["activeCount"], 0)
@@ -459,6 +517,7 @@ class StatusBuilderTests(unittest.TestCase):
                 sessions_store_path=sessions_file,
                 runs_dir=runs_dir,
                 subagent_registry_path=subagent_runs_file,
+                runtime_state_path=root / "missing-runtime-state.json",
             )
             self.assertEqual(runtime["status"], "running")
             self.assertEqual(runtime["activeCount"], 1)
@@ -511,7 +570,12 @@ class StatusBuilderTests(unittest.TestCase):
                 encoding="utf-8",
             )
 
-            runtime = runtime_activity(jobs_file, sessions_file, runs_dir)
+            runtime = runtime_activity(
+                jobs_file,
+                sessions_file,
+                runs_dir,
+                runtime_state_path=root / "missing-runtime-state.json",
+            )
             self.assertEqual(runtime["status"], "idle")
             self.assertEqual(runtime["activeCount"], 0)
 
@@ -551,9 +615,156 @@ class StatusBuilderTests(unittest.TestCase):
                 encoding="utf-8",
             )
 
-            runtime = runtime_activity(jobs_file, sessions_file, runs_dir)
+            runtime = runtime_activity(
+                jobs_file,
+                sessions_file,
+                runs_dir,
+                runtime_state_path=root / "missing-runtime-state.json",
+            )
             self.assertEqual(runtime["status"], "idle")
             self.assertEqual(runtime["activeCount"], 0)
+
+    def test_runtime_activity_prefers_fresh_materialized_runtime_state(self) -> None:
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            jobs_file = root / "jobs.json"
+            sessions_file = root / "sessions.json"
+            runs_dir = root / "runs"
+            runtime_state_file = root / "runtime-state.json"
+            runs_dir.mkdir(parents=True, exist_ok=True)
+
+            jobs_file.write_text(json.dumps({"jobs": []}), encoding="utf-8")
+            sessions_file.write_text(json.dumps({}), encoding="utf-8")
+
+            now_ms = int(dt.datetime.now(dt.timezone.utc).timestamp() * 1000)
+            runtime_state_file.write_text(
+                json.dumps(
+                    {
+                        "status": "running",
+                        "isIdle": False,
+                        "activeCount": 1,
+                        "activeRuns": [
+                            {
+                                "runKey": "cron:job-1:session-a",
+                                "jobId": "job-1",
+                                "jobName": "Materialized Job",
+                                "sessionId": "session-a",
+                                "sessionKey": "agent:main:cron:job-1:run:session-a",
+                                "summary": "Materialized Job",
+                                "startedAtMs": now_ms - 30_000,
+                                "activityType": "cron",
+                            }
+                        ],
+                        "checkedAtMs": now_ms,
+                        "materializedAtMs": now_ms,
+                        "revision": "rtv1-00000123",
+                        "snapshotMode": "live",
+                        "degradedReason": "",
+                    }
+                ),
+                encoding="utf-8",
+            )
+
+            runtime = runtime_activity(
+                jobs_file,
+                sessions_store_path=sessions_file,
+                runs_dir=runs_dir,
+                runtime_state_path=runtime_state_file,
+            )
+            self.assertEqual(runtime["source"], "materialized-ledger")
+            self.assertEqual(runtime["activeCount"], 1)
+            self.assertEqual(runtime["activeRuns"][0]["jobName"], "Materialized Job")
+            self.assertEqual(runtime["revision"], "rtv1-00000123")
+
+    def test_runtime_activity_falls_back_when_materialized_state_is_stale(self) -> None:
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            jobs_file = root / "jobs.json"
+            sessions_file = root / "sessions.json"
+            runs_dir = root / "runs"
+            runtime_state_file = root / "runtime-state.json"
+            runs_dir.mkdir(parents=True, exist_ok=True)
+
+            jobs_file.write_text(
+                json.dumps({"jobs": [{"id": "job-1", "name": "Live Job", "enabled": True}]}),
+                encoding="utf-8",
+            )
+
+            now_ms = int(dt.datetime.now(dt.timezone.utc).timestamp() * 1000)
+            sessions_file.write_text(
+                json.dumps(
+                    {
+                        "agent:main:cron:job-1:run:session-active": {
+                            "sessionId": "session-active",
+                            "updatedAt": now_ms - 5_000,
+                        }
+                    }
+                ),
+                encoding="utf-8",
+            )
+            runtime_state_file.write_text(
+                json.dumps(
+                    {
+                        "status": "idle",
+                        "isIdle": True,
+                        "activeCount": 0,
+                        "activeRuns": [],
+                        "checkedAtMs": now_ms - 10 * 60 * 1000,
+                        "materializedAtMs": now_ms - 10 * 60 * 1000,
+                        "revision": "rtv1-00000044",
+                        "snapshotMode": "live",
+                        "degradedReason": "",
+                    }
+                ),
+                encoding="utf-8",
+            )
+
+            runtime = runtime_activity(
+                jobs_file,
+                sessions_store_path=sessions_file,
+                runs_dir=runs_dir,
+                runtime_state_path=runtime_state_file,
+                materialized_max_age_ms=90_000,
+            )
+            self.assertEqual(runtime["source"], "live-reconciler")
+            self.assertEqual(runtime["activeCount"], 1)
+            self.assertIn("materialized-state-stale", runtime["degradedReason"])
+
+    def test_runtime_activity_expires_stale_session_candidates(self) -> None:
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            jobs_file = root / "jobs.json"
+            sessions_file = root / "sessions.json"
+            runs_dir = root / "runs"
+            runs_dir.mkdir(parents=True, exist_ok=True)
+
+            jobs_file.write_text(
+                json.dumps({"jobs": [{"id": "job-1", "name": "Stale Session Job", "enabled": True}]}),
+                encoding="utf-8",
+            )
+            now_ms = int(dt.datetime.now(dt.timezone.utc).timestamp() * 1000)
+            sessions_file.write_text(
+                json.dumps(
+                    {
+                        "agent:main:cron:job-1:run:session-stale": {
+                            "sessionId": "session-stale",
+                            "updatedAt": now_ms - 120_000,
+                        }
+                    }
+                ),
+                encoding="utf-8",
+            )
+
+            runtime = runtime_activity(
+                jobs_file,
+                sessions_store_path=sessions_file,
+                runs_dir=runs_dir,
+                runtime_state_path=root / "missing-runtime-state.json",
+                stale_ms=60_000,
+            )
+            self.assertEqual(runtime["status"], "idle")
+            self.assertEqual(runtime["activeCount"], 0)
+            self.assertEqual(runtime["droppedStaleCount"], 1)
 
     def test_build_skills_payload_is_deterministic(self) -> None:
         with tempfile.TemporaryDirectory() as td:
@@ -662,7 +873,10 @@ class StatusBuilderTests(unittest.TestCase):
                     {"jobId": "job-2", "jobName": "Other task"},
                 ],
                 "checkedAtMs": 123,
-                "source": "cron-run reconciliation + subagent registry",
+                "source": "live-reconciler",
+                "revision": "rtv1-00000100",
+                "snapshotMode": "live",
+                "degradedReason": "",
             },
             "other": "value",
         }
@@ -672,7 +886,10 @@ class StatusBuilderTests(unittest.TestCase):
         self.assertTrue(sanitized["runtime"]["isIdle"])
         self.assertEqual(sanitized["runtime"]["activeCount"], 0)
         self.assertEqual(sanitized["runtime"]["activeRuns"], [])
-        self.assertIn("static fallback runtime sanitized", sanitized["runtime"]["source"])
+        self.assertEqual(sanitized["runtime"]["source"], "fallback-static")
+        self.assertEqual(sanitized["runtime"]["snapshotMode"], "fallback-sanitized")
+        self.assertIn("cannot carry live runtime", sanitized["runtime"]["degradedReason"])
+        self.assertEqual(sanitized["runtime"]["revision"], "rtv1-00000100")
         self.assertEqual(sanitized["other"], "value")
 
 

@@ -22,9 +22,15 @@ Claw Control Room provides a readable, near-real-time view of Claw's operations:
 - `next` is the ordered remainder after `now`, with no past/completed items.
 - `done` starts empty each day and only receives items that first appeared in `now` and later completed (end-time reached), rendered newest-first for scanability.
 - Done items expose leading completion-time prefixes when time is derivable, improving recency scanning in Overview.
-- Runtime detection reconciles session-store cron run keys against cron finished logs and active subagent registry runs.
+- Runtime truth now uses a hybrid model:
+  - Preferred source: materialized runtime ledger (`status/runtime-state.json`) produced from append-only runtime events.
+  - Fallback source: deterministic live reconciler over sessions store + cron terminal logs + subagent registry.
+- Reconciler guarantees terminal dominance (`finished/failed/cancelled/timed_out`) and stale-orphan expiry TTL before rendering active rows.
+- Runtime payload now surfaces provenance metadata (`source`, `revision`, `snapshotMode`, `degradedReason`) plus per-run execution metadata (`model`, `thinking` when available) so operators can see whether truth is materialized, reconciled, or fallback-sanitized and what execution profile is currently in flight.
 - Runtime semantics intentionally exclude main/interactive rows (cron + background/subagent only).
 - Control-room status publisher runs are intentionally excluded from runtime activity to avoid self-referential false-running states.
+- `scripts/runtime/collect_runtime_events.py` appends normalized lifecycle events into `status/runtime-events.jsonl` (idempotent eventId guard).
+- `scripts/runtime/materialize_runtime_state.py` replays the journal into `status/runtime-state.json` with monotonic runtime revision.
 - `scripts/publish_status_gist.py` pushes fresh payloads to a GitHub Gist.
 - `scripts/publish_status.sh` is the operational wrapper used by cron.
 
@@ -38,9 +44,13 @@ Claw Control Room provides a readable, near-real-time view of Claw's operations:
 - Skills tab renders as a full-tab pannable map surface using a custom SVG+DOM layout engine (`src/lib/skillTreeLayout.ts`) instead of a React graph runtime, prioritizing visual quality, deterministic structure, and lightweight bundle impact.
 - Layout engine now uses explicit dependency-aware hub/branch sectors: dependency-free domains become root hubs, first-hop descendants become branch anchors, and deeper nodes expand on fixed depth rings. Ordering is deterministic (`tier` → `name` → `id`) so positions are refresh-stable (no jitter).
 - Main graph renders one node per domain and keeps connectors in an SVG layer beneath interactive cards to avoid line/text collisions; ring spacing + angle separation are tuned to prevent node overlap and clipping.
-- Node chrome is intentionally concise (`Tier X/5` + state) so progression signal stays visible without cluttering the graph.
-- Skill details are presented in a modal dialog (not a persistent side panel), preserving map real estate while exposing a visual tier ladder (tiers 1..5 definitions, current-tier highlight, complete tiers, and next unlock guidance).
-- Overflow map navigation now pairs pointer-driven bounded drag-pan (mouse + touch) with in-map zoom controls (`+`, `-`, fit/reset) so operators can quickly move between broad orientation and detail inspection without leaving the full-tab surface.
+- Branch readability is reinforced with subtle depth-guide rings (rendered in the SVG layer) so outward hierarchy remains legible while preserving map focus.
+- Node chrome now exposes three meaning layers: progression (`Tier X/5` + state), current-function copy, and next level-up meaning.
+- Skill details are presented in a modal dialog (not a persistent side panel), preserving map real estate while exposing current function, next level-up meaning, locked-requirements checklist, and a visual tier ladder (tiers 1..5 definitions, current-tier highlight, complete tiers, and next unlock guidance).
+- Skills modal now includes an interactive action layer (`Start Learning`, `Discover New Skill`) powered by deterministic local job orchestration (`src/lib/skillActions.ts`).
+- Learning jobs transition `pending -> running -> completed` in near real time, and completed jobs deterministically promote skill tier/level/unlock state.
+- Discover flow creates candidate locked skills as new map nodes, chained to the selected source skill as a dependency branch.
+- Overflow map navigation pairs pointer-driven bounded drag-pan (mouse + touch) with in-map zoom controls (`+`, `-`, fit/reset) so operators can quickly move between broad orientation and detail inspection without leaving the full-tab surface.
 - Components rendered inside collapsible bodies support compact heading mode, so section titles stay in the summary row while inner content keeps accessibility labels without duplicate heading stacks.
 - Active tab is URL-hash persisted (`#tab-*`) for direct navigation/state restore.
 - Theme tokens align to OpenClaw website palette conventions (deep dark surface + coral/orange accents) for product continuity.
@@ -48,14 +58,15 @@ Claw Control Room provides a readable, near-real-time view of Claw's operations:
 - Interaction system standardizes hover/active/focus-visible states across tabs, chips, refresh, and collapsible summaries for UX coherence.
 - Timeline current-block rendering supports both 24-hour and `AM/PM` ranges so highlight state is reflected in visible UI (not just computed logic).
 - Activity Feed normalizes unknown/`N/A` category values into `ops` so filter chips and badges remain clean and actionable, and suppresses `N/A` timestamp pills in feed metadata.
-- Runtime details modal is rendered through a `document.body` portal so it always layers above sticky headers and card stacking contexts.
+- Runtime details modal is rendered through a `document.body` portal so it always layers above sticky headers and card stacking contexts, and now includes run-time model + thinking metadata with explicit fallback messaging plus a baseline check target (`gpt-5.3-codex + high`).
 - Viewport edge-fade scrims (top/bottom) are rendered as fixed non-interactive overlays to soften scroll exits without affecting input hit targets.
 - Build output: `docs/` (served by GitHub Pages).
 
 ### 3) Status source strategy
 - Primary runtime source: Gist URL from `public/data/source.json`.
+- Runtime internals prefer fresh materialized ledger state and drop to live reconciler only when ledger state is missing/stale/invalid.
 - Fallback source: `public/data/status.json`.
-- Fallback payload is runtime-sanitized (`idle`, no active runs) so cached/static fallback cannot present stale `RUNNING` activity.
+- Fallback payload is runtime-sanitized (`idle`, no active runs) with explicit runtime metadata (`source=fallback-static`, `snapshotMode=fallback-sanitized`) so cached/static fallback cannot present stale `RUNNING` activity.
 - Frontend polling keeps showing the last known good snapshot when refresh fails, and sticky tab-row refresh state explicitly marks failure/retry instead of implying success.
 - Polling is concurrency-safe: every refresh gets a monotonic request sequence and abort controller; only the newest successful request may commit state.
 - Aborted superseded requests are intentionally silent (no false error banners) to avoid degraded-noise during quick retry/manual refresh patterns.
@@ -82,7 +93,22 @@ Claw Control Room provides a readable, near-real-time view of Claw's operations:
 ### 5) Continuous QA + issue loop
 - QA findings are tracked as first-class GitHub issues (bug + UX/improvement templates).
 - `scripts/issue_snapshot.py` writes a markdown backlog snapshot for planning/review.
+- Critical UI milestones use focused Playwright proof capture loops (for issue #50: skills map fit/zoom/modal flows + runtime details metadata fallback), with artifacts stored under `status/ui-validation/`.
 - This keeps dashboard evolution visible, triaged, and linked to implementation commits.
+
+### 6) MCP integration scaffold (Issue #50 Block 5)
+- `scripts/mcp/control_room_mcp_server.py` exposes control-room operational actions as MCP tools:
+  - `control-room.issue.snapshot`
+  - `control-room.status.build`
+  - `control-room.release.extract-notes`
+  - `control-room.runtime.materialize`
+- `scripts/mcp/skill_lab_mcp_server.py` provides Skill-Lab capability scaffolding for discover/learn/level transitions:
+  - `skill-lab.state.get`
+  - `skill-lab.discover`
+  - `skill-lab.learn.start`
+  - `skill-lab.level.transition`
+- Both servers use JSON-RPC stdio framing helpers in `scripts/mcp/jsonrpc_stdio.py` and can be tested through the e2e proof runner `scripts/mcp/run_control_room_mcp_flow.py`.
+- Runtime-Bridge low-latency sync contract draft is documented in `docs/mcp/runtime-bridge-protocol-draft.md`.
 
 ## Build and delivery flow
 

@@ -128,7 +128,10 @@ export default function App() {
               activeCount: 0,
               activeRuns: [],
               checkedAtMs: Date.now(),
-              source: 'payload-missing-runtime',
+              source: 'fallback-static',
+              revision: 'rtv1-00000000',
+              snapshotMode: 'fallback-sanitized',
+              degradedReason: 'Runtime payload missing; using safe idle fallback.',
             }
           }
         />

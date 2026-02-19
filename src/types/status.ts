@@ -34,6 +34,8 @@ export interface RuntimeRun {
   runningForMs: number;
   summary?: string;
   activityType?: 'cron' | 'subagent';
+  model?: string;
+  thinking?: 'minimal' | 'low' | 'medium' | 'high' | 'extra_high' | string;
 }
 
 export type SkillState = 'active' | 'planned' | 'locked';
@@ -107,6 +109,9 @@ export interface StatusPayload {
     activeCount: number;
     activeRuns: RuntimeRun[];
     checkedAtMs: number;
-    source: string;
+    source: 'materialized-ledger' | 'live-reconciler' | 'fallback-static' | string;
+    revision: string;
+    snapshotMode: 'live' | 'fallback-sanitized' | string;
+    degradedReason: string;
   };
 }

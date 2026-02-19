@@ -3,6 +3,9 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import type { RuntimeRun, StatusPayload } from '../types/status';
 
+const BASELINE_MODEL = 'gpt-5.3-codex';
+const BASELINE_THINKING = 'high';
+
 function formatDuration(ms: number): string {
   const totalSeconds = Math.max(0, Math.floor(ms / 1000));
   const hours = Math.floor(totalSeconds / 3600);
@@ -12,6 +15,65 @@ function formatDuration(ms: number): string {
   return [hours, minutes, seconds]
     .map((value) => String(value).padStart(2, '0'))
     .join(':');
+}
+
+function normalizeModelKey(value?: string): string {
+  if (!value || typeof value !== 'string') return '';
+  const trimmed = value.trim().toLowerCase();
+  if (!trimmed) return '';
+  const suffix = trimmed.split('/').filter(Boolean).pop() ?? '';
+  return suffix;
+}
+
+function normalizeThinking(value?: string): string {
+  if (!value || typeof value !== 'string') return '';
+  const normalized = value.trim().toLowerCase().replace(/[-\s]+/g, '_');
+  if (!normalized) return '';
+  if (normalized === 'max' || normalized === 'maximum' || normalized === 'very_high') return 'extra_high';
+  if (normalized === 'extra_high') return 'extra_high';
+  if (normalized === 'minimal' || normalized === 'min') return 'minimal';
+  if (normalized === 'low' || normalized === 'medium' || normalized === 'high') return normalized;
+  return normalized;
+}
+
+function formatThinkingLevel(value?: string): string {
+  const normalized = normalizeThinking(value);
+  if (!normalized) return 'Not reported';
+  if (normalized === 'extra_high') return 'Extra high';
+  return normalized.charAt(0).toUpperCase() + normalized.slice(1).replace(/_/g, ' ');
+}
+
+function formatModel(value?: string): string {
+  if (!value || typeof value !== 'string') return 'Not reported';
+  const trimmed = value.trim();
+  return trimmed.length > 0 ? trimmed : 'Not reported';
+}
+
+function baselineIndicator(run: Pick<RuntimeRun, 'model' | 'thinking'>): {
+  tone: 'match' | 'off' | 'unknown';
+  label: string;
+} {
+  const modelKey = normalizeModelKey(run.model);
+  const thinking = normalizeThinking(run.thinking);
+
+  if (!modelKey || !thinking) {
+    return {
+      tone: 'unknown',
+      label: 'Baseline check unavailable (model/thinking metadata missing).',
+    };
+  }
+
+  if (modelKey === BASELINE_MODEL && thinking === BASELINE_THINKING) {
+    return {
+      tone: 'match',
+      label: '✓ Baseline match: gpt-5.3-codex + high',
+    };
+  }
+
+  return {
+    tone: 'off',
+    label: '⚠ Non-baseline runtime (target: gpt-5.3-codex + high)',
+  };
 }
 
 type RuntimeRow = RuntimeRun & {
@@ -71,6 +133,7 @@ export function RuntimeStatus({ runtime }: { runtime: StatusPayload['runtime'] }
   }, [runtime.activeRuns, nowMs]);
 
   const isIdle = runtime.isIdle || runtime.activeRuns.length === 0;
+  const selectedBaseline = selectedRun ? baselineIndicator(selectedRun) : null;
 
   return (
     <section className="card runtime-card">
@@ -164,6 +227,22 @@ export function RuntimeStatus({ runtime }: { runtime: StatusPayload['runtime'] }
                 <dd>{selectedRun.elapsedLabel}</dd>
               </div>
               <div>
+                <dt>Model used</dt>
+                <dd>{formatModel(selectedRun.model)}</dd>
+              </div>
+              <div>
+                <dt>Thinking level</dt>
+                <dd>{formatThinkingLevel(selectedRun.thinking)}</dd>
+              </div>
+              <div>
+                <dt>Baseline target</dt>
+                <dd>
+                  <span className={`runtime-baseline-pill ${selectedBaseline?.tone ?? 'unknown'}`}>
+                    {selectedBaseline?.label ?? 'Baseline check unavailable (model/thinking metadata missing).'}
+                  </span>
+                </dd>
+              </div>
+              <div>
                 <dt>Task summary</dt>
                 <dd>{selectedRun.summary || selectedRun.jobName}</dd>
               </div>
@@ -173,7 +252,12 @@ export function RuntimeStatus({ runtime }: { runtime: StatusPayload['runtime'] }
         document.body,
       )}
 
-      <p className="muted runtime-footnote">Source: {runtime.source}</p>
+      <p className="muted runtime-footnote">
+        Source: {runtime.source} · Revision: {runtime.revision} · Mode: {runtime.snapshotMode}
+      </p>
+      {runtime.degradedReason && (
+        <p className="muted runtime-footnote">Degraded: {runtime.degradedReason}</p>
+      )}
     </section>
   );
 }

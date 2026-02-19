@@ -186,7 +186,21 @@ async function fetchStatusPayload(url: string, signal?: AbortSignal): Promise<St
     throw new StatusFetchError('status-payload-invalid', 'Status payload does not match expected schema');
   }
 
-  return parsed;
+  const payload = parsed as StatusPayload;
+  payload.runtime.revision =
+    typeof payload.runtime.revision === 'string' && payload.runtime.revision.trim().length > 0
+      ? payload.runtime.revision
+      : 'rtv1-00000000';
+  payload.runtime.snapshotMode =
+    typeof payload.runtime.snapshotMode === 'string' && payload.runtime.snapshotMode.trim().length > 0
+      ? payload.runtime.snapshotMode
+      : payload.runtime.source === 'fallback-static'
+        ? 'fallback-sanitized'
+        : 'live';
+  payload.runtime.degradedReason =
+    typeof payload.runtime.degradedReason === 'string' ? payload.runtime.degradedReason : '';
+
+  return payload;
 }
 
 export async function fetchStatus(options?: { signal?: AbortSignal }): Promise<StatusFetchResult> {

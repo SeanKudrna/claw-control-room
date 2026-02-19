@@ -44,9 +44,9 @@ interface BranchBand {
 
 const TAU = Math.PI * 2;
 const HUB_RING_RADIUS = 140;
-const DEPTH_RING_STEP = 220;
-const NODE_SAFE_DIAMETER = 150;
-const CANVAS_EDGE_PADDING = 230;
+const DEPTH_RING_STEP = 236;
+const NODE_SAFE_DIAMETER = 196;
+const CANVAS_EDGE_PADDING = 270;
 
 function compareSkillNodes(a: SkillNode, b: SkillNode): number {
   return a.tier - b.tier || a.name.localeCompare(b.name) || a.id.localeCompare(b.id);

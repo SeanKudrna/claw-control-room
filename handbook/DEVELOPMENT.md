@@ -23,6 +23,7 @@ UI nav notes:
 - Aborted/superseded requests should not surface user-visible error banners.
 - Refresh failures should map to stable error taxonomy (`status-network-error`, `status-http-error`, `status-payload-invalid`, `status-url-unavailable`) so degraded-state messaging is actionable.
 - Status payloads must pass runtime shape validation before commit to UI state; malformed objects should surface `status-payload-invalid` and retain last-known-good snapshot behavior.
+- Runtime payload contract now requires provenance fields (`source`, `revision`, `snapshotMode`, `degradedReason`) so the UI can truthfully label runtime mode.
 - Header source indicator should remain truthful (`Live source` vs `Fallback snapshot`) with fallback reason detail available from the latest fetch path.
 - If configured source fetch fails, fetch logic should attempt local fallback snapshot and explicitly mark fallback mode.
 - Freshness labels should age on a timer between polls (truthful stale-state progression).
@@ -35,13 +36,16 @@ UI nav notes:
 - Refresh success helper text should explicitly call out stale carryover when the newest available payload is still old.
 - Refresh idle helper text should stay empty (show helper copy only for meaningful non-idle states).
 - Activity Feed category normalization should prevent `N/A` category chips/options from appearing; unknown values map to `ops`, and `N/A` timestamp pills should not render in item metadata.
-- Runtime details modal should render via body portal with z-index above sticky tab/header layers.
+- Runtime details modal should render via body portal with z-index above sticky tab/header layers, expose model + thinking runtime metadata when available, show explicit fallback labels when missing, and include a baseline indicator for `gpt-5.3-codex + high`.
 - Skills tree interactions should work on desktop click/drag and mobile tap/drag (tap opens modal details; drag pans overflow map) and include map controls for zoom-in/zoom-out plus fit/reset view.
 - Skills tab contract is full-tab map-first UX: the pannable map should consume the dominant tab area (not a small nested viewport).
-- Main graph contract remains one node per skill domain (no tier-per-card graph clutter) with concise in-node progression text (`Tier X/5`).
+- Main graph contract remains one node per skill domain (no tier-per-card graph clutter) with in-node progression text (`Tier X/5`), current-function copy, and next level-up meaning.
 - Skills layout engine (`src/lib/skillTreeLayout.ts`) should remain deterministic and dependency-aware, using explicit hub/branch sectors + fixed depth rings and stable ordering (`tier` → `name` → `id`).
-- Skills detail modal must include key fields (name, state, learned date, signal/dependencies, description) and a visual tier ladder (Tier 1..5 definitions/differences, current highlight, complete tiers, and next unlock) with escape/backdrop/close-button dismissal.
-- Skills readability/regression guard (`scripts/tests/test_ui_regressions.mjs`) should pass: full-tab surface ratios, deterministic post-refresh position signature, no node overlap/title overflow/canvas clipping, outward depth-ring trend, connectors behind nodes, modal open/close contract, tier-ladder presence, zoom controls (+/- + fit/reset), and bounded desktop/mobile pan behavior.
+- Skills detail modal must include key fields (name, state, learned date, signal/dependencies, description), current function + next level-up meaning cards, locked-requirements checklist, and a visual tier ladder (Tier 1..5 definitions/differences, current highlight, complete tiers, and next unlock) with escape/backdrop/close-button dismissal.
+- Locked skill modal contract now requires an enabled `Start Learning` action when dependencies are met, plus explicit disabled-state rationale when blocked/max-tier/in-flight.
+- Learning-job state (`pending`, `running`, `completed`) must surface both in modal job log and node-level state chip in near real time.
+- Discover flow contract: `Discover New Skill` opens candidate creation UI and adds deterministic locked candidate nodes into the active graph.
+- Skills readability/regression guard (`scripts/tests/test_ui_regressions.mjs`) should pass: full-tab surface ratios, deterministic post-refresh position signature, no node overlap/title overflow/canvas clipping, outward depth-ring trend, connectors behind nodes, modal open/close contract, meaning/locked-requirements sections, tier-ladder presence, zoom controls (+/- + fit/reset), and bounded desktop/mobile pan behavior.
 - Skills evolution ingestion is deterministic and artifact-driven (workspace memory files only; no network/LLM mutation in builder path).
 
 ## Build output for GitHub Pages
@@ -65,6 +69,34 @@ Use live runtime rows only when explicitly needed:
 python3 scripts/build_status_json.py --live-runtime
 ```
 
+## Runtime ledger scripts (hybrid runtime truth)
+
+```bash
+python3 scripts/runtime/collect_runtime_events.py
+python3 scripts/runtime/materialize_runtime_state.py
+```
+
+Collector appends canonical events into `status/runtime-events.jsonl` with deterministic event IDs.
+Materializer replays the journal into `status/runtime-state.json` and emits monotonic runtime revisions (`rtv1-*`).
+
+## MCP scaffold workflows (Issue #50 Block 5)
+
+Run servers:
+
+```bash
+python3 scripts/mcp/control_room_mcp_server.py
+python3 scripts/mcp/skill_lab_mcp_server.py
+```
+
+Run end-to-end control-room MCP proof flow:
+
+```bash
+python3 scripts/mcp/run_control_room_mcp_flow.py
+python3 scripts/tests/test_control_room_mcp_flow.py
+```
+
+MCP design docs live under `docs/mcp/`.
+
 ## Full quality gate
 
 ```bash
@@ -74,9 +106,23 @@ python3 scripts/build_status_json.py --live-runtime
 This runs:
 - Python compile checks
 - Python tests (`scripts/tests/test_status_builder.py`, `scripts/tests/test_extract_release_notes.py`, `scripts/tests/test_issue_snapshot.py`, `scripts/tests/test_collapsible_heading_compact.py`)
-- status payload build sanity check (includes unified event-model lane builder for now/next/done with deterministic transitions/day reset and runtime detection wiring for cron + subagent only)
+- status payload build sanity check (includes unified event-model lane builder for now/next/done with deterministic transitions/day reset and runtime truth wiring for materialized-ledger + reconciler fallback)
 - TypeScript typecheck
 - Vite production build
+- Playwright UI regression scripts (`test_ui_regressions.mjs` + `test_runtime_job_details_modal.mjs` + `test_skill_actions_flow.mjs`)
+
+## Issue #50 visual QA capture loop
+
+```bash
+npm run build
+npm run preview -- --host 127.0.0.1 --port 4173
+# separate shell
+node scripts/tests/capture_issue50_screenshots.mjs
+node scripts/tests/capture_issue50_job_details_screenshots.mjs
+node scripts/tests/test_skill_actions_flow.mjs
+```
+
+Proof screenshots land in `status/ui-validation/issue50-*.png`.
 
 ## Status-only publish (no commit)
 
