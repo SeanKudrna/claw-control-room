@@ -26,6 +26,10 @@ interface UseStatusResult {
   sourceMode: 'configured' | 'fallback';
   sourceLabel: string;
   sourceDetail: string;
+  liveStatusUrl: string | null;
+  freshnessAgeMinutes: number | null;
+  lastErrorCode: RefreshErrorCode | null;
+  lastErrorMessage: string | null;
 }
 
 export function useStatus(refreshMs = 60_000): UseStatusResult {
@@ -39,6 +43,9 @@ export function useStatus(refreshMs = 60_000): UseStatusResult {
   const [sourceMode, setSourceMode] = useState<'configured' | 'fallback'>('fallback');
   const [sourceLabel, setSourceLabel] = useState<string>('Fallback snapshot');
   const [sourceDetail, setSourceDetail] = useState<string>('Using local fallback snapshot.');
+  const [liveStatusUrl, setLiveStatusUrl] = useState<string | null>(null);
+  const [lastErrorCode, setLastErrorCode] = useState<RefreshErrorCode | null>(null);
+  const [lastErrorMessage, setLastErrorMessage] = useState<string | null>(null);
   const [nowMs, setNowMs] = useState<number>(() => Date.now());
   const requestSeqRef = useRef(0);
   const activeControllerRef = useRef<AbortController | null>(null);
@@ -66,6 +73,7 @@ export function useStatus(refreshMs = 60_000): UseStatusResult {
       setSourceMode(next.source.mode);
       setSourceLabel(next.source.label);
       setSourceDetail(next.source.detail);
+      setLiveStatusUrl(next.source.liveStatusUrl);
       setLastRefreshAtMs(Date.now());
       setRefreshOutcome('success');
     } catch (err) {
@@ -74,9 +82,14 @@ export function useStatus(refreshMs = 60_000): UseStatusResult {
       if (err instanceof StatusFetchError) {
         setErrorCode(err.code);
         setError(err.message);
+        setLastErrorCode(err.code);
+        setLastErrorMessage(err.message);
       } else {
+        const unknownMessage = err instanceof Error ? err.message : 'Unknown status error';
         setErrorCode('unknown-status-error');
-        setError(err instanceof Error ? err.message : 'Unknown status error');
+        setError(unknownMessage);
+        setLastErrorCode('unknown-status-error');
+        setLastErrorMessage(unknownMessage);
       }
 
       setRefreshOutcome('error');
@@ -117,22 +130,22 @@ export function useStatus(refreshMs = 60_000): UseStatusResult {
 
   const freshness = useMemo(() => {
     if (!data?.generatedAt) {
-      return { level: 'stale' as FreshnessLevel, label: 'Freshness unknown' };
+      return { level: 'stale' as FreshnessLevel, label: 'Freshness unknown', ageMinutes: null as number | null };
     }
 
     const generatedAtMs = Date.parse(data.generatedAt);
     if (!Number.isFinite(generatedAtMs)) {
-      return { level: 'stale' as FreshnessLevel, label: 'Freshness unknown' };
+      return { level: 'stale' as FreshnessLevel, label: 'Freshness unknown', ageMinutes: null as number | null };
     }
 
     const ageMinutes = Math.max(0, Math.floor((nowMs - generatedAtMs) / 60_000));
     if (ageMinutes <= 5) {
-      return { level: 'fresh' as FreshnessLevel, label: `Fresh (${ageMinutes}m old)` };
+      return { level: 'fresh' as FreshnessLevel, label: `Fresh (${ageMinutes}m old)`, ageMinutes };
     }
     if (ageMinutes <= 15) {
-      return { level: 'aging' as FreshnessLevel, label: `Aging (${ageMinutes}m old)` };
+      return { level: 'aging' as FreshnessLevel, label: `Aging (${ageMinutes}m old)`, ageMinutes };
     }
-    return { level: 'stale' as FreshnessLevel, label: `Stale (${ageMinutes}m old)` };
+    return { level: 'stale' as FreshnessLevel, label: `Stale (${ageMinutes}m old)`, ageMinutes };
   }, [data?.generatedAt, nowMs]);
 
   return {
@@ -150,5 +163,9 @@ export function useStatus(refreshMs = 60_000): UseStatusResult {
     sourceMode,
     sourceLabel,
     sourceDetail,
+    liveStatusUrl,
+    freshnessAgeMinutes: freshness.ageMinutes,
+    lastErrorCode,
+    lastErrorMessage,
   };
 }

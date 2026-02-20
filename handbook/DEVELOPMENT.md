@@ -16,6 +16,7 @@ npm run dev
 
 UI nav notes:
 - Tabs are hash-driven (`#tab-overview`, `#tab-operations`, `#tab-insights`, `#tab-skills`).
+- Global Command Center opens via `Ctrl/Cmd+K` anywhere in-app and supports arrow/enter/escape keyboard navigation.
 - Major sections are collapsible via native `<details>` wrappers.
 - Sticky tab shell uses a translucent contrast layer; viewport edge-fade overlays are fixed and non-interactive.
 - Sticky tab-row refresh feedback should remain attempt-accurate (`refreshing` / `success` / `error`) and never report success for failed polls.
@@ -35,6 +36,8 @@ UI nav notes:
 - Timeline highlight parsing should accept both `HH:MM-HH:MM` and `h:mma/h:mmpm`-style ranges so current-block emphasis renders reliably.
 - Refresh success helper text should explicitly call out stale carryover when the newest available payload is still old.
 - Refresh idle helper text should stay empty (show helper copy only for meaningful non-idle states).
+- Command Center quick actions contract: force refresh, copy live status URL when available, and open freshness-aware diagnostics view (`fresh`/`stale`) in-app.
+- Overview `Refresh Diagnostics` card must remain compact and include outcome/source/freshness-age/last-error fields.
 - Activity Feed category normalization should prevent `N/A` category chips/options from appearing; unknown values map to `ops`, and `N/A` timestamp pills should not render in item metadata.
 - Runtime details modal should render via body portal with z-index above sticky tab/header layers, expose model + thinking runtime metadata when available, show explicit fallback labels when missing, and include a baseline indicator for `gpt-5.3-codex + high`.
 - Skills tree interactions should work on desktop click/drag and mobile tap/drag (tap opens modal details; drag pans overflow map) and include map controls for zoom-in/zoom-out plus fit/reset view.

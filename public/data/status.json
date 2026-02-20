@@ -1,9 +1,9 @@
 {
-  "generatedAt": "2026-02-19T11:13:33.758920+00:00",
-  "generatedAtLocal": "2026-02-19 05:13 ",
-  "controlRoomVersion": "1.4.39",
-  "currentFocus": "Next up:  \u2014 Start-of-day planning + validator",
-  "activeWork": "Next up: 08:25-08:40 \u2014 Start-of-day planning + validator",
+  "generatedAt": "2026-02-20T02:02:48.627608+00:00",
+  "generatedAtLocal": "2026-02-19 20:02 ",
+  "controlRoomVersion": "1.5.0",
+  "currentFocus": "Reliability monitoring + scheduled execution",
+  "activeWork": "",
   "reliability": {
     "status": "green"
   },
@@ -43,69 +43,71 @@
   ],
   "nextJobs": [
     {
-      "name": "Overnight Sprint B6 \u2014 QA gauntlet + release packaging (#50)",
-      "nextRun": "05:10",
-      "lastStatus": null
-    },
-    {
-      "name": "Reliability watchdog hourly (self-heal + conditional alert)",
-      "nextRun": "05:20",
+      "name": "Control room status publish (gist backend)",
+      "nextRun": "20:03",
       "lastStatus": "ok"
     },
     {
       "name": "Critical update failover guard",
-      "nextRun": "05:22",
+      "nextRun": "20:07",
+      "lastStatus": "ok"
+    },
+    {
+      "name": "Model capacity guard (auto model switch)",
+      "nextRun": "20:12",
+      "lastStatus": "ok"
+    },
+    {
+      "name": "Today dashboard refresh (every 3h)",
+      "nextRun": "20:15",
+      "lastStatus": "ok"
+    },
+    {
+      "name": "Reliability watchdog hourly (self-heal + conditional alert)",
+      "nextRun": "20:20",
       "lastStatus": "ok"
     },
     {
       "name": "Downtime gap auto-fill guard (quiet unless triggered)",
-      "nextRun": "06:00",
+      "nextRun": "21:00",
       "lastStatus": "ok"
     },
     {
-      "name": "ClawPrime daily memory evolution pass",
-      "nextRun": "06:10",
+      "name": "Control room issue triage + QA intake",
+      "nextRun": "21:35",
       "lastStatus": "ok"
     },
     {
-      "name": "Overnight Sprint B7 \u2014 Morning 6:25 handoff (#50)",
-      "nextRun": "06:25",
-      "lastStatus": null
-    },
-    {
-      "name": "Control room status publish (gist backend)",
-      "nextRun": "07:00",
-      "lastStatus": "ok"
-    },
-    {
-      "name": "Usage check - morning (5h window)",
-      "nextRun": "07:05",
+      "name": "Usage check - nightly (5h window)",
+      "nextRun": "21:35",
       "lastStatus": "ok"
     }
   ],
   "findings": [
-    "Saved proof notes: `status/overnight/skill-actions-proof.md`.",
-    "Added MCP scaffold transport/helpers under `claw-control-room/scripts/mcp/` and implemented Control-Room server actions for issue/status/release/runtime.",
-    "Added Skill-Lab MCP scaffold server with discover/learn/level-transition flows and JSON-backed scaffold state.",
-    "Drafted Runtime-Bridge low-latency sync protocol in `claw-control-room/docs/mcp/runtime-bridge-protocol-draft.md`.",
-    "Implemented and validated an end-to-end MCP-connected flow (`run_control_room_mcp_flow.py` + `test_control_room_mcp_flow.py`), with proof artifact at `status/overnight/mcp-control-room-flow-proof.json`.",
-    "Wrote overnight deliverables: `status/overnight/mcp-pack.md` and related plan/draft files; full quality gate passed."
+    "Added cron guard `Model capacity guard (auto model switch)` (`1c6ec880-aca2-4983-a97c-dfbed6c0e335`) on `12,42 * * * *` to monitor session usage and auto-switch non-critical jobs between codex/codex-spark based on headroom thresholds.",
+    "Captured directive in `MEMORY.md`: continuously monitor model capacity and proactively switch non-critical jobs to preserve critical reliability.",
+    "Sean preference update: avoid proactive pings for non-feature maintenance/small tweaks; only send proactive updates for major hardening/capability shifts, blockers, or materially impactful outcomes.",
+    "Built `scripts/validate_today_status_freshness.py` to catch stale `TODAY_STATUS.md` by verifying today's local date token appears.",
+    "Added `scripts/test_validate_today_status_freshness.py` (3 unit tests, passing) and captured proof in `status/capability-surprise-2026-02-19-1610.md`.",
+    "Operationalized check in `status/ops_hygiene_checks.md` for recurring autonomous sweeps."
   ],
   "workstream": {
     "now": [
-      "Overnight Sprint B6 \u2014 QA gauntlet + release packaging (#50)"
+      "Ship a true BIG v1.5 dashboard release now. Repo: /Users/seankudrna/.openclaw/workspace/claw-control-room Goal: make GitHub release/tag actually land at v1.5.0 with substantial, wo\u2026"
     ],
     "next": [
-      "05:20 \u2014 Scheduled job: Reliability watchdog hourly (self-heal + conditional alert)",
-      "05:22 \u2014 Scheduled job: Critical update failover guard",
-      "06:00 \u2014 Scheduled job: Downtime gap auto-fill guard (quiet unless triggered)",
-      "06:10 \u2014 Scheduled job: ClawPrime daily memory evolution pass",
-      "06:25 \u2014 Scheduled job: Overnight Sprint B7 \u2014 Morning 6:25 handoff (#50)"
+      "20:03 \u2014 Scheduled job: Control room status publish (gist backend)",
+      "20:07 \u2014 Scheduled job: Critical update failover guard",
+      "20:12 \u2014 Scheduled job: Model capacity guard (auto model switch)",
+      "20:15 \u2014 Scheduled job: Today dashboard refresh (every 3h)",
+      "20:20 \u2014 Scheduled job: Reliability watchdog hourly (self-heal + conditional alert)"
     ],
     "done": [
-      "Overnight Sprint B5 \u2014 MCP expansion pack (#50)",
-      "Overnight Sprint B4 \u2014 Skill actions + live job states (#50)",
-      "Overnight Sprint B3.5 \u2014 Job model/thinking visibility in details (#50)"
+      "Reliability watchdog hourly (self-heal + conditional alert)",
+      "Critical update failover guard",
+      "Evolution profile refresh (helper, non-planner)",
+      "Today dashboard refresh (every 3h)",
+      "Proof schema lint sweep"
     ]
   },
   "charts": {
@@ -123,10 +125,28 @@
         "job": "Pre-5pm reliability checkpoint (DAILY_PLAN-driven)"
       },
       {
+        "label": "17:00",
+        "status": "ok",
+        "score": 1.0,
+        "job": "Usage report - 5pm"
+      },
+      {
         "label": "17:05",
         "status": "ok",
         "score": 1.0,
         "job": "Daily reliability SLO snapshot"
+      },
+      {
+        "label": "17:15",
+        "status": "ok",
+        "score": 1.0,
+        "job": "Today dashboard refresh (every 3h)"
+      },
+      {
+        "label": "17:35",
+        "status": "ok",
+        "score": 1.0,
+        "job": "Control room issue triage + QA intake"
       },
       {
         "label": "17:40",
@@ -141,128 +161,110 @@
         "job": "Autonomy evening wrap + next-day prep"
       },
       {
+        "label": "19:20",
+        "status": "ok",
+        "score": 1.0,
+        "job": "Reliability watchdog hourly (self-heal + conditional alert)"
+      },
+      {
         "label": "19:30",
         "status": "ok",
         "score": 1.0,
         "job": "Evolution profile refresh (helper, non-planner)"
       },
       {
-        "label": "20:15",
+        "label": "19:42",
         "status": "ok",
         "score": 1.0,
-        "job": "Today dashboard refresh (every 3h)"
+        "job": "Model capacity guard (auto model switch)"
       },
       {
-        "label": "21:35",
+        "label": "19:52",
         "status": "ok",
         "score": 1.0,
-        "job": "Control room issue triage + QA intake"
+        "job": "Critical update failover guard"
       },
       {
-        "label": "21:35",
-        "status": "ok",
-        "score": 1.0,
-        "job": "Usage check - nightly (5h window)"
-      },
-      {
-        "label": "22:59",
-        "status": "ok",
-        "score": 1.0,
-        "job": "Control room status publish (gist backend)"
-      },
-      {
-        "label": "01:35",
-        "status": "ok",
-        "score": 1.0,
-        "job": "Nightly stale cron prune (scripted)"
-      },
-      {
-        "label": "04:20",
-        "status": "ok",
-        "score": 1.0,
-        "job": "Reliability watchdog hourly (self-heal + conditional alert)"
-      },
-      {
-        "label": "05:00",
+        "label": "20:00",
         "status": "ok",
         "score": 1.0,
         "job": "Downtime gap auto-fill guard (quiet unless triggered)"
       },
       {
-        "label": "05:07",
+        "label": "20:02",
         "status": "ok",
         "score": 1.0,
-        "job": "Critical update failover guard"
+        "job": "Control room status publish (gist backend)"
       }
     ],
     "reliabilityTrend": [
       {
-        "label": "00:51",
+        "label": "15:20",
         "status": "green",
         "score": 1.0
       },
       {
-        "label": "01:00",
+        "label": "15:51",
         "status": "green",
         "score": 1.0
       },
       {
-        "label": "01:51",
+        "label": "16:20",
         "status": "green",
         "score": 1.0
       },
       {
-        "label": "02:00",
+        "label": "16:50",
         "status": "green",
         "score": 1.0
       },
       {
-        "label": "02:20",
+        "label": "16:51",
         "status": "green",
         "score": 1.0
       },
       {
-        "label": "02:22",
+        "label": "17:00",
         "status": "green",
         "score": 1.0
       },
       {
-        "label": "02:51",
+        "label": "17:20",
         "status": "green",
         "score": 1.0
       },
       {
-        "label": "03:00",
+        "label": "17:51",
         "status": "green",
         "score": 1.0
       },
       {
-        "label": "03:20",
+        "label": "18:00",
         "status": "green",
         "score": 1.0
       },
       {
-        "label": "03:51",
+        "label": "18:20",
         "status": "green",
         "score": 1.0
       },
       {
-        "label": "04:00",
+        "label": "18:51",
         "status": "green",
         "score": 1.0
       },
       {
-        "label": "04:20",
+        "label": "19:20",
         "status": "green",
         "score": 1.0
       },
       {
-        "label": "04:51",
+        "label": "19:51",
         "status": "green",
         "score": 1.0
       },
       {
-        "label": "05:00",
+        "label": "20:00",
         "status": "green",
         "score": 1.0
       }
@@ -313,6 +315,66 @@
       "time": "n/a",
       "category": "ops",
       "text": "Wrote overnight deliverables: `status/overnight/mcp-pack.md` and related plan/draft files; full quality gate passed."
+    },
+    {
+      "time": "06:10",
+      "category": "ops",
+      "text": "Reviewed `ClawPrime_Memory.md` plus latest high-signal outcomes from `memory/2026-02-17.md`, `memory/2026-02-18.md`, `memory/2026-02-19.md`, and overnight status logs (`status/overnight/mcp-pack.md`, `status/overnight/skill-actions-proof.md`, `status/overnight-control-room-log.md`)."
+    },
+    {
+      "time": "06:10",
+      "category": "ops",
+      "text": "Distilled and refreshed durable memory with 3 reinforced patterns: layered runtime-truth guardrails, explicit degraded/source trust semantics, and deterministic+proofed feature shipping."
+    },
+    {
+      "time": "06:10",
+      "category": "release",
+      "text": "Pruned redundancy and tightened default friction-fix sequence to include screenshot proof + gate-before-release discipline."
+    },
+    {
+      "time": "06:10",
+      "category": "ops",
+      "text": "Auto-applied workflow improvement: upgraded `scripts/clawprime_memory_evolution_helper.py` with CLI options and overnight-artifact ingestion, then generated `status/clawprime-memory-digest.md` for faster daily evolution cycles."
+    },
+    {
+      "time": "n/a",
+      "category": "ops",
+      "text": "Sean reported a non-operational incident tied to codex-spark exhaustion/cooldown behavior and requested proactive model switching before limits get tight."
+    },
+    {
+      "time": "n/a",
+      "category": "ui",
+      "text": "Repointed key spark-based automation jobs to `openai-codex/gpt-5.3-codex` (failover guard, status publish, dashboard refresh, triage, validator, lint, stale-prune) to avoid pinning operations to spark."
+    },
+    {
+      "time": "n/a",
+      "category": "reliability",
+      "text": "Added cron guard `Model capacity guard (auto model switch)` (`1c6ec880-aca2-4983-a97c-dfbed6c0e335`) on `12,42 * * * *` to monitor session usage and auto-switch non-critical jobs between codex/codex-spark based on headroom thresholds."
+    },
+    {
+      "time": "n/a",
+      "category": "reliability",
+      "text": "Captured directive in `MEMORY.md`: continuously monitor model capacity and proactively switch non-critical jobs to preserve critical reliability."
+    },
+    {
+      "time": "n/a",
+      "category": "ops",
+      "text": "Sean preference update: avoid proactive pings for non-feature maintenance/small tweaks; only send proactive updates for major hardening/capability shifts, blockers, or materially impactful outcomes."
+    },
+    {
+      "time": "16:10",
+      "category": "ui",
+      "text": "Built `scripts/validate_today_status_freshness.py` to catch stale `TODAY_STATUS.md` by verifying today's local date token appears."
+    },
+    {
+      "time": "16:10",
+      "category": "ops",
+      "text": "Added `scripts/test_validate_today_status_freshness.py` (3 unit tests, passing) and captured proof in `status/capability-surprise-2026-02-19-1610.md`."
+    },
+    {
+      "time": "16:10",
+      "category": "ops",
+      "text": "Operationalized check in `status/ops_hygiene_checks.md` for recurring autonomous sweeps."
     }
   ],
   "skills": {
@@ -630,7 +692,7 @@
         "/Users/seankudrna/.openclaw/workspace/ClawPrime_Memory.md"
       ],
       "deterministicSeed": "b28f7d93e936",
-      "lastProcessedAt": "2026-02-19T05:13:33.671472",
+      "lastProcessedAt": "2026-02-19T20:02:48.578024",
       "mode": "keyword-scan-v1"
     }
   },
@@ -639,12 +701,12 @@
     "isIdle": true,
     "activeCount": 0,
     "activeRuns": [],
-    "checkedAtMs": 1771499613672,
+    "checkedAtMs": 1771552968579,
     "source": "fallback-static",
-    "revision": "rtv1-1771499613672",
+    "revision": "rtv1-1771552968579",
     "snapshotMode": "fallback-sanitized",
     "degradedReason": "Static snapshot cannot carry live runtime rows",
-    "droppedTerminalCount": 173,
+    "droppedTerminalCount": 159,
     "droppedStaleCount": 1
   }
 }

@@ -41,6 +41,7 @@ Claw Control Room provides a readable, near-real-time view of Claw's operations:
   - `src/lib/statusApi.ts` source resolution/fetch logic
   - `src/types/status.ts` shared payload contracts
 - Information architecture uses tabbed views (`Overview`, `Operations`, `Insights`, `Skills`) plus collapsible sections to reduce visual overload.
+- Global Command Center palette (`Ctrl/Cmd+K`) sits above tab views and indexes tabs + timeline blocks + upcoming jobs + activity + findings with keyboard-first navigation.
 - Skills tab renders as a full-tab pannable map surface using a custom SVG+DOM layout engine (`src/lib/skillTreeLayout.ts`) instead of a React graph runtime, prioritizing visual quality, deterministic structure, and lightweight bundle impact.
 - Layout engine now uses explicit dependency-aware hub/branch sectors: dependency-free domains become root hubs, first-hop descendants become branch anchors, and deeper nodes expand on fixed depth rings. Ordering is deterministic (`tier` → `name` → `id`) so positions are refresh-stable (no jitter).
 - Main graph renders one node per domain and keeps connectors in an SVG layer beneath interactive cards to avoid line/text collisions; ring spacing + angle separation are tuned to prevent node overlap and clipping.
@@ -76,6 +77,7 @@ Claw Control Room provides a readable, near-real-time view of Claw's operations:
 - Fallback behavior is fail-soft: configured source fetch attempts first, then local fallback snapshot is used when primary is unavailable/invalid.
 - Freshness age is recomputed on a timer between polls so stale data visibly ages even if payload timestamp is unchanged.
 - Refresh success copy distinguishes "updated" from "fetched but still stale" states to prevent false confidence when the newest available snapshot is still old.
+- Overview now includes a compact Refresh Diagnostics panel exposing latest refresh outcome, source mode, freshness age, and persisted last-error metadata for fast degraded-mode triage.
 - Sticky tab-row refresh control is button-only (no helper text beneath it) to keep row rhythm tight and reduce duplicate messaging.
 - This preserves commitless status refreshes while keeping a safe local fallback snapshot and honest degraded-state UX.
 

@@ -96,6 +96,35 @@ let mobilePage;
 try {
   await desktopPage.goto(APP_URL, { waitUntil: 'networkidle' });
 
+  await desktopPage.keyboard.press(`${process.platform === 'darwin' ? 'Meta' : 'Control'}+KeyK`);
+  await desktopPage.waitForSelector('.command-center-modal');
+  await desktopPage.fill('.command-center-input', 'Force refresh now');
+  await desktopPage.keyboard.press('Enter');
+  await desktopPage.waitForSelector('.command-center-modal', { state: 'detached' });
+
+  await desktopPage.keyboard.press(`${process.platform === 'darwin' ? 'Meta' : 'Control'}+KeyK`);
+  await desktopPage.waitForSelector('.command-center-modal');
+  await desktopPage.fill('.command-center-input', 'Open current diagnostics view');
+  await desktopPage.keyboard.press('Enter');
+  await desktopPage.waitForSelector('#refresh-diagnostics');
+
+  const diagnosticsContract = await desktopPage.$eval('#refresh-diagnostics', (node) => {
+    const terms = [...node.querySelectorAll('dt')].map((term) => term.textContent?.trim() ?? '');
+    const values = [...node.querySelectorAll('dd')].map((value) => value.textContent?.trim() ?? '');
+    return {
+      terms,
+      hasStateBadge: !!node.querySelector('.tiny-pill'),
+      hasFootnote: !!node.querySelector('.refresh-diagnostics-footnote'),
+      valueCount: values.length,
+    };
+  });
+  for (const expected of ['Last outcome', 'Source mode', 'Freshness', 'Age', 'Last error']) {
+    assert(diagnosticsContract.terms.includes(expected), `Refresh diagnostics missing field: ${expected}`);
+  }
+  assert(diagnosticsContract.hasStateBadge, 'Refresh diagnostics panel should include stale/fresh state badge.');
+  assert(diagnosticsContract.hasFootnote, 'Refresh diagnostics panel should include compact state footnote.');
+  assert(diagnosticsContract.valueCount >= 5, 'Refresh diagnostics panel should include diagnostic values.');
+
   await desktopPage.getByRole('tab', { name: 'Insights' }).click({ force: true });
 
   const filterChipLabels = await desktopPage.$$eval('.chip-row .chip', (chips) => chips.map((chip) => chip.textContent?.trim() ?? ''));
@@ -499,6 +528,15 @@ try {
   mobilePage = await mobileContext.newPage();
 
   await mobilePage.goto(APP_URL, { waitUntil: 'networkidle' });
+
+  await mobilePage.locator('.command-center-trigger').click({ force: true });
+  await mobilePage.waitForSelector('.command-center-modal');
+  await mobilePage.fill('.command-center-input', 'zzzz-no-match');
+  const emptyVisible = await mobilePage.locator('.command-center-empty').isVisible();
+  assert(emptyVisible, 'Command center should render empty-state UX when no matches exist.');
+  await mobilePage.keyboard.press('Escape');
+  await mobilePage.waitForSelector('.command-center-modal', { state: 'detached' });
+
   await mobilePage.getByRole('tab', { name: 'Skills' }).click({ force: true });
 
   const mobileControlContract = await mobilePage.$eval('.skills-tree-map-shell', (shell) => {

@@ -2,9 +2,11 @@ import { AlertTriangle } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { ActivityFeed } from './components/ActivityFeed';
 import { CollapsibleSection } from './components/CollapsibleSection';
+import { CommandCenter, type CommandCenterItem } from './components/CommandCenter';
 import { Findings } from './components/Findings';
 import { Header } from './components/Header';
 import { JobsTable } from './components/JobsTable';
+import { RefreshDiagnosticsPanel } from './components/RefreshDiagnosticsPanel';
 import { RuntimeStatus } from './components/RuntimeStatus';
 import { SummaryCards } from './components/SummaryCards';
 import { SkillsTree } from './components/SkillsTree';
@@ -59,13 +61,125 @@ export default function App() {
     sourceMode,
     sourceLabel,
     sourceDetail,
+    liveStatusUrl,
+    freshnessAgeMinutes,
+    lastErrorCode,
+    lastErrorMessage,
   } = useStatus();
   const [activeTab, setActiveTab] = useState<string>(resolveInitialTab());
+  const [commandCenterOpen, setCommandCenterOpen] = useState(false);
+  const [diagnosticsView, setDiagnosticsView] = useState<'fresh' | 'stale'>(
+    freshnessLevel === 'stale' ? 'stale' : 'fresh',
+  );
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
     window.location.hash = `tab-${activeTab}`;
   }, [activeTab]);
+
+  useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      const isShortcut = (event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k';
+      if (!isShortcut) return;
+      event.preventDefault();
+      setCommandCenterOpen((open) => !open);
+    };
+
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, []);
+
+  const openDiagnosticsView = (view: 'fresh' | 'stale') => {
+    setActiveTab('overview');
+    setDiagnosticsView(view);
+    window.setTimeout(() => {
+      document.getElementById('refresh-diagnostics')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 0);
+  };
+
+  const commandItems: CommandCenterItem[] = useMemo(() => {
+    if (!data) return [];
+
+    const items: CommandCenterItem[] = [];
+
+    for (const tab of TABS) {
+      items.push({
+        id: `tab-${tab.id}`,
+        label: tab.label,
+        hint: tab.description,
+        group: 'Tabs',
+        onSelect: () => setActiveTab(tab.id),
+      });
+    }
+
+    data.timeline.forEach((item, idx) => {
+      items.push({
+        id: `timeline-${idx}`,
+        label: item.task,
+        hint: item.time,
+        group: 'Timeline',
+        onSelect: () => setActiveTab('operations'),
+      });
+    });
+
+    data.nextJobs.forEach((job, idx) => {
+      items.push({
+        id: `job-${idx}`,
+        label: job.name,
+        hint: `Runs ${job.nextRun}`,
+        group: 'Jobs',
+        onSelect: () => setActiveTab('operations'),
+      });
+    });
+
+    data.activity.forEach((activity, idx) => {
+      items.push({
+        id: `activity-${idx}`,
+        label: activity.text,
+        hint: `${activity.category.toUpperCase()} · ${activity.time}`,
+        group: 'Activity',
+        onSelect: () => setActiveTab('insights'),
+      });
+    });
+
+    data.findings.forEach((finding, idx) => {
+      items.push({
+        id: `finding-${idx}`,
+        label: finding,
+        group: 'Findings',
+        onSelect: () => setActiveTab('insights'),
+      });
+    });
+
+    items.push({
+      id: 'action-refresh',
+      label: 'Force refresh now',
+      hint: 'Run an immediate status fetch',
+      group: 'Actions',
+      onSelect: () => void refresh(),
+    });
+
+    items.push({
+      id: 'action-copy-gist',
+      label: 'Copy live status gist URL',
+      hint: liveStatusUrl ?? 'No live source URL available',
+      group: 'Actions',
+      onSelect: () => {
+        if (!liveStatusUrl) return;
+        void navigator.clipboard.writeText(liveStatusUrl);
+      },
+    });
+
+    items.push({
+      id: 'action-open-diagnostics',
+      label: 'Open current diagnostics view',
+      hint: freshnessLevel === 'stale' ? 'Open stale diagnostics view' : 'Open fresh diagnostics view',
+      group: 'Actions',
+      onSelect: () => openDiagnosticsView(freshnessLevel === 'stale' ? 'stale' : 'fresh'),
+    });
+
+    return items;
+  }, [data, freshnessLevel, liveStatusUrl, refresh]);
 
   const content = useMemo(() => {
     if (!data) return null;
@@ -135,6 +249,17 @@ export default function App() {
             }
           }
         />
+        <RefreshDiagnosticsPanel
+          refreshOutcome={refreshOutcome}
+          sourceMode={sourceMode}
+          sourceLabel={sourceLabel}
+          freshnessLevel={freshnessLevel}
+          freshnessLabel={freshnessLabel}
+          freshnessAgeMinutes={freshnessAgeMinutes}
+          lastErrorCode={lastErrorCode}
+          lastErrorMessage={lastErrorMessage}
+          diagnosticsView={diagnosticsView}
+        />
         <SummaryCards data={data} />
 
         <CollapsibleSection
@@ -162,7 +287,19 @@ export default function App() {
         </CollapsibleSection>
       </>
     );
-  }, [activeTab, data]);
+  }, [
+    activeTab,
+    data,
+    diagnosticsView,
+    freshnessAgeMinutes,
+    freshnessLabel,
+    freshnessLevel,
+    lastErrorCode,
+    lastErrorMessage,
+    refreshOutcome,
+    sourceLabel,
+    sourceMode,
+  ]);
 
   const errorSummary =
     errorCode === 'status-network-error'
@@ -198,6 +335,10 @@ export default function App() {
         onRefresh={() => void refresh()}
       />
 
+      <button className="command-center-trigger ghost-btn" onClick={() => setCommandCenterOpen(true)}>
+        Command Center <span className="muted">⌘/Ctrl + K</span>
+      </button>
+
       {error && (
         <div className="error-banner">
           <AlertTriangle size={16} />
@@ -210,6 +351,8 @@ export default function App() {
       {!data && loading && <div className="card">Loading status…</div>}
 
       {data && <main className={`dashboard-grid ${activeTab === 'skills' ? 'dashboard-grid-skills' : ''}`}>{content}</main>}
+
+      <CommandCenter open={commandCenterOpen} onClose={() => setCommandCenterOpen(false)} items={commandItems} />
     </div>
   );
 }

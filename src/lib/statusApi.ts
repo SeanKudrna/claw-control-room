@@ -15,6 +15,7 @@ export interface StatusFetchResult {
     mode: 'configured' | 'fallback';
     label: string;
     detail: string;
+    liveStatusUrl: string | null;
   };
 }
 
@@ -215,6 +216,7 @@ export async function fetchStatus(options?: { signal?: AbortSignal }): Promise<S
           mode: 'configured',
           label: 'Live source',
           detail: 'Using configured status source (gist/live feed).',
+          liveStatusUrl: resolved.configuredUrl.replace(/[?&]ts=\d+$/, ''),
         },
       };
     } catch (primaryError) {
@@ -226,6 +228,7 @@ export async function fetchStatus(options?: { signal?: AbortSignal }): Promise<S
           mode: 'fallback',
           label: 'Fallback snapshot',
           detail: `Primary source failed (${primaryCode}); using local fallback snapshot.`,
+          liveStatusUrl: resolved.configuredUrl.replace(/[?&]ts=\d+$/, ''),
         },
       };
     }
@@ -241,6 +244,7 @@ export async function fetchStatus(options?: { signal?: AbortSignal }): Promise<S
         resolved.configStatus === 'unreachable'
           ? 'Source config unavailable; using local fallback snapshot.'
           : 'No configured source URL; using local fallback snapshot.',
+      liveStatusUrl: null,
     },
   };
 }

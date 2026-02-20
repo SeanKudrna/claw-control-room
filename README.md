@@ -3,6 +3,7 @@
 A React + TypeScript dashboard (GitHub Pages) that gives a clear window into Claw's day:
 - tabbed views (Overview / Operations / Insights / Skills) to prevent a single-page infodump
 - sticky section navigation shell for faster movement between tabs on phones (translucent contrast-tuned)
+- global Command Center palette (`Ctrl/Cmd+K`) for cross-dashboard search/jump + operator quick actions
 - subtle top/bottom viewport edge fades so scrolling content exits more smoothly
 - mobile-first responsive layout tuned for touch usage and phone readability
 - collapsible content sections for cleaner UX and faster scanning
@@ -14,6 +15,7 @@ A React + TypeScript dashboard (GitHub Pages) that gives a clear window into Cla
 - per-run runtime details sheet (tap/click row details for source/session/start/elapsed/summary + model + thinking metadata), rendered above sticky layers for consistent readability, with fallback labels when metadata is missing and an explicit baseline check for `gpt-5.3-codex + high`
 - data freshness pill (fresh / aging / stale) based on payload generation time, with live age progression between polls
 - refresh control is anchored in the sticky tab row (right-aligned with section tabs) with truthfulness states (refreshing, success, explicit failure/retry while retaining last known good snapshot), including clear "fetched but still stale" wording when freshness does not improve
+- compact Refresh Diagnostics panel (last outcome/source/freshness age + persisted last error context)
 - structured refresh-failure taxonomy (network/http/payload/source) for clearer degraded-mode operator guidance
 - strict runtime payload-shape validation before render (malformed snapshots are rejected as `status-payload-invalid` instead of crashing UI assumptions)
 - explicit source semantics pill (Live source vs Fallback snapshot) with fallback reason detail for transparent degraded-mode awareness
@@ -77,9 +79,10 @@ npm run preview -- --host 127.0.0.1 --port 4173
 node scripts/tests/capture_issue50_screenshots.mjs
 node scripts/tests/capture_issue50_job_details_screenshots.mjs
 node scripts/tests/test_skill_actions_flow.mjs
+node scripts/tests/capture_issue51_command_center_screenshots.mjs
 ```
 
-Proof artifacts are written to `status/ui-validation/issue50-*.png`.
+Proof artifacts are written to `status/ui-validation/issue50-*.png` and `status/ui-validation/issue51-*.png`.
 
 ## Issue monitoring / QA workflow
 

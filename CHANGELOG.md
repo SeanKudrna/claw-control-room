@@ -1,5 +1,26 @@
 # Changelog
 
+## v1.5.0 - 2026-02-19
+
+### Added
+- Added global Command Center (`Ctrl/Cmd+K`) available across all dashboard tabs with keyboard-first interaction (`↑/↓/Enter/Esc`).
+- Added cross-surface search/jump index for tabs, timeline blocks, upcoming jobs, activity feed rows, and findings entries.
+- Added Command Center quick actions: force refresh now, copy live status gist URL, and open freshness-aware diagnostics view in-app.
+- Added compact `Refresh Diagnostics` panel on Overview with last outcome, source mode, freshness age, and persisted last error code/message.
+- Added visual proof capture script for Command Center/Diagnostics UX (`scripts/tests/capture_issue51_command_center_screenshots.mjs`).
+
+### Changed
+- Extended status-fetch/source metadata so live source URL can be surfaced for quick-copy actions.
+- Extended `useStatus` state contract to persist last-error snapshot and expose freshness age minutes for diagnostics rendering.
+- Added mobile-safe Command Center modal styling and empty-state UX without disturbing existing dashboard layout contracts.
+- Expanded Playwright UI regression checks to validate Command Center behavior + diagnostics panel contract (desktop + mobile).
+
+### Validation
+- `npm run typecheck`
+- `npm run build`
+- `node scripts/tests/test_ui_regressions.mjs`
+- `node scripts/tests/capture_issue51_command_center_screenshots.mjs`
+
 ## v1.4.39 - 2026-02-19
 
 ### Added
